@@ -81,9 +81,10 @@ let detect_flow = () => {
         _report("formsubmit", {action: target.action, form: jsonform});
 
         if (
-            "code" in Object.keys(jsonform)
-            || "access_token" in Object.keys(jsonform)
-            || "id_token" in Object.keys(jsonform)
+            Object.keys(jsonform).includes("code")
+            || Object.keys(jsonform).includes("state")
+            || Object.keys(jsonform).includes("access_token")
+            || Object.keys(jsonform).includes("id_token")
         ) {
             _report("formpost", {action: target.action, form: jsonform});
         }
