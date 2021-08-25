@@ -52,7 +52,6 @@ let helpers = () => {
 				go_up(current.parent, path);
 			} else {
 				// We reached the top
-				path = "top" + (path.length ? "." : "") + path;
 				// If opener is set, go up in opener context
 				if (current.opener) {
                     // Which popup am I?
@@ -62,7 +61,9 @@ let helpers = () => {
                         }
                     }
 					go_up(current.opener, path)
-				}
+				} else {
+                    path = "top" + (path.length ? "." : "") + path;
+                }
 			}
 		}
 		go_up(target);

@@ -84,6 +84,7 @@ def config_chromedriver(chromeprofile):
     options.add_argument("--ignore-certificate-errors")
     options.add_argument("--load-extension={}/chrome_extension".format(os.getcwd()))
     options.add_argument("--disable-web-security")
+    options.add_argument("--disable-site-isolation-trials")
     options.add_argument("--user-data-dir={}".format(chromeprofile))
     driver = webdriver.Chrome(options=options)
     return driver
