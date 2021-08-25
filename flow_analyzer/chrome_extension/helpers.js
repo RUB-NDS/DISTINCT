@@ -55,7 +55,12 @@ let helpers = () => {
 				path = "top" + (path.length ? "." : "") + path;
 				// If opener is set, go up in opener context
 				if (current.opener) {
-					path = "popup" + (path.length ? "." : "") + path;
+                    // Which popup am I?
+                    for (let i = 0; i < current.opener._popups.length; i++) {
+                        if (current.opener._popups[i] === current) {
+                            path = `popups[${i}]` + (path.length ? "." : "") + path;
+                        }
+                    }
 					go_up(current.opener, path)
 				}
 			}
@@ -140,8 +145,32 @@ let helpers = () => {
         obj["hierarchy"] = _hierarchy(self);
         obj["href"] = location.href;
 
-        console.info(`%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`, "color:green;", "");
-        alert(`key=${key}, val=${JSON.stringify(obj)}`);
+        // Format: {"report": {"key": ..., "val": ...}}
+        fetch("http://localhost:7777", {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({"report": {"key": key, "val": obj}})
+        }).then(r => r.json()).then(r => {
+            if (r.success) {
+                console.info(
+                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`,
+                    "color:green;", ""
+                );
+            } else {
+                console.info(
+                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`,
+                    "color:red;", ""
+                );
+            }
+        }).catch(e => {
+            console.info(
+                `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`,
+                "color:red;", ""
+            );
+        });
     }
 
     /* Function wrappers */
@@ -172,7 +201,7 @@ let helpers = () => {
 
     /* Wrapper of window.open function */
     window.open = function open(...args) {
-        let popup = window._open(args);
+        let popup = window._open(...args);
         _report("popupopened", {url: args[0]});
         window._popups.push(popup);
         return popup;

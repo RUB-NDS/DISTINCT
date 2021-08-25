@@ -1,0 +1,7 @@
+# Custom
+logs/
+baseprofile/
+chromeprofile_tmp
+
+# Python
+__pycache__
