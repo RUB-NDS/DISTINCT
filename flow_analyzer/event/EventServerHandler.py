@@ -25,7 +25,6 @@ class EventServerHandler(SimpleHTTPRequestHandler):
         In Extension: _report("foo", {"bar":"baz"})
         In POST: {"report": {"key": "foo", "val": {"bar": "baz"}}}
         """
-        logger.info("Event server handler received POST request")
         
         contentlength = int(self.headers['Content-Length'])
         postdata = self.rfile.read(contentlength)

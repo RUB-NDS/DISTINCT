@@ -9,6 +9,7 @@ class ExecutionContext():
 
     def __init__(self):
         self.topframe = None
+        self.results = {}
 
     def __str__(self):
         if not self.topframe:
@@ -36,8 +37,12 @@ class ExecutionContext():
         command = cmd["command"]
         params = cmd["params"]
         
-        if command == "dumpcontext":
-            logger.info("OUTPUT OF COMMAND: dumpcontext\n" + str(self))
+        if command == "show" and params[0] == "context":
+            print("COMMAND: show context\n" + str(self))
+        elif command == "show" and params[0] == "results":
+            print("COMMAND: show results\n")
+            for key, val in self.results.items():
+                print(f"key={key}, val={val}")
 
     def process_report(self, report):
         key = report["key"]
@@ -53,6 +58,9 @@ class ExecutionContext():
         elif key == "popupopened":
             # href, hierarchy, url
             pass
+        elif key == "popupclosed":
+            # href, hierarchy
+            self.remove_frame(val["hierarchy"])
         elif key == "html":
             # href, hierarchy, html
             pass
@@ -61,7 +69,7 @@ class ExecutionContext():
             pass
         elif key == "result":
             # href, hierarchy, key, val
-            pass
+            self.results[val["key"]] = val["val"]
         elif key == "event":
             # href, hierarchy, event
             pass

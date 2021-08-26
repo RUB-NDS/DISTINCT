@@ -178,6 +178,7 @@ let helpers = () => {
     window._postMessage = window.postMessage;
     window._addEventListener = window.addEventListener;
     window._open = window.open;
+    window._close = window.close;
 
     /* Global access */
     window._qparams = query_params();
@@ -207,6 +208,14 @@ let helpers = () => {
         _report("popupopened", {url: args[0]});
         window._popups.push(popup);
         return popup;
+    }
+
+    /* Wrapper of window.close function */
+    window.close = function close(...args) {
+        _report("popupclosed");
+        self.setTimeout(() => {
+            window._close(...args);
+        }, 1000);
     }
 
     /* Report when dumpframes event is received */
