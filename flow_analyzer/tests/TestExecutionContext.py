@@ -163,7 +163,7 @@ class TestExecutionContext(unittest.TestCase):
 
         self.assertDictEqual(ctx.topframe.popups, {})
 
-    def update_iframe(self):
+    def test_overwrite_iframe(self):
         ctx = ExecutionContext()
         
         frame0 = Frame()
@@ -180,11 +180,11 @@ class TestExecutionContext(unittest.TestCase):
         self.assertEqual(ctx.topframe.popups[0].frames[0].href, "http://frame0.com")
         self.assertEqual(ctx.topframe.popups[0].frames[0].html, "<html>frame0</html>")
 
-    def update_popup(self):
+    def test_overwrite_popup(self):
         ctx = ExecutionContext()
         
         popup0 = Frame()
-        ctx.insert_popup("top.popups[0]", popup0)
+        ctx.insert_frame("top.popups[0]", popup0)
         self.assertIsNotNone(ctx.topframe.popups[0])
         self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
         self.assertIsNone(ctx.topframe.popups[0].href)
@@ -196,6 +196,24 @@ class TestExecutionContext(unittest.TestCase):
         self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
         self.assertEqual(ctx.topframe.popups[0].href, "http://popup0.com")
         self.assertEqual(ctx.topframe.popups[0].html, "<html>popup0</html>")
+
+    def test_get_frame(self):
+        ctx = ExecutionContext()
+
+        frame0 = Frame(href="http://frame0.com", html="<html>frame0</html>")
+        ctx.insert_frame("top.popups[0].frames[0]", frame0)
+
+        frame0_get = ctx.get_frame("top.popups[0].frames[0]")
+        self.assertIsNotNone(frame0_get)
+        self.assertEqual(frame0_get.hierarchy(), "top.popups[0].frames[0]")
+        self.assertEqual(frame0_get.href, "http://frame0.com")
+        self.assertEqual(frame0_get.html, "<html>frame0</html>")
+
+        self.assertIsNotNone(ctx.get_frame("top.popups[0]"))
+        self.assertEqual(ctx.get_frame("top.popups[0]").hierarchy(), "top.popups[0]")
+        
+        self.assertIsNotNone(ctx.get_frame("top"))
+        self.assertEqual(ctx.get_frame("top").hierarchy(), "top")
 
 if __name__ == "__main__":
     unittest.main()

@@ -38,6 +38,11 @@ class Frame():
         self.frames.append(frame)
         return len(self.frames) - 1
 
+    def update_frame(self, index, frame):
+        """ Update frame in list """
+        self.frames[index] = frame
+        return index
+
     def insert_popup(self, index, frame):
         """ Insert popup at index """
         self.popups[index] = frame

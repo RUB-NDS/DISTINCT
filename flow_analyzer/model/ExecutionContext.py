@@ -42,8 +42,52 @@ class ExecutionContext():
             # href, hierarchy, action, form
             pass
     
+    def get_frame(self, hierarchy):
+        """ Get frame in hierarchy
+            Returns frame, if frame is found
+            Returns None, if frame is not found
+        """
+        path = hierarchy.split(".")
+
+        if not self.topframe:
+            return None
+        
+        current = self.topframe
+        for i in range(0, len(path) - 1):
+            frames = re.search("frames\[(\d)+\]", path[i])
+            popups = re.search("popups\[(\d)+\]", path[i])
+
+            if frames:
+                frame_idx = int(frames.group(1))
+                try:
+                    current = current.frames[frame_idx]
+                except IndexError as e:
+                    return None
+            elif popups:
+                popup_idx = int(popups.group(1))
+                try:
+                    current = current.popups[popup_idx]
+                except KeyError as e:
+                    return None
+        
+        last = path[-1]
+        frames = re.search("frames\[(\d)+\]", last)
+        popups = re.search("popups\[(\d)+\]", last)
+
+        if last == "top":
+            return self.topframe # This is our topframe
+        elif frames:
+            frame_idx = int(frames.group(1))
+            return current.frames[frame_idx]
+        elif popups:
+            popup_idx = int(popups.group(1))
+            return current.popups[popup_idx]
+        else:
+            return None
+
     def insert_frame(self, hierarchy, frame):
         """ Insert frame and all superior frames and superior popups in tree (if not existent)
+            Overwrites frame, so all iframes and popups are lost!
             Returns True, if frame inserted successfully
             Returns False, if frame not inserted successfully
         """
@@ -117,7 +161,12 @@ class ExecutionContext():
             frame_idx = int(frames.group(1))
             frame.parent = current
             frame.opener = None
-            idx = current.insert_frame(frame)
+            if frame_idx < len(current.frames):
+                # Update frame
+                idx = current.update_frame(frame_idx, frame)
+            else:
+                # Append frame
+                idx = current.insert_frame(frame)
             if idx != frame_idx:
                 logger.error(
                     f""" New iframe was inserted at index {idx} but expected
@@ -128,7 +177,7 @@ class ExecutionContext():
             popup_idx = int(popups.group(1))
             frame.parent = None
             frame.opener = current
-            idx = current.insert_popup(popup_idx, frame)
+            idx = current.insert_popup(popup_idx, frame) # popups are dict -> overwrite
             if idx != popup_idx:
                 logger.error(
                     f""" New popup was inserted at index {idx} but expected
