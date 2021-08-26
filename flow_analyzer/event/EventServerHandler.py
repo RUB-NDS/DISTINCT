@@ -29,7 +29,6 @@ class EventServerHandler(SimpleHTTPRequestHandler):
         
         contentlength = int(self.headers['Content-Length'])
         postdata = self.rfile.read(contentlength)
-        logger.debug(postdata)
 
         try:
             postdatajson = json.loads(postdata)

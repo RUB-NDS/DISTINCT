@@ -26,13 +26,26 @@ class ExecutionContext():
         go_down(self.topframe, dump, 1)
         return dump["val"]
 
+    def process_message(self, message):
+        if "report" in message:
+            self.process_report(message["report"])
+        if "cmd" in message:
+            self.process_cmd(message["cmd"])
+
+    def process_cmd(self, cmd):
+        command = cmd["command"]
+        params = cmd["params"]
+        
+        if command == "dumpcontext":
+            logger.info("OUTPUT OF COMMAND: dumpcontext\n" + str(self))
+
     def process_report(self, report):
-        key = report["report"]["key"]
-        val = report["report"]["val"]
+        key = report["key"]
+        val = report["val"]
         
         if key == "framecreated":
-            # href, hierarchy, html
-            frame = Frame(href=val["href"], html=val["html"])
+            # href, hierarchy, (html)
+            frame = Frame(href=val["href"])
             self.insert_frame(val["hierarchy"], frame)
         elif key == "framedestroyed":
             # href, hierarchy

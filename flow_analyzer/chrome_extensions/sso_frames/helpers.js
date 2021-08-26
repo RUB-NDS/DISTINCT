@@ -193,7 +193,7 @@ let helpers = () => {
     /* Report when new frame is created */
     window._addEventListener("load", () => {
         let html = document.documentElement.outerHTML;
-        _report("framecreated", {html: html});
+        _report("framecreated");
     });
 
     /* Report when frame is destroyed */

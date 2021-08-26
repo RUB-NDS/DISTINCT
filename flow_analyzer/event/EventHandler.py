@@ -24,13 +24,13 @@ class EventHandler(Thread):
 
         while True:
             # Two types of messages can be added to the queue
-            # {"report": {...}} -> from chrome extension
-            # {"cmd": {...}} -> from cli tool
+            # {"report": {"key": "...", "val": {...}}} -> from chrome extension
+            # {"cmd": {"command": "...", "params": {...}}} -> from cli tool
             message = self.queue.get()
             logger.debug("Dispatched message: {}".format(message))
 
             # Process message ...
-            execution_context.process_report(message)
+            execution_context.process_message(message)
 
     def queue_message(self, message):
         self.queue.put(message)
