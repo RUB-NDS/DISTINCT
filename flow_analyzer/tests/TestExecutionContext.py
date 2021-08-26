@@ -1,0 +1,154 @@
+import unittest
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from model.ExecutionContext import ExecutionContext
+from model.Frame import Frame
+
+class TestExecutionContext(unittest.TestCase):
+
+    def test_insert_topframe(self):
+        """
+        top
+        """
+        ctx = ExecutionContext()
+        frame = Frame()
+        ctx.insert_frame("top", frame)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertEqual(ctx.topframe.hierarchy(), "top")
+
+    def test_insert_iframe(self):
+        """
+        top
+            -> frames[0]
+        """
+        ctx = ExecutionContext()
+        frame = Frame()
+        ctx.insert_frame("top.frames[0]", frame)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertEqual(ctx.topframe.hierarchy(), "top")
+        self.assertIsNotNone(ctx.topframe.frames[0])
+        self.assertEqual(ctx.topframe.frames[0].hierarchy(), "top.frames[0]")
+
+    def test_insert_two_iframes(self):
+        """
+        top
+            -> frames[0]
+            -> frames[1]
+        """
+        ctx = ExecutionContext()
+        frame0 = Frame()
+        frame1 = Frame()
+        ctx.insert_frame("top.frames[0]", frame0)
+        ctx.insert_frame("top.frames[1]", frame1)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertEqual(ctx.topframe.hierarchy(), "top")
+        self.assertIsNotNone(ctx.topframe.frames[0])
+        self.assertIsNotNone(ctx.topframe.frames[1])
+        self.assertEqual(ctx.topframe.frames[0].hierarchy(), "top.frames[0]")
+        self.assertEqual(ctx.topframe.frames[1].hierarchy(), "top.frames[1]")
+    
+    def test_insert_popup(self):
+        """
+        top
+            -> popups[0]
+        """
+        ctx = ExecutionContext()
+        frame = Frame()
+        ctx.insert_frame("top.popups[0]", frame)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertEqual(ctx.topframe.hierarchy(), "top")
+        self.assertIsNotNone(ctx.topframe.popups[0])
+        self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
+    
+    def test_insert_two_popups(self):
+        """
+        top
+            -> popups[0]
+            -> popups[1]
+        """
+        ctx = ExecutionContext()
+        frame0 = Frame()
+        frame1 = Frame()
+        ctx.insert_frame("top.popups[0]", frame0)
+        ctx.insert_frame("top.popups[1]", frame1)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertEqual(ctx.topframe.hierarchy(), "top")
+        self.assertIsNotNone(ctx.topframe.popups[0])
+        self.assertIsNotNone(ctx.topframe.popups[1])
+        self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
+        self.assertEqual(ctx.topframe.popups[1].hierarchy(), "top.popups[1]")
+    
+    def test_insert_remove_multiple(self):
+        """
+        top
+            -> popups[0]
+                -> frames[0]
+                    -> frames[0]
+                        -> popups[0]
+                    -> frames[1]
+            -> popups[1]
+                -> frames[0]
+                -> frames[1]
+        """
+        ctx = ExecutionContext()
+        frame0 = Frame()
+        frame1 = Frame()
+        frame2 = Frame()
+        frame3 = Frame()
+        frame4 = Frame()
+        frame5 = Frame()
+        frame6 = Frame()
+        ctx.insert_frame("top.popups[0].frames[0].frames[0].popups[0]", frame0)
+        ctx.insert_frame("top.popups[0].frames[0].frames[1]", frame1)
+        ctx.insert_frame("top.popups[1].frames[0]", frame2)
+        ctx.insert_frame("top.popups[1].frames[1]", frame3)
+        ctx.insert_frame("top.frames[0]", frame4)
+        ctx.insert_frame("top.frames[1]", frame5)
+        ctx.insert_frame("top.frames[2]", frame6)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertIsNotNone(ctx.topframe.popups[0])
+        self.assertIsNotNone(ctx.topframe.popups[0].frames[0])
+        self.assertIsNotNone(ctx.topframe.popups[0].frames[0].frames[0])
+        self.assertIsNotNone(ctx.topframe.popups[0].frames[0].frames[0].popups[0])
+        self.assertIsNotNone(ctx.topframe.popups[0].frames[0].frames[1])
+        self.assertIsNotNone(ctx.topframe.popups[1])
+        self.assertIsNotNone(ctx.topframe.popups[1].frames[0])
+        self.assertIsNotNone(ctx.topframe.popups[1].frames[1])
+        self.assertIsNotNone(ctx.topframe.frames[0])
+        self.assertIsNotNone(ctx.topframe.frames[1])
+        self.assertIsNotNone(ctx.topframe.frames[2])
+        
+        self.assertEqual(ctx.topframe.hierarchy(), "top")
+        self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
+        self.assertEqual(ctx.topframe.popups[0].frames[0].hierarchy(), "top.popups[0].frames[0]")
+        self.assertEqual(ctx.topframe.popups[0].frames[0].frames[0].hierarchy(), "top.popups[0].frames[0].frames[0]")
+        self.assertEqual(ctx.topframe.popups[0].frames[0].frames[0].popups[0].hierarchy(), "top.popups[0].frames[0].frames[0].popups[0]")
+        self.assertEqual(ctx.topframe.popups[0].frames[0].frames[1].hierarchy(), "top.popups[0].frames[0].frames[1]")
+        self.assertEqual(ctx.topframe.popups[1].hierarchy(), "top.popups[1]")
+        self.assertEqual(ctx.topframe.popups[1].frames[0].hierarchy(), "top.popups[1].frames[0]")
+        self.assertEqual(ctx.topframe.popups[1].frames[1].hierarchy(), "top.popups[1].frames[1]")
+        self.assertEqual(ctx.topframe.frames[0].hierarchy(), "top.frames[0]")
+        self.assertEqual(ctx.topframe.frames[1].hierarchy(), "top.frames[1]")
+        self.assertEqual(ctx.topframe.frames[2].hierarchy(), "top.frames[2]")
+
+        ctx.remove_frame("top.popups[0].frames[0]") # frame 0 and 1 should be deleted
+        ctx.remove_frame("top.popups[1].frames[0]") # frame 2 should be deleted
+        ctx.remove_frame("top.frames[1]") # frame 5 should be deleted
+
+        self.assertListEqual(ctx.topframe.popups[0].frames, [])
+        self.assertListEqual(ctx.topframe.popups[1].frames, [frame3])
+
+        self.assertListEqual(ctx.topframe.frames, [frame4, frame6])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -42,16 +42,16 @@ class ExecutionContext():
             # href, hierarchy, action, form
             pass
     
-    def insert_frame(self, frame):
+    def insert_frame(self, hierarchy, frame):
         """ Insert frame and all superior frames and superior popups in tree (if not existent)
             Returns True, if frame inserted successfully
             Returns False, if frame not inserted successfully
         """
-        if frame.hierarchy == "top":
+        if hierarchy == "top":
             self.topframe = frame
             return True
 
-        path = frame.hierarchy.split(".")
+        path = hierarchy.split(".")
 
         current = self.topframe
         for i in range(0, len(path) - 1):
@@ -66,19 +66,19 @@ class ExecutionContext():
                     # Create intermediate iframe
                     logger.info(
                         f""" Creating new iframe with index {frame_idx}
-                        in frame '{current.hierarchy}'"""
+                        in frame '{current.hierarchy()}'"""
                     )
-                    inter_frame = Frame(hierarchy=f"{current.hierarchy}.frames[{frame_idx}]")
+                    inter_frame = Frame()
+                    inter_frame.parent = current
+                    inter_frame.opener = None
                     idx = current.insert_frame(inter_frame)
                     if idx != frame_idx:
                         logger.error(
                             f""" New iframe was inserted at index {idx} but expected
-                            to be inserted at index {frame_idx} in frame '{current.hierarchy}'"""
+                            to be inserted at index {frame_idx} in frame '{current.hierarchy()}'"""
                         )
                         return False
-                    inter_frame.parent = current
                     current = current.frames[frame_idx]
-                    
             elif popups:
                 popup_idx = int(popups.group(1))
                 try:
@@ -87,18 +87,27 @@ class ExecutionContext():
                     # Create intermediate popup
                     logger.info(
                         f""" Creating new popup with index {popup_idx}
-                        in frame '{current.hierarchy}'"""
+                        in frame '{current.hierarchy()}'"""
                     )
-                    inter_frame = Frame(hierarchy=f"{current.hierarchy}.popups[{popup_idx}]")
+                    inter_frame = Frame()
+                    inter_frame.parent = None
+                    inter_frame.opener = current
                     idx = current.insert_popup(popup_idx, inter_frame)
                     if idx != popup_idx:
                         logger.error(
                             f""" New popup was inserted at index {idx} but expected
-                            to be inserted at index {popup_idx} in frame '{current.hierarchy}'"""
+                            to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
                         )
                         return False
-                    inter_frame.opener = current
                     current = current.popups[popup_idx]
+            elif path[i] == "top" and current == None:
+                # Create topframe
+                logger.info("Creating topframe")
+                inter_frame = Frame()
+                inter_frame.parent = None
+                inter_frame.opener = None
+                self.topframe = inter_frame
+                current = self.topframe
         
         last = path[-1]
         frames = re.search("frames\[(\d)+\]", last)
@@ -106,24 +115,26 @@ class ExecutionContext():
         
         if frames:
             frame_idx = int(frames.group(1))
+            frame.parent = current
+            frame.opener = None
             idx = current.insert_frame(frame)
             if idx != frame_idx:
                 logger.error(
                     f""" New iframe was inserted at index {idx} but expected
-                    to be inserted at index {frame_idx} in frame '{current.hierarchy}'"""
+                    to be inserted at index {frame_idx} in frame '{current.hierarchy()}'"""
                 )
                 return False
-            frame.parent = current
         elif popups:
             popup_idx = int(popups.group(1))
+            frame.parent = None
+            frame.opener = current
             idx = current.insert_popup(popup_idx, frame)
             if idx != popup_idx:
                 logger.error(
                     f""" New popup was inserted at index {idx} but expected
-                    to be inserted at index {popup_idx} in frame '{current.hierarchy}'"""
+                    to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
                 )
                 return False
-            frame.opener = current
 
         return True
 
@@ -146,7 +157,7 @@ class ExecutionContext():
                 except IndexError as e:
                     logger.warning(f"""
                         Failed to remove frame '{hierarchy}' 
-                        because frame '{current.hierarchy}'
+                        because frame '{current.hierarchy()}'
                         does not contain iframe with index {frame_idx}"""
                     )
                     return False
@@ -157,7 +168,7 @@ class ExecutionContext():
                 except KeyError as e:
                     logger.warning(f"""
                         Failed to remove frame '{hierarchy}' 
-                        because frame '{current.hierarchy}'
+                        because frame '{current.hierarchy()}'
                         does not contain popup with index {popup_idx}"""
                     )
                     return False
