@@ -10,16 +10,33 @@ class ExecutionContext():
     def __init__(self):
         self.topframe = None
 
+    def __str__(self):
+        if not self.topframe:
+            return ""
+        
+        dump = {"val": "top"}
+        def go_down(current, dump, indent):
+            for i in range(0, len(current.frames)):
+                dump["val"] += "\n{}-> frames[{}]".format('\t'*indent, i)
+                go_down(current.frames[i], dump, indent+1)
+            for i in current.popups.keys():
+                dump["val"] += "\n{}-> popups[{}]".format('\t'*indent, i)
+                go_down(current.popups[i], dump, indent+1)
+        
+        go_down(self.topframe, dump, 1)
+        return dump["val"]
+
     def process_report(self, report):
         key = report["report"]["key"]
         val = report["report"]["val"]
         
         if key == "framecreated":
             # href, hierarchy, html
-            pass
+            frame = Frame(href=val["href"], html=val["html"])
+            self.insert_frame(val["hierarchy"], frame)
         elif key == "framedestroyed":
             # href, hierarchy
-            pass
+            self.remove_frame(val["hierarchy"])
         elif key == "popupopened":
             # href, hierarchy, url
             pass

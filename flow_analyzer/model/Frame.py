@@ -10,6 +10,9 @@ class Frame():
         self.popups = {} # {0: Frame, 1: Frame, ...} -> ._popups[0], .popups[1]
         self.frames = [] # [Frame, Frame, ...] -> .frames[0], .frames[1]
 
+    def __str__(self):
+        return self.hierarchy()
+
     def hierarchy(self):
         path = {"val": ""}
         def go_up(current, path):

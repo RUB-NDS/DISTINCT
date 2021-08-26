@@ -215,5 +215,23 @@ class TestExecutionContext(unittest.TestCase):
         self.assertIsNotNone(ctx.get_frame("top"))
         self.assertEqual(ctx.get_frame("top").hierarchy(), "top")
 
+    def test_dump_ctx(self):
+        ctx = ExecutionContext()
+
+        frame0 = Frame()
+        frame1 = Frame()
+        frame2 = Frame()
+        frame3 = Frame()
+        frame4 = Frame()
+        ctx.insert_frame("top.popups[0].frames[0].frames[0]", frame0)
+        ctx.insert_frame("top.popups[0].frames[0].frames[1]", frame1)
+        ctx.insert_frame("top.popups[0].frames[1]", frame2)
+        ctx.insert_frame("top.frames[0]", frame3)
+        ctx.insert_frame("top.frames[1]", frame4)
+
+        ctx_str = str(ctx)
+        print("Output: test_dump_ctx")
+        print(ctx_str)
+
 if __name__ == "__main__":
     unittest.main()
