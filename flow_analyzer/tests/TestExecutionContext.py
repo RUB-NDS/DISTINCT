@@ -97,6 +97,9 @@ class TestExecutionContext(unittest.TestCase):
             -> popups[1]
                 -> frames[0]
                 -> frames[1]
+            -> frames[0]
+            -> frames[1]
+            -> frames[2]
         """
         ctx = ExecutionContext()
         frame0 = Frame()
@@ -145,10 +148,54 @@ class TestExecutionContext(unittest.TestCase):
         ctx.remove_frame("top.frames[1]") # frame 5 should be deleted
 
         self.assertListEqual(ctx.topframe.popups[0].frames, [])
+        
         self.assertListEqual(ctx.topframe.popups[1].frames, [frame3])
+        self.assertEqual(ctx.topframe.popups[1].frames[0], frame3)
+        self.assertEqual(ctx.topframe.popups[1].frames[0].hierarchy(), "top.popups[1].frames[0]")
 
         self.assertListEqual(ctx.topframe.frames, [frame4, frame6])
 
+        ctx.remove_frame("top.popups[0]")
+        self.assertNotIn(0, ctx.topframe.popups)
+
+        ctx.remove_frame("top.popups[1]")
+        self.assertNotIn(1, ctx.topframe.popups)
+
+        self.assertDictEqual(ctx.topframe.popups, {})
+
+    def update_iframe(self):
+        ctx = ExecutionContext()
+        
+        frame0 = Frame()
+        ctx.insert_frame("top.popups[0].frames[0]", frame0)
+        self.assertIsNotNone(ctx.topframe.popups[0].frames[0])
+        self.assertEqual(ctx.topframe.popups[0].frames[0].hierarchy(), "top.popups[0].frames[0]")
+        self.assertIsNone(ctx.topframe.popups[0].frames[0].href)
+        self.assertIsNone(ctx.topframe.popups[0].frames[0].html)
+
+        frame0_new = Frame(href="http://frame0.com", html="<html>frame0</html>")
+        ctx.insert_frame("top.popups[0].frames[0]", frame0_new)
+        self.assertIsNotNone(ctx.topframe.popups[0].frames[0])
+        self.assertEqual(ctx.topframe.popups[0].frames[0].hierarchy(), "top.popups[0].frames[0]")
+        self.assertEqual(ctx.topframe.popups[0].frames[0].href, "http://frame0.com")
+        self.assertEqual(ctx.topframe.popups[0].frames[0].html, "<html>frame0</html>")
+
+    def update_popup(self):
+        ctx = ExecutionContext()
+        
+        popup0 = Frame()
+        ctx.insert_popup("top.popups[0]", popup0)
+        self.assertIsNotNone(ctx.topframe.popups[0])
+        self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
+        self.assertIsNone(ctx.topframe.popups[0].href)
+        self.assertIsNone(ctx.topframe.popups[0].html)
+
+        popup0_new = Frame(href="http://popup0.com", html="<html>popup0</html>")
+        ctx.insert_frame("top.popups[0]", popup0_new)
+        self.assertIsNotNone(ctx.topframe.popups[0])
+        self.assertEqual(ctx.topframe.popups[0].hierarchy(), "top.popups[0]")
+        self.assertEqual(ctx.topframe.popups[0].href, "http://popup0.com")
+        self.assertEqual(ctx.topframe.popups[0].html, "<html>popup0</html>")
 
 if __name__ == "__main__":
     unittest.main()
