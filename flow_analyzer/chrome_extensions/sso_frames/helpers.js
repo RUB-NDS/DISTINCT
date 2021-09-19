@@ -129,17 +129,6 @@ let helpers = () => {
 		go_up(window);
 	}
 
-    /* Dump the current frame, i.e., href, hierarchy, source code */
-    function dump_frame() {
-        let html = document.documentElement.outerHTML;
-        _report("html", {html: html});
-    }
-    
-    /* Simple logger that logs to console */
-    function log(message) {
-        console.info(`%c[sso-context-switching]%c ${message}`, "color:green;", "");
-    }
-
     /* Send signals back to python script */
     function report(key, val) {
         let obj = val || {};
@@ -174,58 +163,13 @@ let helpers = () => {
         });
     }
 
-    /* Function wrappers */
-    window._postMessage = window.postMessage;
-    window._addEventListener = window.addEventListener;
-    window._open = window.open;
-    window._close = window.close;
-
     /* Global access */
     window._qparams = query_params();
     window._hparams = hash_params();
     window._form2json = form2json;
     window._hierarchy = hierarchy;
     window._postMessageAll = postMessageAll;
-    window._dump_frame = dump_frame;
-    window._log = log;
     window._report = report;
-    window._popups = [];
-
-    /* Report when new frame is created */
-    window._addEventListener("load", () => {
-        let html = document.documentElement.outerHTML;
-        _report("framecreated");
-    });
-
-    /* Report when frame is destroyed */
-    window._addEventListener("beforeunload", () => {
-        _report("framedestroyed");
-    });
-
-    /* Wrapper of window.open function */
-    window.open = function open(...args) {
-        let popup = window._open(...args);
-        _report("popupopened", {url: args[0]});
-        window._popups.push(popup);
-        return popup;
-    }
-
-    /* Wrapper of window.close function */
-    window.close = function close(...args) {
-        _report("popupclosed");
-        // Wait a second to give event time to be sent to handler
-        self.setTimeout(() => {
-            window._close(...args);
-        }, 1000);
-    }
-
-    /* Report when dumpframes event is received */
-    window._addEventListener("message", (e) => {
-        if (e.data.cmd === "dumpframe") {
-            _report("dumpframe");
-            _dump_frame();
-        }
-    });
 
 }
 

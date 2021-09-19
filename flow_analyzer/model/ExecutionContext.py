@@ -60,11 +60,8 @@ class ExecutionContext():
         elif key == "popupclosed":
             # href, hierarchy
             self.remove_frame(val["hierarchy"])
-        elif key == "html":
-            # href, hierarchy, html
-            pass
         elif key == "dumpframe":
-            # href, hierarchy
+            # href, hierarchy, html
             pass
         elif key == "result":
             # href, hierarchy, key, val
