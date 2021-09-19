@@ -254,5 +254,11 @@ class TestExecutionContext(unittest.TestCase):
         self.assertEqual(ctx.topframe.href, "http://frame2.com")
         self.assertEqual(ctx.topframe.html, "<html>frame2</html>")
 
+        self.assertEqual(ctx.topframe.frames[0].href, "http://frame1.com")
+        self.assertEqual(ctx.topframe.frames[0].html, "<html>frame1</html>")
+
+        self.assertEqual(ctx.topframe.frames[0].frames[0].href, "http://frame0.com")
+        self.assertEqual(ctx.topframe.frames[0].frames[0].html, "<html>frame0</html>")
+
 if __name__ == "__main__":
     unittest.main()
