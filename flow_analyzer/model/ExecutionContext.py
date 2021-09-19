@@ -38,9 +38,8 @@ class ExecutionContext():
         params = cmd["params"]
         
         if command == "show" and params[0] == "context":
-            print("COMMAND: show context\n" + str(self))
+            print(self)
         elif command == "show" and params[0] == "results":
-            print("COMMAND: show results\n")
             for key, val in self.results.items():
                 print(f"key={key}, val={val}")
 
@@ -116,21 +115,30 @@ class ExecutionContext():
             return self.topframe # This is our topframe
         elif frames:
             frame_idx = int(frames.group(1))
-            return current.frames[frame_idx]
+            try:
+                return current.frames[frame_idx]
+            except IndexError as e:
+                return None
         elif popups:
             popup_idx = int(popups.group(1))
-            return current.popups[popup_idx]
+            try:
+                return current.popups[popup_idx]
+            except KeyError as e:
+                return None
         else:
             return None
 
     def insert_frame(self, hierarchy, frame):
         """ Insert frame and all superior frames and superior popups in tree (if not existent)
-            Overwrites frame, so all iframes and popups are lost!
             Returns True, if frame inserted successfully
             Returns False, if frame not inserted successfully
         """
-        if hierarchy == "top":
-            self.topframe = frame
+        
+        # If frame already exists, just update its basic values
+        # but keep it in tree with .frames[] and .popups[] references
+        old_frame = self.get_frame(hierarchy)
+        if old_frame:
+            self.update_frame(old_frame, frame)
             return True
 
         path = hierarchy.split(".")
@@ -146,8 +154,8 @@ class ExecutionContext():
                     current = current.frames[frame_idx]
                 except IndexError as e:
                     # Create intermediate iframe
-                    logger.info(
-                        f""" Creating new iframe with index {frame_idx}
+                    logger.debug(
+                        f""" Creating new intermediate iframe with index {frame_idx}
                         in frame '{current.hierarchy()}'"""
                     )
                     inter_frame = Frame()
@@ -167,8 +175,8 @@ class ExecutionContext():
                     current = current.popups[popup_idx]
                 except KeyError as e:
                     # Create intermediate popup
-                    logger.info(
-                        f""" Creating new popup with index {popup_idx}
+                    logger.debug(
+                        f""" Creating new intermediate popup with index {popup_idx}
                         in frame '{current.hierarchy()}'"""
                     )
                     inter_frame = Frame()
@@ -184,7 +192,7 @@ class ExecutionContext():
                     current = current.popups[popup_idx]
             elif path[i] == "top" and current == None:
                 # Create topframe
-                logger.info("Creating topframe")
+                logger.debug("Creating intermediate topframe")
                 inter_frame = Frame()
                 inter_frame.parent = None
                 inter_frame.opener = None
@@ -222,6 +230,8 @@ class ExecutionContext():
                     to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
                 )
                 return False
+        elif last == "top" and not self.topframe:
+            self.topframe = frame
 
         return True
 
@@ -274,3 +284,8 @@ class ExecutionContext():
             current.delete_popup(popup_idx)
 
         return True
+
+    def update_frame(self, old_frame, new_frame):
+        """ Update href and html of frame with new frame """
+        old_frame.href = new_frame.href
+        old_frame.html = new_frame.html

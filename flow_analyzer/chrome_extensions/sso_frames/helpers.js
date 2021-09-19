@@ -213,6 +213,7 @@ let helpers = () => {
     /* Wrapper of window.close function */
     window.close = function close(...args) {
         _report("popupclosed");
+        // Wait a second to give event time to be sent to handler
         self.setTimeout(() => {
             window._close(...args);
         }, 1000);

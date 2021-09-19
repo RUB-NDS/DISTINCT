@@ -233,5 +233,26 @@ class TestExecutionContext(unittest.TestCase):
         print("Output: test_dump_ctx")
         print(ctx_str)
 
+    def test_update_frame(self):
+        ctx = ExecutionContext()
+
+        frame0 = Frame(href="http://frame0.com", html="<html>frame0</html>")
+        frame1 = Frame(href="http://frame1.com", html="<html>frame1</html>")
+        frame2 = Frame(href="http://frame2.com", html="<html>frame2</html>")
+        ctx.insert_frame("top.frames[0].frames[0]", frame0)
+        ctx.insert_frame("top.frames[0]", frame1)
+        ctx.insert_frame("top", frame2)
+
+        self.assertIsNotNone(ctx.topframe)
+        self.assertIsNotNone(ctx.topframe.frames[0])
+        self.assertIsNotNone(ctx.topframe.frames[0].frames[0])
+        
+        self.assertNotEqual(ctx.topframe, frame2)
+        self.assertNotEqual(ctx.topframe.frames[0], frame1)
+        self.assertEqual(ctx.topframe.frames[0].frames[0], frame0)
+
+        self.assertEqual(ctx.topframe.href, "http://frame2.com")
+        self.assertEqual(ctx.topframe.html, "<html>frame2</html>")
+
 if __name__ == "__main__":
     unittest.main()
