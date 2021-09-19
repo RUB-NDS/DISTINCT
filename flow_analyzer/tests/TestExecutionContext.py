@@ -156,12 +156,12 @@ class TestExecutionContext(unittest.TestCase):
         self.assertListEqual(ctx.topframe.frames, [frame4, frame6])
 
         ctx.remove_frame("top.popups[0]")
-        self.assertNotIn(0, ctx.topframe.popups)
+        self.assertEqual(ctx.topframe.popups[0].closed, True)
 
         ctx.remove_frame("top.popups[1]")
-        self.assertNotIn(1, ctx.topframe.popups)
+        self.assertEqual(ctx.topframe.popups[1].closed, True)
 
-        self.assertDictEqual(ctx.topframe.popups, {})
+        self.assertEqual(len(ctx.topframe.popups), 2)
 
     def test_overwrite_iframe(self):
         ctx = ExecutionContext()

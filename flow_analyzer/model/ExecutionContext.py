@@ -60,30 +60,24 @@ class ExecutionContext():
                 The document is still loading.
                 -> href, hierarchy
             """
-            print("Document loading: " + val["hierarchy"])
             pass
+        
         elif key == "documentinteractive":
             """ DOCUMENT INTERACTIVE
                 The document has finished loading. We can now access the DOM elements.
                 But sub-resources such as scripts and frames are still loading.
-                -> href, hierarchy
-            """
-            print("Document interactive: " + val["hierarchy"])
-            pass
-        elif key == "documentcomplete":
-            """ DOCUMENT COMPLETED
-                The page is fully loaded.
                 -> href, hierarchy, html
             """
-            print("Document complete: " + val["hierarchy"])
-            pass
-        elif key == "framecreated":
-            """ FRAME CREATED
-                -> href, hierarchy, html
-            """
-            print("Frame completed: " + val["hierarchy"])
-            frame = Frame(href=val["href"], html=val["html"])
-            self.insert_frame(val["hierarchy"], frame)
+            frame = Frame(href=val["href"]) # html=val["html"]
+           
+            # If frame already exists, just update its basic values
+            # but keep it in tree with .frames[] and .popups[] references
+            old_frame = self.get_frame(val["hierarchy"])
+            if old_frame:
+                self.update_frame(old_frame, frame)
+                frame = old_frame
+            else:
+                self.insert_frame(val["hierarchy"], frame)
             
             # Mermaid
             if frame.parent:
@@ -92,10 +86,18 @@ class ExecutionContext():
                 self.sequencediagram.add_popup(frame.hierarchy(), frame.opener.hierarchy())
             else:
                 self.sequencediagram.add_topframe()
+            
             self.sequencediagram.url_get(frame.hierarchy(), frame.href)
+
+        elif key == "documentcomplete":
+            """ DOCUMENT COMPLETED
+                The page is fully loaded.
+                -> href, hierarchy, html
+            """
+            pass
         
-        elif key == "framedestroyed":
-            """ FRAME DESTROYED
+        elif key == "documentunload":
+            """ DOCUMENT UNLOADED
                 -> href, hierarchy
             """
             frame = self.get_frame(val["hierarchy"])
@@ -223,14 +225,6 @@ class ExecutionContext():
             Returns True, if frame inserted successfully
             Returns False, if frame not inserted successfully
         """
-        
-        # If frame already exists, just update its basic values
-        # but keep it in tree with .frames[] and .popups[] references
-        old_frame = self.get_frame(hierarchy)
-        if old_frame:
-            self.update_frame(old_frame, frame)
-            return True
-
         path = hierarchy.split(".")
 
         current = self.topframe
@@ -376,8 +370,6 @@ class ExecutionContext():
         return True
 
     def update_frame(self, old_frame, new_frame):
-        """ Update old frame with new frame but keep  """
+        """ Update href and html of old frame with new frame """
         old_frame.href = new_frame.href
         old_frame.html = new_frame.html
-
-        

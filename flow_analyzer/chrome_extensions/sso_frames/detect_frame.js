@@ -6,28 +6,25 @@ let detect_frame = () => {
     window._open = window.open;
     window._close = window.close;
     
-    /* FRAME CREATED / DESTROYED */
+    /* DOCUMENT */
 
+    /* Report when document is loaded */
     document.onreadystatechange = () => {
         switch(document.readyState) {
             case "loading":
                 _report("documentloading")
             case "interactive":
+                //_report("documentinteractive", {html: document.documentElement.outerHTML})
                 _report("documentinteractive")
             case "complete":
-                _report("documentcomplete", {html: document.documentElement.outerHTML})
+                //_report("documentcomplete", {html: document.documentElement.outerHTML})
+                _report("documentcomplete")
         }
     };
 
-    /* Report when new frame is created */
-    window._addEventListener("load", () => {
-        let html = document.documentElement.outerHTML;
-        _report("framecreated", {html: html});
-    });
-
-    /* Report when frame is destroyed */
+    /* Report when document is unloaded */
     window._addEventListener("beforeunload", () => {
-        _report("framedestroyed");
+        _report("documentunload");
     });
 
     /* POPUPS */
