@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 def config_argparser():
     """ Configure the argparser """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--domain",
+    parser.add_argument("-u", "--url",
         type=str,
-        help="set domain to open in the new chrome instance"
+        help="set URL to open in the new chrome instance"
     )
     parser.add_argument("-v", "--verbosity",
         type=str,
@@ -129,11 +129,11 @@ def main():
     driver = config_chromedriver(chromeprofile)
     logger.info("Starting selenium chromedriver")
     try:
-        if args.domain:
-            logger.info("Domain: https://{}".format(args.domain))
-            driver.get("https://{}".format(args.domain))
+        if args.url:
+            logger.info("URL: {}".format(args.url))
+            driver.get(args.url)
         else:
-            logger.info("Domain: about:blank".format(args.domain))
+            logger.info("Domain: about:blank")
             driver.get("about:blank")
     except WebDriverException as e:
         logger.exception(e)
