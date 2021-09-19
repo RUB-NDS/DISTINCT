@@ -7,7 +7,7 @@ class Frame():
         self.parent = None
         self.opener = None
 
-        self.popups = {} # {0: Frame, 1: Frame, ...} -> ._popups[0], .popups[1]
+        self.popups = {} # {0: Frame, 1: Frame, ...} -> ._popups[0], ._popups[1]
         self.frames = [] # [Frame, Frame, ...] -> .frames[0], .frames[1]
 
     def __str__(self):
@@ -36,6 +36,8 @@ class Frame():
         go_up(self, path)
         return path["val"]
 
+    """ FRAMES """
+
     def insert_frame(self, frame):
         """ Append frame to list """
         self.frames.append(frame)
@@ -46,14 +48,16 @@ class Frame():
         self.frames[index] = frame
         return index
 
+    def delete_frame(self, index):
+        """ Delete frame at index """
+        self.frames.pop(index)
+
+    """ POPUPS """
+
     def insert_popup(self, index, frame):
         """ Insert popup at index """
         self.popups[index] = frame
         return index
-
-    def delete_frame(self, index):
-        """ Delete frame at index """
-        self.frames.pop(index)
 
     def delete_popup(self, index):
         """ Delete popup at index """
