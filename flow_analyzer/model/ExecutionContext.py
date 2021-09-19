@@ -2,6 +2,7 @@ import re
 import logging
 
 from model.Frame import Frame
+from mermaid.SequenceDiagram import SequenceDiagram
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +11,7 @@ class ExecutionContext():
     def __init__(self):
         self.topframe = None
         self.results = {}
+        self.sequencediagram = SequenceDiagram()
 
     def __str__(self):
         if not self.topframe:
@@ -21,6 +23,8 @@ class ExecutionContext():
                 dump["val"] += "\n{}-> frames[{}]".format('\t'*indent, i)
                 go_down(current.frames[i], dump, indent+1)
             for i in current.popups.keys():
+                if current.popups[i].closed:
+                    continue
                 dump["val"] += "\n{}-> popups[{}]".format('\t'*indent, i)
                 go_down(current.popups[i], dump, indent+1)
         
@@ -42,38 +46,127 @@ class ExecutionContext():
         elif command == "show" and params[0] == "results":
             for key, val in self.results.items():
                 print(f"key={key}, val={val}")
+        elif command == "show" and params[0] == "mermaid":
+            print(self.sequencediagram)
+        elif command == "show" and params[0] == "plot":
+            self.sequencediagram.plot()
 
     def process_report(self, report):
         key = report["key"]
         val = report["val"]
         
-        if key == "framecreated":
-            # href, hierarchy, (html)
-            frame = Frame(href=val["href"])
+        if key == "documentloading":
+            """ DOCUMENT LOADING
+                The document is still loading.
+                -> href, hierarchy
+            """
+            print("Document loading: " + val["hierarchy"])
+            pass
+        elif key == "documentinteractive":
+            """ DOCUMENT INTERACTIVE
+                The document has finished loading. We can now access the DOM elements.
+                But sub-resources such as scripts and frames are still loading.
+                -> href, hierarchy
+            """
+            print("Document interactive: " + val["hierarchy"])
+            pass
+        elif key == "documentcomplete":
+            """ DOCUMENT COMPLETED
+                The page is fully loaded.
+                -> href, hierarchy, html
+            """
+            print("Document complete: " + val["hierarchy"])
+            pass
+        elif key == "framecreated":
+            """ FRAME CREATED
+                -> href, hierarchy, html
+            """
+            print("Frame completed: " + val["hierarchy"])
+            frame = Frame(href=val["href"], html=val["html"])
             self.insert_frame(val["hierarchy"], frame)
+            
+            # Mermaid
+            if frame.parent:
+                self.sequencediagram.add_iframe(frame.hierarchy(), frame.parent.hierarchy())
+            elif frame.opener:
+                self.sequencediagram.add_popup(frame.hierarchy(), frame.opener.hierarchy())
+            else:
+                self.sequencediagram.add_topframe()
+            self.sequencediagram.url_get(frame.hierarchy(), frame.href)
+        
         elif key == "framedestroyed":
-            # href, hierarchy
+            """ FRAME DESTROYED
+                -> href, hierarchy
+            """
+            frame = self.get_frame(val["hierarchy"])
+            
+            if not frame:
+                logger.error(
+                    f"""Failed to remove frame '{val["hierarchy"]}' since it
+                    does not exist."""
+                )
+                return
+
+            # Mermaid
+            if frame.parent:
+                self.sequencediagram.close_iframe(frame.hierarchy(), frame.parent.hierarchy())
+            elif frame.opener:
+                self.sequencediagram.close_popup(frame.hierarchy(), frame.opener.hierarchy())
+
             self.remove_frame(val["hierarchy"])
+            
         elif key == "popupopened":
-            # href, hierarchy, url
+            """ POPUP OPENED
+                -> href, hierarchy, url
+            """
             pass
+        
         elif key == "popupclosed":
-            # href, hierarchy
+            """ POPUP CLOSED
+                -> href, hierarchy
+            """
+            frame = self.get_frame(val["hierarchy"])
+
+            if not frame:
+                logger.error(
+                    f"""Failed to remove frame '{val["hierarchy"]}' since it
+                    does not exist."""
+                )
+                return
+
+            # Mermaid
+            self.sequencediagram.close_popup(frame.hierarchy(), frame.opener.hierarchy())
+
             self.remove_frame(val["hierarchy"])
+        
         elif key == "dumpframe":
-            # href, hierarchy, html
+            """ FRAME DUMPED
+                -> href, hierarchy, html
+            """
             pass
+        
         elif key == "result":
-            # href, hierarchy, key, val
+            """ RESULT
+                -> href, hierarchy, key, val
+            """
             self.results[val["key"]] = val["val"]
+        
         elif key == "event":
-            # href, hierarchy, event
+            """ EVENT
+                -> href, hierarchy, event
+            """
             pass
+        
         elif key == "formsubmit":
-            # href, hierarchy, action, form
+            """ FORM SUBMITTED
+                -> href, hierarchy, action, form
+            """
             pass
+        
         elif key == "formpost":
-            # href, hierarchy, action, form
+            """ FORM POST RESPONSE TYPE
+                -> href, hierarchy, action, form
+            """
             pass
     
     def get_frame(self, hierarchy):
@@ -283,6 +376,8 @@ class ExecutionContext():
         return True
 
     def update_frame(self, old_frame, new_frame):
-        """ Update href and html of frame with new frame """
+        """ Update old frame with new frame but keep  """
         old_frame.href = new_frame.href
         old_frame.html = new_frame.html
+
+        

@@ -8,6 +8,17 @@ let detect_frame = () => {
     
     /* FRAME CREATED / DESTROYED */
 
+    document.onreadystatechange = () => {
+        switch(document.readyState) {
+            case "loading":
+                _report("documentloading")
+            case "interactive":
+                _report("documentinteractive")
+            case "complete":
+                _report("documentcomplete", {html: document.documentElement.outerHTML})
+        }
+    };
+
     /* Report when new frame is created */
     window._addEventListener("load", () => {
         let html = document.documentElement.outerHTML;

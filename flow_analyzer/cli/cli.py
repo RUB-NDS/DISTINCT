@@ -12,10 +12,7 @@ class CliPrompt(Cmd):
         print("Hello, world")
     
     def do_show(self, params):
-        if params == "context":
-            self.event_handler.queue_message({"cmd": {"command": "show", "params": ["context"]}})
-        elif params == "results":
-            self.event_handler.queue_message({"cmd": {"command": "show", "params": ["results"]}})
+        self.event_handler.queue_message({"cmd": {"command": "show", "params": params.split(" ")}})
 
     def do_exit(self, input):
         print("Bye")

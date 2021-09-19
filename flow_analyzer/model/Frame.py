@@ -10,6 +10,8 @@ class Frame():
         self.popups = {} # {0: Frame, 1: Frame, ...} -> ._popups[0], ._popups[1]
         self.frames = [] # [Frame, Frame, ...] -> .frames[0], .frames[1]
 
+        self.closed = False
+
     def __str__(self):
         return self.hierarchy()
 
@@ -61,5 +63,5 @@ class Frame():
 
     def delete_popup(self, index):
         """ Delete popup at index """
-        del self.popups[index]
+        self.popups[index].closed = True
     
