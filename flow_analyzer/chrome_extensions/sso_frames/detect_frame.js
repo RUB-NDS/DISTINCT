@@ -14,17 +14,15 @@ let detect_frame = () => {
             case "loading":
                 _report("documentloading")
             case "interactive":
-                //_report("documentinteractive", {html: document.documentElement.outerHTML})
-                _report("documentinteractive")
+                _report("documentinteractive", {html: _html()})
             case "complete":
-                //_report("documentcomplete", {html: document.documentElement.outerHTML})
                 _report("documentcomplete")
         }
     };
 
     /* Report when document is unloaded */
     window._addEventListener("beforeunload", () => {
-        _report("documentunload");
+        _report("documentbeforeunload");
     });
 
     /* POPUPS */
@@ -34,14 +32,14 @@ let detect_frame = () => {
     /* Wrapper of window.open function */
     window.open = function open(...args) {
         let popup = window._open(...args);
-        _report("popupopened", {url: args[0]});
+        _report("windowopen", {url: args[0]});
         window._popups.push(popup);
         return popup;
     }
 
     /* Wrapper of window.close function */
     window.close = function close(...args) {
-        _report("popupclosed");
+        _report("windowclose");
         // Wait a second to give event time to be sent to handler
         self.setTimeout(() => {
             window._close(...args);
@@ -52,11 +50,10 @@ let detect_frame = () => {
 
     /* Dump the current frame, i.e., href, hierarchy, source code */
     function dump_frame() {
-        let html = document.documentElement.outerHTML;
-        _report("dumpframe", {html: html});
+        _report("dumpframe", {html: _html()});
     }
     
-    /* Report when dumpframes event is received */
+    /* Report when dumpframe event is received */
     window._addEventListener("message", (e) => {
         if (e.data.cmd === "dumpframe") {
             _dump_frame();
@@ -69,5 +66,6 @@ let detect_frame = () => {
 }
 
 let detect_frame_script = document.createElement("script");
+detect_frame_script.classList.add("chromeextension");
 detect_frame_script.textContent = "(" + detect_frame.toString() + ")()";
 document.documentElement.prepend(detect_frame_script);

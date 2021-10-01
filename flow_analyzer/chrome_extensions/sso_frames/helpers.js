@@ -24,6 +24,25 @@ let helpers = () => {
         return params;
     }
 
+    /* Get the HTML markup of the current window without the chrome extension scripts */
+    function html() {
+        let docelement = document.documentElement.cloneNode(true);
+        
+        // Remove all inline scripts of chrome extension
+        let extensionscripts = docelement.getElementsByClassName("chromeextension");
+        while (extensionscripts[0]) {
+            extensionscripts[0].parentNode.removeChild(extensionscripts[0]);
+        }
+
+        // Remove all inline CSS stylesheets
+        let stylesheets = docelement.getElementsByTagName("style");
+        while(stylesheets[0]) {
+            stylesheets[0].parentNode.removeChild(stylesheets[0]);
+        }
+
+        return docelement.outerHTML;
+    }
+
     /* Creates a json object including fields in the form */
     /* Source: https://jordanfinners.dev/blogs/how-to-easily-convert-html-form-to-json */
     function form2json(form) {
@@ -166,6 +185,7 @@ let helpers = () => {
     /* Global access */
     window._qparams = query_params();
     window._hparams = hash_params();
+    window._html = html;
     window._form2json = form2json;
     window._hierarchy = hierarchy;
     window._postMessageAll = postMessageAll;
@@ -174,5 +194,6 @@ let helpers = () => {
 }
 
 let helpers_script = document.createElement("script");
+helpers_script.classList.add("chromeextension");
 helpers_script.textContent = "(" + helpers.toString() + ")()";
 document.documentElement.prepend(helpers_script);

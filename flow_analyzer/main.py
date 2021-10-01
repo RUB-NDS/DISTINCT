@@ -5,9 +5,8 @@ import logging
 import sys
 import os
 import shutil
-import threading
 
-from time import sleep, time
+from time import time
 from event.EventDispatcher import EventDispatcher
 from event.EventHandler import EventHandler
 from cli.cli import CliPrompt
@@ -133,7 +132,7 @@ def main():
             logger.info("URL: {}".format(args.url))
             driver.get(args.url)
         else:
-            logger.info("Domain: about:blank")
+            logger.info("URL: about:blank")
             driver.get("about:blank")
     except WebDriverException as e:
         logger.exception(e)

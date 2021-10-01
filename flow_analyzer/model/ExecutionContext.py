@@ -10,10 +10,19 @@ class ExecutionContext():
 
     def __init__(self):
         self.topframe = None
-        self.results = {}
-        self.sequencediagram = SequenceDiagram()
+        
+        self.results = {} # Results received from chrome extension (i.e., detected SDKs, ...)
+        self.history = [] # History of all reports received from chrome extension
+        self.sequencediagram = SequenceDiagram() # Reports as visual representation
 
     def __str__(self):
+        """ String representation of execution context is a tree hierarchy
+            Example:
+            top
+                -> popups[0]
+                -> frames[0]
+                    -> frames[0]
+        """
         if not self.topframe:
             return ""
         
@@ -52,6 +61,8 @@ class ExecutionContext():
             self.sequencediagram.plot()
 
     def process_report(self, report):
+        self.history.append(report)
+        
         key = report["key"]
         val = report["val"]
         
@@ -68,7 +79,7 @@ class ExecutionContext():
                 But sub-resources such as scripts and frames are still loading.
                 -> href, hierarchy, html
             """
-            frame = Frame(href=val["href"]) # html=val["html"]
+            frame = Frame(href=val["href"], html=val["html"])
            
             # If frame already exists, just update its basic values
             # but keep it in tree with .frames[] and .popups[] references
@@ -79,15 +90,7 @@ class ExecutionContext():
             else:
                 self.insert_frame(val["hierarchy"], frame)
             
-            # Mermaid
-            if frame.parent:
-                self.sequencediagram.add_iframe(frame.hierarchy(), frame.parent.hierarchy())
-            elif frame.opener:
-                self.sequencediagram.add_popup(frame.hierarchy(), frame.opener.hierarchy())
-            else:
-                self.sequencediagram.add_topframe()
-            
-            self.sequencediagram.url_get(frame.hierarchy(), frame.href)
+            self.sequencediagram.documentinteractive(frame)
 
         elif key == "documentcomplete":
             """ DOCUMENT COMPLETED
@@ -96,56 +99,43 @@ class ExecutionContext():
             """
             pass
         
-        elif key == "documentunload":
-            """ DOCUMENT UNLOADED
+        elif key == "documentbeforeunload":
+            """ DOCUMENT BEFOREUNLOAD
+                The document and its resources are about to be unloaded.
                 -> href, hierarchy
             """
             frame = self.get_frame(val["hierarchy"])
-            
             if not frame:
-                logger.error(
-                    f"""Failed to remove frame '{val["hierarchy"]}' since it
-                    does not exist."""
-                )
                 return
 
-            # Mermaid
-            if frame.parent:
-                self.sequencediagram.close_iframe(frame.hierarchy(), frame.parent.hierarchy())
-            elif frame.opener:
-                self.sequencediagram.close_popup(frame.hierarchy(), frame.opener.hierarchy())
+            self.sequencediagram.documentbeforeunload(frame)
 
             self.remove_frame(val["hierarchy"])
             
-        elif key == "popupopened":
+        elif key == "windowopen":
             """ POPUP OPENED
                 -> href, hierarchy, url
             """
             pass
         
-        elif key == "popupclosed":
+        elif key == "windowclose":
             """ POPUP CLOSED
                 -> href, hierarchy
             """
-            frame = self.get_frame(val["hierarchy"])
+            # frame = self.get_frame(val["hierarchy"])
+            # if not frame:
+            #     return
 
-            if not frame:
-                logger.error(
-                    f"""Failed to remove frame '{val["hierarchy"]}' since it
-                    does not exist."""
-                )
-                return
+            # self.sequencediagram.close_popup(frame.hierarchy(), frame.opener.hierarchy())
 
-            # Mermaid
-            self.sequencediagram.close_popup(frame.hierarchy(), frame.opener.hierarchy())
-
-            self.remove_frame(val["hierarchy"])
+            # self.remove_frame(val["hierarchy"])
+            pass
         
         elif key == "dumpframe":
             """ FRAME DUMPED
                 -> href, hierarchy, html
             """
-            pass
+            self.sequencediagram.dumpframe(val["hierarchy"], val["html"])
         
         elif key == "result":
             """ RESULT
@@ -163,7 +153,10 @@ class ExecutionContext():
             """ FORM SUBMITTED
                 -> href, hierarchy, action, form
             """
-            pass
+            frame = Frame(href=val["action"])
+            self.insert_frame(val["hierarchy"], frame)
+            
+            self.sequencediagram.formsubmit(frame, val["form"])
         
         elif key == "formpost":
             """ FORM POST RESPONSE TYPE
