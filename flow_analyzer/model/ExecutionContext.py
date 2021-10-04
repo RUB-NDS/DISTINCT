@@ -2,7 +2,7 @@ import re
 import logging
 
 from model.Frame import Frame
-from mermaid.SequenceDiagram import SequenceDiagram
+from model.SequenceDiagram import SequenceDiagram
 
 logger = logging.getLogger(__name__)
 
@@ -55,10 +55,11 @@ class ExecutionContext():
         elif command == "show" and params[0] == "results":
             for key, val in self.results.items():
                 print(f"key={key}, val={val}")
-        elif command == "show" and params[0] == "mermaid":
-            print(self.sequencediagram)
         elif command == "show" and params[0] == "plot":
-            self.sequencediagram.plot()
+            print(self.sequencediagram)
+        elif command == "show" and params[0] == "compiled":
+            self.sequencediagram.compile()
+            self.sequencediagram.show()
 
     def process_report(self, report):
         self.history.append(report)
