@@ -2,7 +2,7 @@ import re
 import logging
 
 from model.Frame import Frame
-from model.SequenceDiagram import SequenceDiagram
+from modules.SequenceDiagram import SequenceDiagram
 
 logger = logging.getLogger(__name__)
 
