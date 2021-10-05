@@ -155,7 +155,7 @@ let helpers = () => {
         obj["href"] = location.href;
 
         // Format: {"report": {"key": ..., "val": ...}}
-        fetch("http://localhost:7777", {
+        fetch("http://localhost:20200", {
             method: "POST",
             mode: "cors",
             headers: {

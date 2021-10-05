@@ -6,18 +6,18 @@ import os
 from time import time
 from selenium.common.exceptions import WebDriverException
 
-from config import setup_outputdir
-from config import config_argparser, config_logger
-from config import setup_chromeprofile, config_chromedriver, destroy_chromeprofile
+from config import setup_outputdir, setup_argparser, setup_logger
+from config import setup_chromeprofile, setup_chromedriver
+from config import setup_proxy, set_all_cookies
 from event.EventDispatcher import EventDispatcher
 from event.EventHandler import EventHandler
-from cli.cli import CliPrompt
+from cli import CliPrompt
 
 logger = logging.getLogger(__name__)
 
 def main():
     # Setup argparser
-    argparser = config_argparser()
+    argparser = setup_argparser()
     args = argparser.parse_args()
     
     # Setup global config variables
@@ -27,46 +27,37 @@ def main():
     os.environ["OUTPUTDIR"] = outputdir
 
     # Setup logger
-    config_logger(outputdir, args.verbosity)
+    setup_logger(outputdir, args.verbosity)
 
-    # Setup event dispatcher and handler
+    # Setup intercepting proxy
+    proxy = setup_proxy(outputdir, args.port_proxy)
+
+    # Setup event dispatcher and handler threads
     event_dispatcher = EventDispatcher()
     event_handler = EventHandler(event_dispatcher)
     event_handler.start()
     event_dispatcher.start()
 
     # Setup chromeprofile
-    chromeprofile = setup_chromeprofile(args.baseprofile)
+    chromeprofile = setup_chromeprofile(outputdir)
 
     # Setup chromedriver
-    driver = config_chromedriver(chromeprofile)
-    logger.info(f"Starting selenium: '{args.url.geturl()}'")
+    driver = setup_chromedriver(chromeprofile, args.port_proxy, args.chromium_path, args.webdriver_path)
+
+    # Setup cookies
+    if args.cookie_file:
+        set_all_cookies(driver, args.cookie_file)
+
+    # Load URL
+    logger.info(f"URL: {args.url.geturl()}")
     try:
         driver.get(args.url.geturl())
     except WebDriverException as e:
         logger.exception(e)
-        raise(e)
     
-    if args.cli:
-        """ Switch in CLI loop """
-        cliprompt = CliPrompt(event_handler)
-        cliprompt.cmdloop()
-    else:
-        """ Wait for threads to join """
-        # Wait for KeyboardInterrupt to stop event dispatcher thread
-        try:
-            event_dispatcher.join()
-        except KeyboardInterrupt as e:
-            logger.info("Keyboard interrupt signal. Stopping the event dispatcher.")
-        
-        # Wait for KeyboardInterrupt to stop event handler thread
-        try:
-            event_handler.join()
-        except KeyboardInterrupt as e:
-            logger.info("Keyboard interrupt signal. Stopping the event handler.")
-
-    # Cleanup
-    destroy_chromeprofile(chromeprofile)
+    # Switch in CLI loop
+    cliprompt = CliPrompt(driver, proxy, outputdir, chromeprofile, event_handler)
+    cliprompt.cmdloop()
 
 if __name__ == "__main__":
     main()

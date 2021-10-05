@@ -1,6 +1,12 @@
 import os
 import urllib.parse
 
+def file_path(string):
+    if os.path.isfile(string):
+        return os.path.abspath(string)
+    else:
+        raise FileNotFoundError(string)
+
 def dir_path(string):
     if os.path.isdir(string):
         return os.path.abspath(string)

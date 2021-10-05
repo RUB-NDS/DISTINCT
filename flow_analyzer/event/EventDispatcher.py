@@ -2,6 +2,7 @@ import logging
 
 from threading import Thread
 from http.server import HTTPServer
+
 from event.EventServerHandler import EventServerHandler
 
 logger = logging.getLogger(__name__)
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 class EventDispatcher(Thread):
 
     def __init__(self):
-        logger.info("Initializing new event dispatcher thread")
+        logger.info("Initializing event dispatcher thread")
         super(EventDispatcher, self).__init__()
         self.daemon = True
 
@@ -18,9 +19,11 @@ class EventDispatcher(Thread):
     def run(self):
         logger.info("Started event dispatcher thread")
 
-        logger.info("Starting new event server on localhost:7777")
+        listen_port = 20200
+        logger.info(f"Starting event server on port {listen_port}")
+        
         event_server_handler = EventServerHandler(self)
-        self.httpd = HTTPServer(("", 7777), event_server_handler)
+        self.httpd = HTTPServer(("127.0.0.1", listen_port), event_server_handler)
         self.httpd.serve_forever()
 
     def register_handler(self, thread):
