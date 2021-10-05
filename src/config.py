@@ -175,7 +175,9 @@ def setup_proxy(outputdir, proxyport):
             "mitmdump",
             "--listen-host", "127.0.0.1",
             "--listen-port", str(proxyport),
-            "--save-stream-file", f"{outputdir}/proxy.dump"
+            "--save-stream-file", f"{outputdir}/proxy.dump",
+            "--scripts", "./har_dump.py",
+            "--set", f"hardump={outputdir}/proxy.har"
         ], stdout=out, stderr=err)
     
         logger.info(f"Started proxy on port {proxyport}")
