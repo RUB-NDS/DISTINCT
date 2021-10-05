@@ -29,9 +29,16 @@ class CliPrompt(Cmd):
     def do_exit(self, params):
         """ Exit the tool """
 
-        # Cleanup ...
+        # Terminate the proxy
         terminate_proxy(self.proxy)
+        
+        # Store all browser cookies in file
         store_all_cookies(self.driver, self.outputdir)
+
+        # Compile plantuml sequence diagram to svg
+        self.event_handler.execution_context.sequencediagram.compile()
+        
+        # Delete chromeprofile
         # delete_chromeprofile(chromeprofile)
         
         print("Bye")
