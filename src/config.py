@@ -22,12 +22,6 @@ def setup_argparser():
         required=True,
         help="set url to open in browser"
     )
-    parser.add_argument("--verbosity",
-        type=str,
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        default="DEBUG",
-        help="set output verbosity"
-    )
     parser.add_argument("-o", "--out",
         type=dir_path,
         required=True,
@@ -36,6 +30,12 @@ def setup_argparser():
     parser.add_argument("-c", "--cookie-file",
         type=file_path,
         help="set path to cookie file"
+    )
+    parser.add_argument("--verbosity",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default="DEBUG",
+        help="set output verbosity"
     )
     parser.add_argument("--chromium-path",
         type=file_path,
@@ -122,7 +122,7 @@ def store_all_cookies(driver, outputdir):
     }
     """
     cookies = driver.execute_cdp_cmd("Network.getAllCookies", {}) # {"cookies": [{...}, ...]}
-    cookiefile = f"{outputdir}/cookies.json"
+    cookiefile = f"{outputdir}/cookiejar.json"
     with open(cookiefile, "w+") as f:
         json.dump(cookies, f)
         logger.info(f"Saved all browser cookies: {cookiefile}")
