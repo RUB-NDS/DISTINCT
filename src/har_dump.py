@@ -86,12 +86,24 @@ def response(flow: mitmproxy.http.HTTPFlow):
     # spent waiting between request.timestamp_end and response.timestamp_start
     # thus it correlates to HAR wait instead.
     timings_raw = {
-        'send': flow.request.timestamp_end - flow.request.timestamp_start,
-        'receive': flow.response.timestamp_end - flow.response.timestamp_start,
-        'wait': flow.response.timestamp_start - flow.request.timestamp_end,
         'connect': connect_time,
         'ssl': ssl_time,
     }
+    if (
+        flow.request.timestamp_start is not None
+        and flow.request.timestamp_end is not None
+    ):
+        timings_raw['send'] = flow.request.timestamp_end - flow.request.timestamp_start
+    if (
+        flow.response.timestamp_start is not None
+        and flow.response.timestamp_end is not None
+    ):
+        timings_raw['receive'] = flow.response.timestamp_end - flow.response.timestamp_start
+    if (
+        flow.request.timestamp_end is not None
+        and flow.response.timestamp_start is not None
+    ):
+        timings_raw['wait'] = flow.response.timestamp_start - flow.request.timestamp_end
 
     # HAR timings are integers in ms, so we re-encode the raw timings to that format.
     timings = {
