@@ -61,9 +61,20 @@ class SequenceDiagram:
         )
 
     def dumpframe(self, hierarchy, html):
+        self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
             f'HTML:\n'
             f'{html}\n'
             f'end note'
         )
+
+    def windowopen(self, frame):
+        self.statement(f'participant "{frame.hierarchy()}"')
+        self.statement(f'participant "{frame.opener.hierarchy()}"')
+        self.statement(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open("{frame.href}")')
+
+    def windowclose(self, frame):
+        self.statement(f'participant "{frame.hierarchy()}"')
+        self.statement(f'participant "{frame.opener.hierarchy()}"')
+        self.statement(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')

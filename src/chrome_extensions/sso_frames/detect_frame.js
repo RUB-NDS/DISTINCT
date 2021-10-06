@@ -32,8 +32,8 @@ let detect_frame = () => {
     /* Wrapper of window.open function */
     window.open = function open(...args) {
         let popup = window._open(...args);
-        _report("windowopen", {url: args[0]});
         window._popups.push(popup);
+        _report("windowopen", {url: args[0], popup_hierarchy: _hierarchy(popup)});
         return popup;
     }
 

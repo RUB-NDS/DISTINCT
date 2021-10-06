@@ -115,23 +115,22 @@ class ExecutionContext():
             
         elif key == "windowopen":
             """ POPUP OPENED
-                -> href, hierarchy, url
+                -> href, hierarchy, url, popup_hierarchy
             """
-            pass
+            new_frame = Frame(href=val["url"])
+            self.insert_frame(val["popup_hierarchy"], new_frame)
+            self.sequencediagram.windowopen(new_frame)
         
         elif key == "windowclose":
             """ POPUP CLOSED
                 -> href, hierarchy
             """
-            # frame = self.get_frame(val["hierarchy"])
-            # if not frame:
-            #     return
+            old_frame = self.get_frame(val["hierarchy"])
+            if not old_frame:
+                return
+            self.sequencediagram.windowclose(old_frame)
+            self.remove_frame(val["hierarchy"])
 
-            # self.sequencediagram.close_popup(frame.hierarchy(), frame.opener.hierarchy())
-
-            # self.remove_frame(val["hierarchy"])
-            pass
-        
         elif key == "dumpframe":
             """ FRAME DUMPED
                 -> href, hierarchy, html
