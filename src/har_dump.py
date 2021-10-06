@@ -133,7 +133,7 @@ def response(flow: mitmproxy.http.HTTPFlow):
             "headers": name_value(flow.request.headers),
             "queryString": name_value(flow.request.query or {}),
             "headersSize": len(str(flow.request.headers)),
-            "bodySize": len(flow.request.content),
+            "bodySize": len(flow.request.content or ""),
         },
         "response": {
             "status": flow.response.status_code,
