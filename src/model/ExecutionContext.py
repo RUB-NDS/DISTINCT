@@ -154,10 +154,14 @@ class ExecutionContext():
             """ FORM SUBMITTED
                 -> href, hierarchy, action, form
             """
-            frame = Frame(href=val["action"])
-            self.insert_frame(val["hierarchy"], frame)
-            
-            self.sequencediagram.formsubmit(frame, val["form"])
+            old_frame = self.get_frame(val["hierarchy"])
+            new_frame = Frame(href=val["action"])
+            if old_frame:
+                self.update_frame(old_frame, new_frame)
+                self.sequencediagram.formsubmit(old_frame, val["form"])
+            else:
+                self.insert_frame(val["hierarchy"], new_frame)
+                self.sequencediagram.formsubmit(new_frame, val["form"])
         
         elif key == "formpost":
             """ FORM POST RESPONSE TYPE

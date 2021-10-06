@@ -38,33 +38,24 @@ class SequenceDiagram:
     """ REPORTS """
 
     def documentinteractive(self, frame):
-        if frame.parent:
-            self.statement(f'participant "{frame.hierarchy()}"')
-            self.statement(f'participant "{frame.parent.hierarchy()}"')
-            self.statement(f'"{frame.parent.hierarchy()}" -> "{frame.hierarchy()}" : Document Interactive')
-        elif frame.opener:
-            self.statement(f'participant "{frame.hierarchy()}"')
-            self.statement(f'participant "{frame.opener.hierarchy()}"')
-            self.statement(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}" : Document Interactive')
-        else:
-            self.statement(f'participant "{frame.hierarchy()}"')
-        
-        self.statement(f'note right of "{frame.hierarchy()}": URL: "{frame.href}"')
-
-    def documentbeforeunload(self, frame):
-        if frame.parent:
-            self.statement(f'participant "{frame.hierarchy()}"')
-            self.statement(f'participant "{frame.parent.hierarchy()}"')
-            self.statement(f'"{frame.hierarchy()}" -> "{frame.parent.hierarchy()}" : Document Unload')
-        elif frame.opener:
-            self.statement(f'participant "{frame.hierarchy()}"')
-            self.statement(f'participant "{frame.opener.hierarchy()}"')
-            self.statement(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}" : Document Unload')
-
-    def formsubmit(self, frame, formbody):
+        self.statement(f'participant "{frame.hierarchy()}"') 
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
-            f'POST "{frame.href}"\n'
+            f'Event: Document Interactive\n'
+            f'URL: {frame.href}\n'
+            f'end note'
+        )
+
+    def documentbeforeunload(self, frame):
+        self.statement(f'participant "{frame.hierarchy()}"')
+        self.statement(f'note right of "{frame.hierarchy()}": Event: Document Before Unload')
+
+    def formsubmit(self, frame, formbody):
+        self.statement(f'participant "{frame.hierarchy()}"')
+        self.statement(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'Event: Form Submit\n'
+            f'URL: {frame.href}\n'
             f'{formbody}\n'
             f'end note'
         )
