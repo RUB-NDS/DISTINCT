@@ -18,8 +18,8 @@ let detect_flow = () => {
             )
             // TODO: and not SDK
         ) {
-            _report("result", {key: "idp", val: "apple"});
-            _report("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "idp", val: "apple"});
+            _event("result", {key: "sourceframe", val: "popup"});
         }
 
         /* Facebook AuthnReq opened in popup */
@@ -33,8 +33,8 @@ let detect_flow = () => {
             && _qparams["redirect_uri"].startsWith("http")
             // TODO: and not SDK
         ) {
-            _report("result", {key: "idp", val: "facebook"});
-            _report("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "idp", val: "facebook"});
+            _event("result", {key: "sourceframe", val: "popup"});
         }
 
         /* Google AuthnReq opened in popup */
@@ -50,8 +50,8 @@ let detect_flow = () => {
             && "scope" in _qparams
             // TODO: and not SDK
         ) {
-            _report("result", {key: "idp", val: "google"});
-            _report("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "idp", val: "google"});
+            _event("result", {key: "sourceframe", val: "popup"});
         }
 
         /* response_type = code &| token &| id_token */
@@ -65,10 +65,10 @@ let detect_flow = () => {
                 || "id_token" in _hparams
             )
         ) {
-            _report("result", {key: "sourceframe", val: "popup"});
-            _report("result", {key: "sourcehierarchy", val: _hierarchy(self)});
-            _report("result", {key: "initiator", val: "sp"});
-            _report("event", {event: "frameswitch"});
+            _event("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "sourcehierarchy", val: _hierarchy(self)});
+            _event("result", {key: "initiator", val: "sp"});
+            _event("event", {event: "frameswitch"});
 
             // _postMessageAll({cmd: "dumpframe"});
             window.postMessage({cmd: "dumpframe"}, "*");
@@ -82,7 +82,7 @@ let detect_flow = () => {
     function formsubmit(e) {
         let target = e ? e.target : this;
         let jsonform = _form2json(target);
-        _report("formsubmit", {action: target.action, form: jsonform});
+        _event("formsubmit", {action: target.action, form: jsonform});
 
         if (
             Object.keys(jsonform).includes("code")
@@ -90,7 +90,7 @@ let detect_flow = () => {
             || Object.keys(jsonform).includes("access_token")
             || Object.keys(jsonform).includes("id_token")
         ) {
-            _report("formpost", {action: target.action, form: jsonform});
+            _event("formpost", {action: target.action, form: jsonform});
         }
 
         target._submit();

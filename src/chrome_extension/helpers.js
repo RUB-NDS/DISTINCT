@@ -57,7 +57,7 @@ let helpers = () => {
         }, {});
     };
 
-    /* Get target window's hierarchy, i.e., top.popup.top.frames[0] */
+    /* Get target window's hierarchy, i.e., top.popups[0].frames[0] */
     function hierarchy(target) {
 		var path = "";
 		function go_up(current) {
@@ -148,35 +148,35 @@ let helpers = () => {
 		go_up(window);
 	}
 
-    /* Send signals back to python script */
-    function report(key, val) {
-        let obj = val || {};
-        obj["hierarchy"] = _hierarchy(self);
-        obj["href"] = location.href;
+    /* Send in-browser events to python backend */
+    function event(key, val) {
+        // Where did this event trigger?
+        val["hierarchy"] = _hierarchy(self);
+        val["href"] = location.href;
 
-        // Format: {"report": {"key": ..., "val": ...}}
+        // Format: {"event": {"key": "...", "val": {...}}}
         fetch("http://localhost:20200", {
             method: "POST",
             mode: "cors",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({"report": {"key": key, "val": obj}})
+            body: JSON.stringify({"event": {"key": key, "val": val}})
         }).then(r => r.json()).then(r => {
             if (r.success) {
                 console.info(
-                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`,
+                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                     "color:green;", ""
                 );
             } else {
                 console.info(
-                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`,
+                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                     "color:red;", ""
                 );
             }
         }).catch(e => {
             console.info(
-                `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(obj)}`,
+                `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                 "color:red;", ""
             );
         });
@@ -189,7 +189,7 @@ let helpers = () => {
     window._form2json = form2json;
     window._hierarchy = hierarchy;
     window._postMessageAll = postMessageAll;
-    window._report = report;
+    window._event = event;
 
 }
 

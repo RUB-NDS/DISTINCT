@@ -21,17 +21,14 @@ class EventHandler(Thread):
         logger.info("Started event handler thread")
 
         self.execution_context = ExecutionContext()
-        logger.info("Created execution context")
-
         while True:
-            # Two types of messages can be added to the queue
-            # {"report": {"key": "...", "val": {...}}} -> from chrome extension
-            # {"cmd": {"command": "...", "params": {...}}} -> from cli tool
-            message = self.queue.get()
-            logger.debug("Dispatch message: {}".format(message))
+            # Events from chrome extension:
+            # {"event": {"key": "...", "val": {...}}}
+            event = self.queue.get()
+            logger.debug(f"Dispatch event: {event}")
 
-            # Process message
-            self.execution_context.process_message(message)
+            # Process event
+            self.execution_context.process_event(event["event"])
 
-    def queue_message(self, message):
-        self.queue.put(message)
+    def queue_event(self, event):
+        self.queue.put(event)

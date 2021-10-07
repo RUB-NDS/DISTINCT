@@ -14,9 +14,9 @@ let detect_sdks = () => {
             && "v" in _qparams
             && "frame_id" in _qparams
         ) {
-            _report("result", {key: "idp", val: "apple"});
-            _report("result", {key: "sdk", val: "siwa"});
-            _report("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "idp", val: "apple"});
+            _event("result", {key: "sdk", val: "siwa"});
+            _event("result", {key: "initiator", val: "idp"});
         }
 
         /* Facebook Login SDK */
@@ -32,9 +32,9 @@ let detect_sdks = () => {
             && "ref" in _qparams
             && _qparams["ref"] === "LoginButton"
         ) {
-            _report("result", {key: "idp", val: "facebook"});
-            _report("result", {key: "sdk", val: "fl"});
-            _report("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "idp", val: "facebook"});
+            _event("result", {key: "sdk", val: "fl"});
+            _event("result", {key: "initiator", val: "idp"});
         }
 
         /* Facebook Login Button SDK */
@@ -62,9 +62,9 @@ let detect_sdks = () => {
             && "redirect_uri" in _qparams
             && _qparams["redirect_uri"].startsWith("storagerelay://")
         ) {
-            _report("result", {key: "idp", val: "google"});
-            _report("result", {key: "sdk", val: "gsilegacy"});
-            _report("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "idp", val: "google"});
+            _event("result", {key: "sdk", val: "gsilegacy"});
+            _event("result", {key: "initiator", val: "idp"});
         }
 
         /* Sign in with Google Button SDK */
@@ -79,9 +79,9 @@ let detect_sdks = () => {
             && "as" in _qparams
             && "origin" in _qparams
         ) {
-            _report("result", {key: "idp", val: "google"});
-            _report("result", {key: "sdk", val: "siwgbutton"});
-            _report("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "idp", val: "google"});
+            _event("result", {key: "sdk", val: "siwgbutton"});
+            _event("result", {key: "initiator", val: "idp"});
         }
 
     });
@@ -96,9 +96,9 @@ let detect_sdks = () => {
             && url.startsWith("/gsi/issue")
             && url.includes("select_by=user_1ta")
         ) {
-            _report("result", {key: "idp", val: "google"});
-            _report("result", {key: "sdk", val: "got"});
-            _report("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "idp", val: "google"});
+            _event("result", {key: "sdk", val: "got"});
+            _event("result", {key: "initiator", val: "idp"});
         }
         return window._xmlhttprequest_open.apply(this, arguments);
     };

@@ -19,11 +19,10 @@ class EventServerHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        """
-        Receive reports as POST requests from chrome extension
+        """ Receive events as POST requests from the chrome extension
 
-        In Extension: _report("foo", {"bar":"baz"})
-        In POST: {"report": {"key": "foo", "val": {"bar": "baz"}}}
+        In chrome extension: _event("foo", {"bar": "baz"})
+        POST request body: {"event": {"key": "foo", "val": {"bar": "baz"}}}
         """
         
         contentlength = int(self.headers['Content-Length'])
@@ -31,19 +30,19 @@ class EventServerHandler(SimpleHTTPRequestHandler):
 
         try:
             postdatajson = json.loads(postdata)
-            if "report" not in postdatajson:
-                raise Exception("Validation of received report failed")
-            if ("key" not in postdatajson["report"]) or ("val" not in postdatajson["report"]):
-                raise Exception("Validation of received report failed")
+            if "event" not in postdatajson:
+                raise Exception("Validation of received event failed")
+            if ("key" not in postdatajson["event"]) or ("val" not in postdatajson["event"]):
+                raise Exception("Validation of received event failed")
         except Exception as e:
-            logger.warning(e)
-            self.respond(success=False)
+            logger.exception(e)
+            self.respond(False)
             return
 
-        self.event_dispatcher.dispatch_message(postdatajson)
-        self.respond(success=True)
+        self.event_dispatcher.dispatch_event(postdatajson)
+        self.respond(True)
 
-    def respond(self, success=True):
+    def respond(self, success):
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
@@ -59,4 +58,5 @@ class EventServerHandler(SimpleHTTPRequestHandler):
         return super(EventServerHandler, self).end_headers()
 
     def log_message(self, format, *args):
+        # We already log the event; thus we skip it here ...
         return

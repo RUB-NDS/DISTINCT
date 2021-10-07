@@ -21,7 +21,6 @@ class EventDispatcher(Thread):
 
         listen_port = 20200
         logger.info(f"Starting event server on port {listen_port}")
-        
         event_server_handler = EventServerHandler(self)
         self.httpd = HTTPServer(("127.0.0.1", listen_port), event_server_handler)
         self.httpd.serve_forever()
@@ -29,6 +28,6 @@ class EventDispatcher(Thread):
     def register_handler(self, thread):
         self.registered_handlers.append(thread)
     
-    def dispatch_message(self, message):
+    def dispatch_event(self, event):
         for thread in self.registered_handlers:
-            thread.queue_message(message)
+            thread.queue_event(event)

@@ -14,11 +14,6 @@ class CliPrompt(Cmd):
         self.outputdir = outputdir
         self.chromeprofile = chromeprofile
         self.event_handler = event_handler
-    
-    def do_show(self, params):
-        self.event_handler.queue_message(
-            {"cmd": {"command": "show", "params": params.split(" ")}}
-        )
 
     def do_compile(self, params):
         self.event_handler.execution_context.sequencediagram.compile()

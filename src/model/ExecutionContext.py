@@ -40,32 +40,11 @@ class ExecutionContext():
         go_down(self.topframe, dump, 1)
         return dump["val"]
 
-    def process_message(self, message):
-        if "report" in message:
-            self.process_report(message["report"])
-        if "cmd" in message:
-            self.process_cmd(message["cmd"])
-
-    def process_cmd(self, cmd):
-        command = cmd["command"]
-        params = cmd["params"]
+    def process_event(self, event):
+        self.history.append(event)
         
-        if command == "show" and params[0] == "context":
-            print(self)
-        elif command == "show" and params[0] == "results":
-            for key, val in self.results.items():
-                print(f"key={key}, val={val}")
-        elif command == "show" and params[0] == "plot":
-            print(self.sequencediagram)
-        elif command == "show" and params[0] == "compiled":
-            self.sequencediagram.compile()
-            self.sequencediagram.show()
-
-    def process_report(self, report):
-        self.history.append(report)
-        
-        key = report["key"]
-        val = report["val"]
+        key = event["key"]
+        val = event["val"]
         
         if key == "documentloading":
             """ DOCUMENT LOADING
@@ -167,7 +146,14 @@ class ExecutionContext():
                 -> href, hierarchy, action, form
             """
             pass
-    
+
+    def update_frame(self, old_frame, new_frame):
+        """ Update properties of existing frame with properties of new frame
+            Properties: href, html
+        """
+        old_frame.href = new_frame.href
+        old_frame.html = new_frame.html
+
     def get_frame(self, hierarchy):
         """ Get frame in hierarchy
             Returns frame, if frame is found
@@ -365,8 +351,3 @@ class ExecutionContext():
             current.delete_popup(popup_idx)
 
         return True
-
-    def update_frame(self, old_frame, new_frame):
-        """ Update href and html of old frame with new frame """
-        old_frame.href = new_frame.href
-        old_frame.html = new_frame.html
