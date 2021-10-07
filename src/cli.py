@@ -1,3 +1,5 @@
+import json
+
 from cmd import Cmd
 
 from config import terminate_proxy, store_all_cookies
@@ -29,6 +31,10 @@ class CliPrompt(Cmd):
         
         # Store all browser cookies in file
         store_all_cookies(self.driver, self.outputdir)
+
+        # Store event history
+        with open(f"{self.outputdir}/history.json", "w+") as f:
+            json.dump(self.event_handler.execution_context.history, f)
 
         # Compile plantuml sequence diagram to svg
         self.event_handler.execution_context.sequencediagram.compile()
