@@ -132,10 +132,7 @@ def store_all_cookies(driver, outputdir):
 def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver_path=None):
     options = Options()
     options.add_argument("--ignore-certificate-errors") # for proxy support
-    options.add_argument(
-       f"--load-extension={os.getcwd()}/chrome_extensions/sso_frames,"
-       f"{os.getcwd()}/chrome_extensions/disable_csp"
-    )
+    options.add_argument("--load-extension=./chrome_extension") # generates in-browser events
     options.add_argument("--disable-web-security") # full access to cross-origin windows
     options.add_argument("--disable-site-isolation-trials") # access window.opener cross-origin
     options.add_argument(f"--user-data-dir={chromeprofile}") # cookies for idps
