@@ -21,8 +21,8 @@ class EventServerHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         """ Receive events as POST requests from the chrome extension
 
-        In chrome extension: _event("foo", {"bar": "baz"})
-        POST request body: {"event": {"key": "foo", "val": {"bar": "baz"}}}
+            In chrome extension: _event("foo", {"bar": "baz"})
+            POST request body: {"event": {"key": "foo", "val": {"bar": "baz"}}}
         """
         
         contentlength = int(self.headers['Content-Length'])

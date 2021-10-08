@@ -13,8 +13,8 @@ class ExecutionContext():
         self.topframe = None
         
         self.results = {} # Results received from chrome extension (i.e., detected SDKs, ...)
-        self.history = [] # History of all reports received from chrome extension
-        self.sequencediagram = SequenceDiagram() # Reports as visual representation
+        self.history = [] # History of all events received from chrome extension
+        self.sequencediagram = SequenceDiagram() # Events as visual representation
 
     def __str__(self):
         """ String representation of execution context is a tree hierarchy
@@ -60,18 +60,18 @@ class ExecutionContext():
                 But sub-resources such as scripts and frames are still loading.
                 -> href, hierarchy, html
             """
-            frame = Frame(href=val["href"], html=val["html"])
+            new_frame = Frame(href=val["href"], html=val["html"])
            
             # If frame already exists, just update its basic values
             # but keep it in tree with .frames[] and .popups[] references
             old_frame = self.get_frame(val["hierarchy"])
             if old_frame:
-                self.update_frame(old_frame, frame)
-                frame = old_frame
+                self.update_frame(old_frame, new_frame)
+                new_frame = old_frame
             else:
-                self.insert_frame(val["hierarchy"], frame)
+                self.insert_frame(val["hierarchy"], new_frame)
             
-            self.sequencediagram.documentinteractive(frame)
+            self.sequencediagram.documentinteractive(new_frame)
 
         elif key == "documentcomplete":
             """ DOCUMENT COMPLETED
@@ -86,12 +86,9 @@ class ExecutionContext():
                 -> href, hierarchy
             """
             frame = self.get_frame(val["hierarchy"])
-            if not frame:
-                return
-
-            self.sequencediagram.documentbeforeunload(frame)
-
-            self.remove_frame(val["hierarchy"])
+            if frame:
+                self.sequencediagram.documentbeforeunload(frame)
+                self.remove_frame(val["hierarchy"])
             
         elif key == "windowopen":
             """ POPUP OPENED
@@ -106,10 +103,9 @@ class ExecutionContext():
                 -> href, hierarchy
             """
             old_frame = self.get_frame(val["hierarchy"])
-            if not old_frame:
-                return
-            self.sequencediagram.windowclose(old_frame)
-            self.remove_frame(val["hierarchy"])
+            if old_frame:
+                self.sequencediagram.windowclose(old_frame)
+                self.remove_frame(val["hierarchy"])
 
         elif key == "dumpframe":
             """ FRAME DUMPED
