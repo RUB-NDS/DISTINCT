@@ -24,7 +24,7 @@ let helpers = () => {
         return params;
     }
 
-    /* Get the HTML markup of the current window without the chrome extension scripts */
+    /* Get the HTML markup of the current window */
     function html() {
         let docelement = document.documentElement.cloneNode(true);
         

@@ -40,28 +40,20 @@ let detect_frame = () => {
     /* Wrapper of window.close function */
     window.close = function close(...args) {
         _event("windowclose", {});
-        // Wait a second to give event time to be sent to handler
+        // Wait a second to give the event time to be sent to python backend
         self.setTimeout(() => {
             window._close(...args);
         }, 1000);
     }
 
-    /* OTHERS */
+    /* DUMP FRAME */
 
-    /* Dump the current frame, i.e., href, hierarchy, source code */
-    function dump_frame() {
-        _event("dumpframe", {html: _html()});
-    }
-    
-    /* Report when dumpframe event is received */
+    /* Dump the current frame (href, hierarchy, html) when dumpframe event is received */
     window._addEventListener("message", (e) => {
         if (e.data.cmd === "dumpframe") {
-            _dump_frame();
+            _event("dumpframe", {html: _html()});
         }
     });
-
-    /* Global access */
-    window._dump_frame = dump_frame;
 
 }
 
