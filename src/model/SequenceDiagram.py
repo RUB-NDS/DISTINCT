@@ -50,12 +50,22 @@ class SequenceDiagram:
 
     def documentinteractive(self, frame):
         self.statement(f'participant "{frame.hierarchy()}"')
-        self.statement(
-            f'note right of "{frame.hierarchy()}"\n'
-            f'Event: Document Interactive\n'
-            f'URL: {insert_newlines(frame.href)}\n'
-            f'end note'
-        )
+        if frame.opener:
+            self.statement(
+                f'note right of "{frame.hierarchy()}"\n'
+                f'Event: Document Interactive\n'
+                f'URL: {insert_newlines(frame.href)}\n'
+                f'HTML: {insert_newlines(frame.html)}\n'
+                f'end note'
+            )
+        else:
+            self.statement(
+                f'note right of "{frame.hierarchy()}"\n'
+                f'Event: Document Interactive\n'
+                f'URL: {insert_newlines(frame.href)}\n'
+                f'HTML: REDACTED\n'
+                f'end note'
+            )
 
     def documentbeforeunload(self, frame):
         self.statement(f'participant "{frame.hierarchy()}"')
