@@ -1,8 +1,12 @@
 import json
+import logging
 
 from cmd import Cmd
+from types import resolve_bases
 
 from config import terminate_proxy, store_all_cookies
+
+logger = logging.getLogger(__name__)
 
 class CliPrompt(Cmd):
     
@@ -33,8 +37,16 @@ class CliPrompt(Cmd):
         store_all_cookies(self.driver, self.outputdir)
 
         # Store event history
-        with open(f"{self.outputdir}/history.json", "w+") as f:
+        historyfile = f"{self.outputdir}/history.json"
+        with open(historyfile, "w+") as f:
             json.dump(self.event_handler.execution_context.history, f)
+            logger.info(f"Saved event history: {historyfile}")
+
+        # Store event results
+        resultsfile = f"{self.outputdir}/results.json"
+        with open(resultsfile, "w+") as f:
+            json.dump(self.event_handler.execution_context.results, f)
+            logger.info(f"Saved event results: {resultsfile}")
 
         # Compile plantuml sequence diagram to svg
         self.event_handler.execution_context.sequencediagram.compile()
