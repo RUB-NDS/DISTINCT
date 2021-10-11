@@ -37,8 +37,17 @@ class SequenceDiagram:
 
     """ REPORTS """
 
+    def extensioninit(self, frame):
+        self.statement(f'participant "{frame.hierarchy()}"')
+        self.statement(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'Event: Extension Init\n'
+            f'URL: {frame.href}\n'
+            f'end note'
+        )
+
     def documentinteractive(self, frame):
-        self.statement(f'participant "{frame.hierarchy()}"') 
+        self.statement(f'participant "{frame.hierarchy()}"')
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
             f'Event: Document Interactive\n'

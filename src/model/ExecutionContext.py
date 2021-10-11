@@ -47,7 +47,27 @@ class ExecutionContext():
         key = event["key"]
         val = event["val"]
         
-        if key == "documentloading":
+        if key == "extensioninit":
+            """ EXTENSION INIT
+                The chrome extension is executed. Since the extension is executed
+                before any other scripts on the page, it catches the page before any
+                other JS redirects or similar are executed.
+                -> href, hierarchy
+            """
+            new_frame = Frame(href=val["href"])
+           
+            # If frame already exists, just update its properties
+            # but keep it in hierarchy tree with references to parents and children
+            old_frame = self.get_frame(val["hierarchy"])
+            if old_frame:
+                self.update_frame(old_frame, new_frame)
+                new_frame = old_frame
+            else:
+                self.insert_frame(val["hierarchy"], new_frame)
+            
+            self.sequencediagram.extensioninit(new_frame)
+
+        elif key == "documentloading":
             """ DOCUMENT LOADING
                 The document is still loading.
                 -> href, hierarchy
@@ -62,8 +82,8 @@ class ExecutionContext():
             """
             new_frame = Frame(href=val["href"], html=val["html"])
            
-            # If frame already exists, just update its basic values
-            # but keep it in tree with .frames[] and .popups[] references
+            # If frame already exists, just update its properties
+            # but keep it in hierarchy tree with references to parents and children
             old_frame = self.get_frame(val["hierarchy"])
             if old_frame:
                 self.update_frame(old_frame, new_frame)

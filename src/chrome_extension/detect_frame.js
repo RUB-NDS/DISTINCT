@@ -8,7 +8,10 @@ let detect_frame = () => {
     
     /* DOCUMENT */
 
-    /* Report when document is loaded */
+    /* Report when this extension is executed */
+    _event("extensioninit", {});
+
+    /* Report when document finished loading */
     document.onreadystatechange = () => {
         switch(document.readyState) {
             case "loading":
