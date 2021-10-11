@@ -2,6 +2,8 @@ import webbrowser
 import plantuml
 import os
 
+from helpers import insert_newlines
+
 class SequenceDiagram:
 
     def __init__(self):
@@ -42,7 +44,7 @@ class SequenceDiagram:
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
             f'Event: Extension Init\n'
-            f'URL: {frame.href}\n'
+            f'URL: {insert_newlines(frame.href)}\n'
             f'end note'
         )
 
@@ -51,7 +53,7 @@ class SequenceDiagram:
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
             f'Event: Document Interactive\n'
-            f'URL: {frame.href}\n'
+            f'URL: {insert_newlines(frame.href)}\n'
             f'end note'
         )
 
@@ -64,8 +66,8 @@ class SequenceDiagram:
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
             f'Event: Form Submit\n'
-            f'URL: {frame.href}\n'
-            f'{formbody}\n'
+            f'URL: {insert_newlines(frame.href)}\n'
+            f'Body: {insert_newlines(formbody)}\n'
             f'end note'
         )
 
@@ -73,17 +75,41 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'Event: Dump Frame\n'
             f'HTML:\n'
-            f'{html}\n'
+            f'{insert_newlines(html, every=200)}\n'
             f'end note'
         )
 
     def windowopen(self, frame):
         self.statement(f'participant "{frame.hierarchy()}"')
         self.statement(f'participant "{frame.opener.hierarchy()}"')
-        self.statement(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open("{frame.href}")')
+        self.statement(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open()')
+        self.statement(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'Event: Window Open\n'
+            f'URL: {insert_newlines(frame.href)}\n'
+            f'end note'
+        )
 
     def windowclose(self, frame):
         self.statement(f'participant "{frame.hierarchy()}"')
         self.statement(f'participant "{frame.opener.hierarchy()}"')
+        self.statement(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'Event: Window Close\n'
+            f'end note'
+        )
         self.statement(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')
+
+    def postmessagereceived(self, receiver, sender, data, datatype):
+        self.statement(f'participant "{receiver}"')
+        self.statement(f'participant "{sender}"')
+        self.statement(f'"{sender}" -> "{receiver}": window.postMessage()')
+        self.statement(
+            f'note right of "{receiver}"\n'
+            f'Event: PostMessage Received\n'
+            f'Data Type: {datatype}\n'
+            f'Data: {insert_newlines(data)}\n'
+            f'end note'
+        )

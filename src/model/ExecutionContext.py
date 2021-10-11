@@ -164,6 +164,17 @@ class ExecutionContext():
             """
             pass
 
+        elif key == "postmessagereceived":
+            """ POSTMESSAGE RECEIVED
+                -> href, hierarchy, receiver, sender, data, datatype
+            """
+            self.sequencediagram.postmessagereceived(
+                val["receiver"],
+                val["sender"],
+                val["data"],
+                val["datatype"]
+            )
+
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame
             Properties: href, html
