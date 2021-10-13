@@ -1,5 +1,7 @@
 let detect_js = () => {
 
+    /* CROSS-FRAME COMMUNICATION */
+
     /* Report when postMessage is received */
     window.addEventListener("message", (e) => {
         let receiver = _hierarchy(self);
@@ -14,6 +16,10 @@ let detect_js = () => {
         });
 
     });
+
+    /* BROWSER STORAGE */
+    /* LocalStorage, SessionStorage, IndexedDB, WebSQL, Cookies, Trust Tokens */
+    /* Note: We cannot store data in trust tokens */
 
     /* Report when data is written to localStorage */
     /* LocalStorage items can be set in two different ways:
