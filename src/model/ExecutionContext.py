@@ -185,6 +185,16 @@ class ExecutionContext():
                 val["val"]
             )
 
+        elif key == "sessionstorageset":
+            """ SESSIONSTORAGE SET
+                -> href, hierarchy, key, val
+            """
+            self.sequencediagram.sessionstorageset(
+                val["hierarchy"],
+                val["key"],
+                val["val"]
+            )
+
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame
             Properties: href, html

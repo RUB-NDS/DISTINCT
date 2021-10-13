@@ -133,3 +133,13 @@ class SequenceDiagram:
             f'Value: {insert_newlines(val)}\n'
             f'end note'
         )
+
+    def sessionstorageset(self, hierarchy, key, val):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: SessionStorage Set\n'
+            f'Key: {insert_newlines(key)}\n'
+            f'Value: {insert_newlines(val)}\n'
+            f'end note'
+        )
