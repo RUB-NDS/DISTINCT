@@ -143,3 +143,12 @@ class SequenceDiagram:
             f'Value: {insert_newlines(val)}\n'
             f'end note'
         )
+
+    def cookieset(self, hierarchy, val):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: Cookie Set\n'
+            f'Value: {insert_newlines(val)}\n'
+            f'end note'
+        )

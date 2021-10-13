@@ -194,6 +194,15 @@ class ExecutionContext():
                 val["key"],
                 val["val"]
             )
+        
+        elif key == "cookieset":
+            """ COOKIE SET
+                -> href, hierarchy, val
+            """
+            self.sequencediagram.cookieset(
+                val["hierarchy"],
+                val["val"]
+            )
 
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame

@@ -131,6 +131,20 @@ let detect_js = () => {
         writable: false
     });
 
+    /* Report when data is written to cookies */
+    let cookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
+    Object.defineProperty(document, "cookie", {
+        configurable: true,
+        enumerable: true,
+        get: () => {
+            return cookieDescriptor.get.call(document);
+        },
+        set: (val) => {
+            _event("cookieset", {val: val});
+            cookieDescriptor.set.call(document, val);
+        }
+    });
+
     /* TODO: Report when properties are set on global window object */
     /* Note: These properties are commonly used as JS callbacks in SSO flows */
 
