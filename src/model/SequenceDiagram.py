@@ -123,3 +123,13 @@ class SequenceDiagram:
             f'Data: {insert_newlines(data)}\n'
             f'end note'
         )
+
+    def localstorageset(self, hierarchy, key, val):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: LocalStorage Set\n'
+            f'Key: {insert_newlines(key)}\n'
+            f'Value: {insert_newlines(val)}\n'
+            f'end note'
+        )

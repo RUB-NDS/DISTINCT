@@ -15,6 +15,69 @@ let detect_js = () => {
 
     });
 
+    /* Report when data is written to localStorage */
+    /* LocalStorage items can be set in two different ways:
+        - using window.localStorage.setItem("foo", "faa")
+        - using window.localStorage["foo"] = "faa"
+       Thus, we need a proxy to catch all property accesses
+       and additionally overwrite the setItem, getItem, ... methods.
+     */
+    window._localStorage = window.localStorage;
+    let localStorageHandler = {
+        set: function(target, prop, value) {
+            _event("localstorageset", {key: prop, val: value});
+            return Reflect.set(...arguments);
+        },
+        get: function(target, prop, receiver) {
+            if (prop == "setItem") {
+                return (key, val) => {
+                    _event("localstorageset", {key: key, val: val});
+                    return window._localStorage.setItem(key, val);
+                }
+            } else if (prop == "getItem") {
+                return (key) => {
+                    return window._localStorage.getItem(key);
+                }
+            } else if (prop == "removeItem") {
+                return (key) => {
+                    return window._localStorage.removeItem(key);
+                }
+            } else if (prop == "key") {
+                return (key) => {
+                    return window._localStorage.key(key);
+                }
+            } else if (prop == "clear") {
+                return () => {
+                    return window._localStorage.clear();
+                }
+            } else if (prop == "length") {
+                return window._localStorage.length;
+            } else {
+                if (typeof window._localStorage[prop] == "function") {
+                    return (...args) => {
+                        return window._localStorage[prop](...args);
+                    }
+                } else if (typeof window._localStorage[prop] == "string") {
+                    return window._localStorage[prop];
+                }
+            }
+        }
+    }
+    let localStorageProxy = new Proxy(
+        window._localStorage, localStorageHandler
+    );
+    Object.defineProperty(window, "localStorage", {
+        value: localStorageProxy,
+        configurable: true,
+        enumerable: true,
+        writable: false
+    });
+
+    /* TODO: Report when data is written to sessionStorage */
+
+    /* TODO: Report when properties are set on global window object */
+    /* Note: These properties are commonly used as JS callbacks in SSO flows */
+
 }
 
 let detect_js_script = document.createElement("script");
