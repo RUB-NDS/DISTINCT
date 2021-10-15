@@ -217,6 +217,28 @@ class ExecutionContext():
                 val["val"]
             )
 
+        elif key == "windowpropnew":
+            """ WINDOW PROP NEW
+                -> href, hierarchy, key, val, valtype
+            """
+            self.sequencediagram.windowpropnew(
+                val["hierarchy"],
+                val["key"],
+                val["val"],
+                val["valtype"]
+            )
+        
+        elif key == "windowpropchanged":
+            """ WINDOW PROP CHANGED
+                -> href, hierarchy, key, val, valtype
+            """
+            self.sequencediagram.windowpropchanged(
+                val["hierarchy"],
+                val["key"],
+                val["val"],
+                val["valtype"]
+            )
+
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame
             Properties: href, html

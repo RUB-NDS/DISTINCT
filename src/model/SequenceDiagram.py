@@ -165,3 +165,25 @@ class SequenceDiagram:
             f'Value: {insert_newlines(val)}\n'
             f'end note'
         )
+
+    def windowpropnew(self, hierarchy, key, val, valtype):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: Window Property New\n'
+            f'Key: {insert_newlines(key)}\n'
+            f'Value Type: {insert_newlines(valtype)}\n'
+            f'Value: {insert_newlines(val)}\n'
+            f'end note'
+        )
+    
+    def windowpropchanged(self, hierarchy, key, val, valtype):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: Window Property Changed\n'
+            f'Key: {insert_newlines(key)}\n'
+            f'Value Type: {insert_newlines(valtype)}\n'
+            f'Value: {insert_newlines(val)}\n'
+            f'end note'
+        )
