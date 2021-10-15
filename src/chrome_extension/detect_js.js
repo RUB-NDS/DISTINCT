@@ -21,8 +21,12 @@ let detect_js = () => {
     /* Note: These properties are commonly used as JS callbacks in SSO flows */
 
     /* BROWSER STORAGE */
-    /* LocalStorage, SessionStorage, IndexedDB, WebSQL, Cookies, Trust Tokens */
-    /* Note: We cannot store data in trust tokens */
+
+    /* LocalStorage, SessionStorage, IndexedDB, ~WebSQL~, Cookies, ~Trust Tokens~
+       - We cannot store data in trust tokens
+       - The Web SQL Database specification is no longer being maintained
+       and support may be dropped in future versions. (https://caniuse.com/sql-storage)
+     */
 
     /* Report when data is written to localStorage */
     /* LocalStorage items can be set in two different ways:
