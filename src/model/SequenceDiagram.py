@@ -152,3 +152,16 @@ class SequenceDiagram:
             f'Value: {insert_newlines(val)}\n'
             f'end note'
         )
+    
+    def idbset(self, hierarchy, db, objectstore, keypath, key, val):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: IndexedDB Set\n'
+            f'Database: {insert_newlines(db)}\n'
+            f'Object Store: {insert_newlines(objectstore)}\n'
+            f'Key Path: {insert_newlines(keypath)}\n'
+            f'Key: {insert_newlines(key)}\n'
+            f'Value: {insert_newlines(val)}\n'
+            f'end note'
+        )

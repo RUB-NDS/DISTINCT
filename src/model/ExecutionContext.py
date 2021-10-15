@@ -203,6 +203,19 @@ class ExecutionContext():
                 val["hierarchy"],
                 val["val"]
             )
+        
+        elif key == "idbadd" or key == "idbput":
+            """ INDEXEDDB ADD/PUT
+                -> href, hierarchy, db, objectstore, keypath, key, val
+            """
+            self.sequencediagram.idbset(
+                val["hierarchy"],
+                val["db"],
+                val["objectstore"],
+                val["keypath"],
+                val["key"],
+                val["val"]
+            )
 
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame

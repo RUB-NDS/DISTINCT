@@ -17,6 +17,9 @@ let detect_js = () => {
 
     });
 
+    /* TODO: Report when properties are set on global window object */
+    /* Note: These properties are commonly used as JS callbacks in SSO flows */
+
     /* BROWSER STORAGE */
     /* LocalStorage, SessionStorage, IndexedDB, WebSQL, Cookies, Trust Tokens */
     /* Note: We cannot store data in trust tokens */
@@ -151,8 +154,29 @@ let detect_js = () => {
         }
     });
 
-    /* TODO: Report when properties are set on global window object */
-    /* Note: These properties are commonly used as JS callbacks in SSO flows */
+    /* Report when data is written to IndexedDB */
+    let _add = IDBObjectStore.prototype.add;
+    let _put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.add = function add(value, ...args) { // (value, [key])
+        _event("idbadd", {
+            db: this.transaction.db.name,
+            objectstore: this.name,
+            keypath: this.keyPath,
+            key: args[0] || "",
+            val: value
+        });
+        return _add.call(this, value, ...args);
+    }
+    IDBObjectStore.prototype.put = function put(value, ...args) { // (value, [key])
+        _event("idbput", {
+            db: this.transaction.db.name,
+            objectstore: this.name,
+            keypath: this.keyPath,
+            key: args[0] || "",
+            val: value
+        });
+        return _put.call(this, value, ...args);
+    }
 
 }
 
