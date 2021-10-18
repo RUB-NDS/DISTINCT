@@ -161,7 +161,9 @@ let helpers = () => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({"event": {"key": key, "val": val}})
+            body: JSON.stringify({"event": {"key": key, "val": val}}, (key, val) => {
+                return typeof val === "undefined" ? null : val;
+            })
         }).then(r => r.json()).then(r => {
             if (r.success) {
                 console.info(
