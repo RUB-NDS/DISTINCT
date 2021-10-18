@@ -68,7 +68,6 @@ let detect_flow = () => {
             _event("result", {key: "sourceframe", val: "popup"});
             _event("result", {key: "sourceframehierarchy", val: _hierarchy(self)});
             _event("result", {key: "initiator", val: "sp"});
-            _event("event", {event: "frameswitch"});
 
             // _postMessageAll({cmd: "dumpframe"});
             window.postMessage({cmd: "dumpframe"}, "*");
