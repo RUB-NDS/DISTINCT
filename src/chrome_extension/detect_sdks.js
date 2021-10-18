@@ -53,7 +53,7 @@ let detect_sdks = () => {
         // 
         // }
 
-        /* Google Sign-In (Legacy) SDK */
+        /* Google Sign-In SDK (Legacy) */
         /* https://developers.google.com/identity/sign-in/web/sign-in */
         if (
             window.opener
@@ -63,7 +63,7 @@ let detect_sdks = () => {
             && _qparams["redirect_uri"].startsWith("storagerelay://")
         ) {
             _event("result", {key: "idp", val: "google"});
-            _event("result", {key: "sdk", val: "gsilegacy"});
+            _event("result", {key: "sdk", val: "gsi"});
             _event("result", {key: "initiator", val: "idp"});
         }
 
@@ -80,7 +80,7 @@ let detect_sdks = () => {
             && "origin" in _qparams
         ) {
             _event("result", {key: "idp", val: "google"});
-            _event("result", {key: "sdk", val: "siwgbutton"});
+            _event("result", {key: "sdk", val: "siwg"});
             _event("result", {key: "initiator", val: "idp"});
         }
 
