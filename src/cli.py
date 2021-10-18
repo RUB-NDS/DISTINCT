@@ -2,7 +2,6 @@ import json
 import logging
 
 from cmd import Cmd
-from types import resolve_bases
 
 from config import terminate_proxy, store_all_cookies
 
