@@ -21,8 +21,10 @@ def main():
     args = argparser.parse_args()
     
     # Setup global config variables
+    url = args.url.geturl()
     starttime = str(int(time())) # UNIX timestamp
     outputdir = setup_outputdir(args.out, args.url, starttime)
+    os.environ["URL"] = url
     os.environ["STARTTIME"] = starttime
     os.environ["OUTPUTDIR"] = outputdir
 
@@ -49,9 +51,9 @@ def main():
         set_all_cookies(driver, args.cookie_file)
 
     # Load URL
-    logger.info(f"URL: {args.url.geturl()}")
+    logger.info(f"URL: {url}")
     try:
-        driver.get(args.url.geturl())
+        driver.get(url)
     except WebDriverException as e:
         logger.exception(e)
     

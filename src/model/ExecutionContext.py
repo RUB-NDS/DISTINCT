@@ -1,6 +1,7 @@
 import re
 import time
 import logging
+import os
 
 from model.Frame import Frame
 from model.SequenceDiagram import SequenceDiagram
@@ -15,6 +16,10 @@ class ExecutionContext():
         self.results = {} # Results received from chrome extension (i.e., detected SDKs, ...)
         self.history = [] # History of all events received from chrome extension
         self.sequencediagram = SequenceDiagram() # Events as visual representation
+
+        self.add_result("starttime", os.environ["STARTTIME"])
+        self.add_result("outputdir", os.environ["OUTPUTDIR"])
+        self.add_result("url", os.environ["URL"])
 
     def __str__(self):
         """ String representation of execution context is a tree hierarchy
@@ -40,6 +45,9 @@ class ExecutionContext():
         
         go_down(self.topframe, dump, 1)
         return dump["val"]
+
+    def add_result(self, key, val):
+        self.results[key] = val
 
     def process_event(self, event):
         self.history.append({"timestamp": str(time.time()), "event": event})
@@ -137,7 +145,7 @@ class ExecutionContext():
             """ RESULT
                 -> href, hierarchy, key, val
             """
-            self.results[val["key"]] = val["val"]
+            self.add_result(val["key"], val["val"])
         
         elif key == "event":
             """ EVENT
