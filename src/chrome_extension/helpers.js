@@ -160,6 +160,19 @@ let helpers = () => {
         // to be acknowledged by the event server
         return new Promise((resolve, reject) => {
             
+            try {
+                var body = JSON.stringify({"event": {"key": key, "val": val}}, (key, val) => {
+                    return typeof val === "undefined" ? null : val;
+                });
+            } catch {
+                console.info(
+                    `%c[sso-context-switching]%c\nkey=${key}\nval=${val}`,
+                    "color:red;", ""
+                );
+                reject("Failed to stringify event into json");
+                return;
+            }
+
             // Send request to event server and check response
             // Event format: {"event": {"key": "...", "val": {...}}}
             fetch("http://localhost:20200", {
@@ -168,9 +181,7 @@ let helpers = () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({"event": {"key": key, "val": val}}, (key, val) => {
-                    return typeof val === "undefined" ? null : val;
-                })
+                body: body
             }).then(r => r.json()).then(r => {
                 
                 // Resolve if event was successfully received by event server
