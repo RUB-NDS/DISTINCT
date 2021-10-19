@@ -42,11 +42,9 @@ let detect_frame = () => {
 
     /* Wrapper of window.close function */
     window.close = function close(...args) {
-        _event("windowclose", {});
-        // Wait a second to give the event time to be sent to python backend
-        self.setTimeout(() => {
-            window._close(...args);
-        }, 1000);
+        _event("windowclose", {}).finally(() => {
+            window._close(...args); // Close window once event is acknowledged
+        });
     }
 
     /* DUMP FRAME */

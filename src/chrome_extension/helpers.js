@@ -154,34 +154,51 @@ let helpers = () => {
         val["hierarchy"] = _hierarchy(self);
         val["href"] = location.href;
 
-        // Format: {"event": {"key": "...", "val": {...}}}
-        fetch("http://localhost:20200", {
-            method: "POST",
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({"event": {"key": key, "val": val}}, (key, val) => {
-                return typeof val === "undefined" ? null : val;
-            })
-        }).then(r => r.json()).then(r => {
-            if (r.success) {
-                console.info(
-                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
-                    "color:green;", ""
-                );
-            } else {
+        // We are working with a promise
+        // This allows us to either send event and don't care of whether it was
+        // received by the event server or we can send the event and wait for it
+        // to be acknowledged by the event server
+        return new Promise((resolve, reject) => {
+            
+            // Send request to event server and check response
+            // Event format: {"event": {"key": "...", "val": {...}}}
+            fetch("http://localhost:20200", {
+                method: "POST",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({"event": {"key": key, "val": val}}, (key, val) => {
+                    return typeof val === "undefined" ? null : val;
+                })
+            }).then(r => r.json()).then(r => {
+                
+                // Resolve if event was successfully received by event server
+                // and reject if event server failed to receive event
+                if (r.success) {
+                    console.info(
+                        `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
+                        "color:green;", ""
+                    );
+                    resolve();
+                } else {
+                    console.info(
+                        `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
+                        "color:red;", ""
+                    );
+                    reject("Event server failed to receive event");
+                }
+
+            }).catch(e => {
                 console.info(
                     `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                     "color:red;", ""
                 );
-            }
-        }).catch(e => {
-            console.info(
-                `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
-                "color:red;", ""
-            );
+                reject(e);
+            });
+
         });
+        
     }
 
     /* Global access */
