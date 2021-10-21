@@ -27,7 +27,7 @@ let detect_flow = () => {
         /* Docs: https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow */
         if (
             window.opener
-            && location.host === "www.facebook.com"
+            && location.host.endsWith("facebook.com")
             && location.pathname.endsWith("/dialog/oauth") // /v11.0/dialog/oauth
             && "client_id" in _qparams
             && "redirect_uri" in _qparams

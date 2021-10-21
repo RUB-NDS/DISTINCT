@@ -39,3 +39,9 @@ def request(flow):
     ):
         _event("result", {"key": "idp", "val": "google"})
         _event("result", {"key": "authnrequrl", "val": url})
+
+    # AuthnResp
+    if (
+        "code" in query
+    ):
+        _event("result", {"key": "authnrespurl", "val": url})
