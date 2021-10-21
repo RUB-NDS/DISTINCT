@@ -20,6 +20,7 @@ let detect_flow = () => {
         ) {
             _event("result", {key: "idp", val: "apple"});
             _event("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Facebook AuthnReq opened in popup */
@@ -35,6 +36,7 @@ let detect_flow = () => {
         ) {
             _event("result", {key: "idp", val: "facebook"});
             _event("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Google AuthnReq opened in popup */
@@ -52,6 +54,7 @@ let detect_flow = () => {
         ) {
             _event("result", {key: "idp", val: "google"});
             _event("result", {key: "sourceframe", val: "popup"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* response_type = code &| token &| id_token */
@@ -68,6 +71,7 @@ let detect_flow = () => {
             _event("result", {key: "sourceframe", val: "popup"});
             _event("result", {key: "sourceframehierarchy", val: _hierarchy(self)});
             _event("result", {key: "initiator", val: "sp"});
+            _event("result", {key: "authnrespurl", val: location.href});
 
             // _postMessageAll({cmd: "dumpframe"});
             window.postMessage({cmd: "dumpframe"}, "*");

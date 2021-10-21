@@ -17,6 +17,7 @@ let detect_sdks = () => {
             _event("result", {key: "idp", val: "apple"});
             _event("result", {key: "sdk", val: "siwa"});
             _event("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Facebook Login SDK */
@@ -35,6 +36,7 @@ let detect_sdks = () => {
             _event("result", {key: "idp", val: "facebook"});
             _event("result", {key: "sdk", val: "fl"});
             _event("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Facebook Login Button SDK */
@@ -65,6 +67,7 @@ let detect_sdks = () => {
             _event("result", {key: "idp", val: "google"});
             _event("result", {key: "sdk", val: "gsi"});
             _event("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Sign in with Google Button SDK */
@@ -82,6 +85,7 @@ let detect_sdks = () => {
             _event("result", {key: "idp", val: "google"});
             _event("result", {key: "sdk", val: "siwg"});
             _event("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "authnrequrl", val: location.href});
         }
 
     });
@@ -99,6 +103,7 @@ let detect_sdks = () => {
             _event("result", {key: "idp", val: "google"});
             _event("result", {key: "sdk", val: "got"});
             _event("result", {key: "initiator", val: "idp"});
+            _event("result", {key: "authnrequrl", val: url});
         }
         return window._xmlhttprequest_open.apply(this, arguments);
     };
