@@ -47,7 +47,10 @@ class ExecutionContext():
         return dump["val"]
 
     def add_result(self, key, val):
-        self.results[key] = val
+        if key not in self.results:
+            self.results[key] = [val]
+        else:
+            self.results[key].append(val)
 
     def process_event(self, event):
         self.history.append({"timestamp": str(time.time()), "event": event})

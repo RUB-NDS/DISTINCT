@@ -173,6 +173,7 @@ def setup_proxy(outputdir, proxyport):
             "--listen-host", "127.0.0.1",
             "--listen-port", str(proxyport),
             "--save-stream-file", f"{outputdir}/proxy.dump",
+            "--quiet",
             "--scripts", "./proxy/har_dump.py",
             "--scripts", "./proxy/detect_flow.py",
             "--set", f"hardump={outputdir}/proxy.har"
