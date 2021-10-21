@@ -187,3 +187,12 @@ class SequenceDiagram:
             f'Value: {insert_newlines(val)}\n'
             f'end note'
         )
+    
+    def closedaccessed(self, hierarchy, closed):
+        self.statement(f'participant "{hierarchy}"')
+        self.statement(
+            f'note right of "{hierarchy}"\n'
+            f'Event: Closed Accessed\n'
+            f'Closed: {closed}\n'
+            f'end note'
+        )

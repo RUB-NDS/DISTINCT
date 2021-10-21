@@ -247,6 +247,15 @@ class ExecutionContext():
                 val["valtype"]
             )
 
+        elif key == "closedaccessed":
+            """ CLOSED ACCESSED
+                -> href, hierarchy, closed
+            """
+            self.sequencediagram.closedaccessed(
+                val["hierarchy"],
+                val["closed"]
+            )
+
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame
             Properties: href, html

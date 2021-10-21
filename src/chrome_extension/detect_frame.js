@@ -47,6 +47,16 @@ let detect_frame = () => {
         });
     }
 
+    /* Report when window.closed property is accessed */
+
+    window._closed = Object.getOwnPropertyDescriptor(window, "closed").get;
+    Object.defineProperty(window, "closed", {
+        get: () => {
+            _event("closedaccessed", {closed: window._closed()});
+            return window._closed();
+        }
+    });
+
     /* DUMP FRAME */
 
     /* Dump the current frame (href, hierarchy, html) when dumpframe event is received */
