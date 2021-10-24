@@ -136,6 +136,7 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
     options.add_argument("--disable-web-security") # full access to cross-origin windows
     options.add_argument("--disable-site-isolation-trials") # access window.opener cross-origin
     options.add_argument(f"--user-data-dir={chromeprofile}") # cookies for idps
+    options.add_argument('--disable-features=MediaRouter') # avoid "accept incoming network connections?"
     
     if chromium_binary:
         options.binary_location = chromium_binary
