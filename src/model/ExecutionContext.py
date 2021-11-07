@@ -20,6 +20,7 @@ class ExecutionContext():
         self.add_result("starttime", os.environ["STARTTIME"])
         self.add_result("outputdir", os.environ["OUTPUTDIR"])
         self.add_result("url", os.environ["URL"])
+        self.add_result("gitversion", os.environ["GITVERSION"])
 
     def __str__(self):
         """ String representation of execution context is a tree hierarchy

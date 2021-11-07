@@ -6,7 +6,7 @@ import os
 from time import time
 from selenium.common.exceptions import WebDriverException
 
-from config import setup_outputdir, setup_argparser, setup_logger
+from config import setup_outputdir, setup_argparser, setup_logger, git_version
 from config import setup_chromeprofile, setup_chromedriver
 from config import setup_proxy, set_all_cookies
 from event.EventDispatcher import EventDispatcher
@@ -27,6 +27,7 @@ def main():
     os.environ["URL"] = url
     os.environ["STARTTIME"] = starttime
     os.environ["OUTPUTDIR"] = outputdir
+    os.environ["GITVERSION"] = git_version()
 
     # Setup logger
     setup_logger(outputdir, args.verbosity)
