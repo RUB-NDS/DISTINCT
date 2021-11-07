@@ -18,3 +18,5 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
     "blocking",
     "responseHeaders"
 ]);
+
+console.info("disable_csp.js initialized");

@@ -8,16 +8,16 @@ let detect_sdks = () => {
             window.opener
             && location.host === "appleid.apple.com"
             && location.pathname === "/auth/authorize"
-            && "response_mode" in _qparams
-            && _qparams["response_mode"] === "web_message"
-            && "m" in _qparams
-            && "v" in _qparams
-            && "frame_id" in _qparams
+            && "response_mode" in _sso._qparams
+            && _sso._qparams["response_mode"] === "web_message"
+            && "m" in _sso._qparams
+            && "v" in _sso._qparams
+            && "frame_id" in _sso._qparams
         ) {
-            _event("result", {key: "idp", val: "apple"});
-            _event("result", {key: "sdk", val: "siwa"});
-            _event("result", {key: "initiator", val: "idp"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "apple"});
+            _sso._event("result", {key: "sdk", val: "siwa"});
+            _sso._event("result", {key: "initiator", val: "idp"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Facebook Login SDK */
@@ -26,17 +26,17 @@ let detect_sdks = () => {
             window.opener
             && location.host.endsWith("facebook.com") // Found www.facebook.com and web.facebook.com
             && location.pathname.endsWith("/dialog/oauth") // /v11.0/dialog/oauth
-            && "app_id" in _qparams
-            && "display" in _qparams
-            && _qparams["display"] === "popup"
-            && "channel_url" in _qparams
-            && "ref" in _qparams
-            && _qparams["ref"] === "LoginButton"
+            && "app_id" in _sso._qparams
+            && "display" in _sso._qparams
+            && _sso._qparams["display"] === "popup"
+            && "channel_url" in _sso._qparams
+            && "ref" in _sso._qparams
+            && _sso._qparams["ref"] === "LoginButton"
         ) {
-            _event("result", {key: "idp", val: "facebook"});
-            _event("result", {key: "sdk", val: "fl"});
-            _event("result", {key: "initiator", val: "idp"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "facebook"});
+            _sso._event("result", {key: "sdk", val: "fl"});
+            _sso._event("result", {key: "initiator", val: "idp"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Facebook Login Button SDK */
@@ -45,12 +45,12 @@ let detect_sdks = () => {
         //     window.parent
         //     && location.host.includes("facebook.com")
         //     && location.pathname.endsWith("/plugins/login_button.php")
-        //     && "app_id" in _qparams
-        //     && "channel" in _qparams
-        //     && "sdk" in _qparams
-        //     && _qparams["sdk"] === "joey"
-        //     && "use_continue_as" in _qparams
-        //     && _qparams["use_continue_as"] === "true"
+        //     && "app_id" in _sso._qparams
+        //     && "channel" in _sso._qparams
+        //     && "sdk" in _sso._qparams
+        //     && _sso._qparams["sdk"] === "joey"
+        //     && "use_continue_as" in _sso._qparams
+        //     && _sso._qparams["use_continue_as"] === "true"
         // ) {
         // 
         // }
@@ -61,13 +61,13 @@ let detect_sdks = () => {
             window.opener
             && location.host === "accounts.google.com"
             && location.pathname === "/o/oauth2/auth"
-            && "redirect_uri" in _qparams
-            && _qparams["redirect_uri"].startsWith("storagerelay://")
+            && "redirect_uri" in _sso._qparams
+            && _sso._qparams["redirect_uri"].startsWith("storagerelay://")
         ) {
-            _event("result", {key: "idp", val: "google"});
-            _event("result", {key: "sdk", val: "gsi"});
-            _event("result", {key: "initiator", val: "idp"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "google"});
+            _sso._event("result", {key: "sdk", val: "gsi"});
+            _sso._event("result", {key: "initiator", val: "idp"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Sign in with Google Button SDK */
@@ -76,23 +76,23 @@ let detect_sdks = () => {
             window.opener
             && location.host === "accounts.google.com"
             && location.pathname === "/gsi/select"
-            && "ux_mode" in _qparams
-            && "ui_mode" in _qparams
-            && "channel_id" in _qparams
-            && "as" in _qparams
-            && "origin" in _qparams
+            && "ux_mode" in _sso._qparams
+            && "ui_mode" in _sso._qparams
+            && "channel_id" in _sso._qparams
+            && "as" in _sso._qparams
+            && "origin" in _sso._qparams
         ) {
-            _event("result", {key: "idp", val: "google"});
-            _event("result", {key: "sdk", val: "siwg"});
-            _event("result", {key: "initiator", val: "idp"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "google"});
+            _sso._event("result", {key: "sdk", val: "siwg"});
+            _sso._event("result", {key: "initiator", val: "idp"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
     });
 
     /* Google One Tap SDK */
     /* Docs: https://developers.google.com/identity/gsi/web/guides/features */
-    window._xmlhttprequest_open = window.XMLHttpRequest.prototype.open;
+    window._sso._xmlhttprequest_open = window.XMLHttpRequest.prototype.open;
     window.XMLHttpRequest.prototype.open = function open() {
         let url = arguments[1] || undefined;
         if (
@@ -100,14 +100,15 @@ let detect_sdks = () => {
             && url.startsWith("/gsi/issue")
             && url.includes("select_by=user_1ta")
         ) {
-            _event("result", {key: "idp", val: "google"});
-            _event("result", {key: "sdk", val: "got"});
-            _event("result", {key: "initiator", val: "idp"});
-            _event("result", {key: "authnrequrl", val: url});
+            _sso._event("result", {key: "idp", val: "google"});
+            _sso._event("result", {key: "sdk", val: "got"});
+            _sso._event("result", {key: "initiator", val: "idp"});
+            _sso._event("result", {key: "authnrequrl", val: url});
         }
-        return window._xmlhttprequest_open.apply(this, arguments);
+        return window._sso._xmlhttprequest_open.apply(this, arguments);
     };
 
+    console.info("detect_sdks.js initialized");
 }
 
 let detect_sdks_script = document.createElement("script");

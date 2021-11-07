@@ -8,19 +8,19 @@ let detect_flow = () => {
             window.opener
             && location.host === "appleid.apple.com"
             && location.pathname === "/auth/authorize"
-            && "client_id" in _qparams
-            && "redirect_uri" in _qparams
-            && _qparams["redirect_uri"].startsWith("http")
-            && "response_type" in _qparams
+            && "client_id" in _sso._qparams
+            && "redirect_uri" in _sso._qparams
+            && _sso._qparams["redirect_uri"].startsWith("http")
+            && "response_type" in _sso._qparams
             && (
-                !("response_mode" in _qparams)
-                || (_qparams["response_mode"] !== "web_message")
+                !("response_mode" in _sso._qparams)
+                || (_sso._qparams["response_mode"] !== "web_message")
             )
             // TODO: and not SDK
         ) {
-            _event("result", {key: "idp", val: "apple"});
-            _event("result", {key: "sourceframe", val: "popup"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "apple"});
+            _sso._event("result", {key: "sourceframe", val: "popup"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Facebook AuthnReq opened in popup */
@@ -29,14 +29,14 @@ let detect_flow = () => {
             window.opener
             && location.host.endsWith("facebook.com")
             && location.pathname.endsWith("/dialog/oauth") // /v11.0/dialog/oauth
-            && "client_id" in _qparams
-            && "redirect_uri" in _qparams
-            && _qparams["redirect_uri"].startsWith("http")
+            && "client_id" in _sso._qparams
+            && "redirect_uri" in _sso._qparams
+            && _sso._qparams["redirect_uri"].startsWith("http")
             // TODO: and not SDK
         ) {
-            _event("result", {key: "idp", val: "facebook"});
-            _event("result", {key: "sourceframe", val: "popup"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "facebook"});
+            _sso._event("result", {key: "sourceframe", val: "popup"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* Google AuthnReq opened in popup */
@@ -45,16 +45,16 @@ let detect_flow = () => {
             window.opener
             && location.host === "accounts.google.com"
             && location.pathname === "/o/oauth2/v2/auth"
-            && "client_id" in _qparams
-            && "redirect_uri" in _qparams
-            && _qparams["redirect_uri"].startsWith("http")
-            && "response_type" in _qparams
-            && "scope" in _qparams
+            && "client_id" in _sso._qparams
+            && "redirect_uri" in _sso._qparams
+            && _sso._qparams["redirect_uri"].startsWith("http")
+            && "response_type" in _sso._qparams
+            && "scope" in _sso._qparams
             // TODO: and not SDK
         ) {
-            _event("result", {key: "idp", val: "google"});
-            _event("result", {key: "sourceframe", val: "popup"});
-            _event("result", {key: "authnrequrl", val: location.href});
+            _sso._event("result", {key: "idp", val: "google"});
+            _sso._event("result", {key: "sourceframe", val: "popup"});
+            _sso._event("result", {key: "authnrequrl", val: location.href});
         }
 
         /* response_type = code &| token &| id_token */
@@ -62,18 +62,18 @@ let detect_flow = () => {
         if (
             window.opener
             && (
-                "code" in _qparams
-                || "code" in _hparams
-                || "access_token" in _hparams
-                || "id_token" in _hparams
+                "code" in _sso._qparams
+                || "code" in _sso._hparams
+                || "access_token" in _sso._hparams
+                || "id_token" in _sso._hparams
             )
         ) {
-            _event("result", {key: "sourceframe", val: "popup"});
-            _event("result", {key: "sourceframehierarchy", val: _hierarchy(self)});
-            _event("result", {key: "initiator", val: "sp"});
-            _event("result", {key: "authnrespurl", val: location.href});
+            _sso._event("result", {key: "sourceframe", val: "popup"});
+            _sso._event("result", {key: "sourceframehierarchy", val: _sso._hierarchy(self)});
+            _sso._event("result", {key: "initiator", val: "sp"});
+            _sso._event("result", {key: "authnrespurl", val: location.href});
 
-            // _postMessageAll({cmd: "dumpframe"});
+            // _sso._postMessageAll({cmd: "dumpframe"});
             window.postMessage({cmd: "dumpframe"}, "*");
         }
 
@@ -84,8 +84,8 @@ let detect_flow = () => {
 
     function formsubmit(e) {
         let target = e ? e.target : this;
-        let jsonform = _form2json(target);
-        _event("formsubmit", {action: target.action, form: jsonform});
+        let jsonform = _sso._form2json(target);
+        _sso._event("formsubmit", {action: target.action, form: jsonform});
 
         if (
             Object.keys(jsonform).includes("code")
@@ -93,15 +93,16 @@ let detect_flow = () => {
             || Object.keys(jsonform).includes("access_token")
             || Object.keys(jsonform).includes("id_token")
         ) {
-            _event("formpost", {action: target.action, form: jsonform});
+            _sso._event("formpost", {action: target.action, form: jsonform});
         }
 
         target._submit();
     }
-    window.addEventListener("submit", formsubmit, true); // Submission with click
+    window._sso._addEventListener("submit", formsubmit, true); // Submission with click
     HTMLFormElement.prototype._submit = HTMLFormElement.prototype.submit;
     HTMLFormElement.prototype.submit = formsubmit; // Submission with .submit() call
 
+    console.info("detect_flow.js initialized");
 }
 
 let detect_flow_script = document.createElement("script");

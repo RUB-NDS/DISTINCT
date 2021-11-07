@@ -74,8 +74,8 @@ let helpers = () => {
 				// If opener is set, go up in opener context
 				if (current.opener) {
                     // Which popup am I?
-                    for (let i = 0; i < current.opener._popups.length; i++) {
-                        if (current.opener._popups[i] === current) {
+                    for (let i = 0; i < current.opener._sso._popups.length; i++) {
+                        if (current.opener._sso._popups[i] === current) {
                             path = `popups[${i}]` + (path.length ? "." : "") + path;
                         }
                     }
@@ -97,10 +97,10 @@ let helpers = () => {
 				current.frames[i].postMessage(message, "*");
 				go_down(current.frames[i]);
 			}
-			for (let i = 0; i < current._popups.length, current._popups[i].closed === false; i++) {
+			for (let i = 0; i < current._sso._popups.length, current._sso._popups[i].closed === false; i++) {
 				// Popup
-				current._popups[i].postMessage(message, "*");
-				go_down(current._popups[i]);
+				current._sso._popups[i].postMessage(message, "*");
+				go_down(current._sso._popups[i]);
 			}
 		}
 		function go_up(current) {
@@ -108,9 +108,9 @@ let helpers = () => {
 				// Parent
 				current.parent.postMessage(message, "*");
 				// Enumerate Popups
-				for (let i = 0; i < current.parent._popups.length, current.parent._popups[i].closed === false; i++) {
-					current.parent._popups[i].postMessage(message, "*");
-					go_down(current.parent._popups[i]);
+				for (let i = 0; i < current.parent._sso._popups.length, current.parent._sso._popups[i].closed === false; i++) {
+					current.parent._sso._popups[i].postMessage(message, "*");
+					go_down(current.parent._sso._popups[i]);
 				}
 				// Enumerate Frames
 				for (let i = 0; i < current.parent.frames.length; i++) {
@@ -127,11 +127,11 @@ let helpers = () => {
 					// Opener
 					current.opener.postMessage(message, "*");
                     // Enumerate Popups
-					for (let i = 0; i < current.opener._popups.length, current.opener._popups[i].closed === false; i++) {
-						if (current.opener._popups[i] !== current) {
+					for (let i = 0; i < current.opener._sso._popups.length, current.opener._sso._popups[i].closed === false; i++) {
+						if (current.opener._sso._popups[i] !== current) {
                             // Sibling Popup
-                            current.opener._popups[i].postMessage(message, "*");
-						    go_down(current.opener._popups[i]);
+                            current.opener._sso._popups[i].postMessage(message, "*");
+						    go_down(current.opener._sso._popups[i]);
                         }
 					}
                     // Enumerate Frames
@@ -151,7 +151,7 @@ let helpers = () => {
     /* Send in-browser events to python backend */
     function event(key, val) {
         // Where did this event trigger?
-        val["hierarchy"] = _hierarchy(self);
+        val["hierarchy"] = _sso._hierarchy(self);
         val["href"] = location.href;
 
         // We are working with a promise
@@ -213,14 +213,28 @@ let helpers = () => {
     }
 
     /* Global access */
-    window._qparams = query_params();
-    window._hparams = hash_params();
-    window._html = html;
-    window._form2json = form2json;
-    window._hierarchy = hierarchy;
-    window._postMessageAll = postMessageAll;
-    window._event = event;
+    
+    window._sso = {};
 
+    /* Helper functions */
+
+    window._sso._qparams = query_params();
+    window._sso._hparams = hash_params();
+    window._sso._html = html;
+    window._sso._form2json = form2json;
+    window._sso._hierarchy = hierarchy;
+    window._sso._postMessageAll = postMessageAll;
+    window._sso._event = event;
+
+    /* Function Wrappers */
+
+    window._sso._postMessage = window.postMessage.bind(window);
+    window._sso._addEventListener = window.addEventListener.bind(window);
+    window._sso._open = window.open.bind(window);
+    window._sso._close = window.close.bind(window);
+    window._sso._closed_get = Object.getOwnPropertyDescriptor(window, "closed").get.bind(window);
+
+    console.info("helpers.js initialized");
 }
 
 let helpers_script = document.createElement("script");
