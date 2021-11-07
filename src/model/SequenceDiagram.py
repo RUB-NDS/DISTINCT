@@ -126,19 +126,35 @@ class SequenceDiagram:
         )
         self.statement(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')
 
-    def postmessagereceived(self, receiver, sender, data, datatype):
+    def postmessagereceived(self, receiver, sender, data, datatype, targetorigincheck, sourceoriginaccessed):
         self.statement(f'participant "{receiver}"')
         self.statement(f'participant "{sender}"')
         self.statement(f'"{sender}" -> "{receiver}": window.postMessage()')
-        self.statement(
-            f'note right of "{receiver}"\n'
-            f'<code>\n'
-            f'Event: PostMessage Received\n'
-            f'Data Type: {datatype}\n'
-            f'Data: {insert_newlines(data)}\n'
-            f'</code>\n'
-            f'end note'
-        )
+        
+        if targetorigincheck == "*":
+            self.statement(
+                f'note right of "{receiver}" #red\n'
+                f'<code>\n'
+                f'Event: PostMessage Received\n'
+                f'Target Origin Check: {targetorigincheck}\n'
+                f'Source Origin Accessed: {sourceoriginaccessed}\n'
+                f'Data Type: {datatype}\n'
+                f'Data: {insert_newlines(data)}\n'
+                f'</code>\n'
+                f'end note'
+            )
+        else:
+            self.statement(
+                f'note right of "{receiver}" #green\n'
+                f'<code>\n'
+                f'Event: PostMessage Received\n'
+                f'Target Origin Check: {targetorigincheck}\n'
+                f'Source Origin Accessed: {sourceoriginaccessed}\n'
+                f'Data Type: {datatype}\n'
+                f'Data: {insert_newlines(data)}\n'
+                f'</code>\n'
+                f'end note'
+            )
 
     def localstorageset(self, hierarchy, key, val):
         self.statement(f'participant "{hierarchy}"')

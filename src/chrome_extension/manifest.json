@@ -11,6 +11,7 @@
 				"helpers.js",
 				"detect_frame.js",
 				"detect_communication.js",
+				"detect_postmessage.js",
 				"detect_storage.js",
 				"detect_sdks.js",
 				"detect_flow.js"
@@ -18,11 +19,13 @@
 		}
 	],
 	"permissions": [
-		"webRequest", "webRequestBlocking", "http://*/*", "https://*/*"
+		"webRequest", "webRequestBlocking", "http://*/*", "https://*/*",
+		"tabs", "debugger"
 	],
 	"background": {
 		"scripts": [
-			"disable_csp.js"
+			"disable_csp.js",
+			"pm_debugger.js"
 		],
 		"persistent": true
 	}

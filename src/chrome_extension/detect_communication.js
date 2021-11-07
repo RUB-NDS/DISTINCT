@@ -13,7 +13,9 @@ let detect_communication = () => {
             "receiver": receiver,
             "sender": sender,
             "data": data,
-            "datatype": typeof data
+            "datatype": typeof data,
+            "targetorigincheck": "N/A",
+            "sourceoriginaccessed": "N/A"
         });
 
     });

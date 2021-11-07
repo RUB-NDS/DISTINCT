@@ -230,6 +230,9 @@ let helpers = () => {
 
     window._sso._postMessage = window.postMessage.bind(window);
     window._sso._addEventListener = window.addEventListener.bind(window);
+    window._sso._removeEventListener = window.removeEventListener.bind(window);
+    window._sso._onmessage = window.onmessage;
+    window._sso._dispatchEvent = window.dispatchEvent.bind(window);
     window._sso._open = window.open.bind(window);
     window._sso._close = window.close.bind(window);
     window._sso._closed_get = Object.getOwnPropertyDescriptor(window, "closed").get.bind(window);
