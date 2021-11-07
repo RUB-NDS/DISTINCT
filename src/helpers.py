@@ -27,7 +27,10 @@ def insert_newlines(string, every=100, escape=False):
     newlined = []
     for line in lines:
         for i in range(0, len(line), every):
-            newlined.append(line[i:i+every])
+            # new need an invisible space as first char because plantuml
+            # treats lines that begin with ' or /' as comments, which could
+            # lead to rendering issues ...
+            newlined.append(f" {line[i:i+every]}")
     if escape:
         return "\\n".join(newlined)
     else:

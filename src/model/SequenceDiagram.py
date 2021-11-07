@@ -43,8 +43,10 @@ class SequenceDiagram:
         self.statement(f'participant "{frame.hierarchy()}"')
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
             f'Event: Extension Init\n'
             f'URL: {insert_newlines(frame.href)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -53,17 +55,21 @@ class SequenceDiagram:
         if frame.opener:
             self.statement(
                 f'note right of "{frame.hierarchy()}"\n'
+                f'<code>\n'
                 f'Event: Document Interactive\n'
                 f'URL: {insert_newlines(frame.href)}\n'
                 f'HTML: {insert_newlines(frame.html)}\n'
+                f'</code>\n'
                 f'end note'
             )
         else:
             self.statement(
                 f'note right of "{frame.hierarchy()}"\n'
+                f'<code>\n'
                 f'Event: Document Interactive\n'
                 f'URL: {insert_newlines(frame.href)}\n'
                 f'HTML: REDACTED\n'
+                f'</code>\n'
                 f'end note'
             )
 
@@ -75,9 +81,11 @@ class SequenceDiagram:
         self.statement(f'participant "{frame.hierarchy()}"')
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
             f'Event: Form Submit\n'
             f'URL: {insert_newlines(frame.href)}\n'
             f'Body: {insert_newlines(formbody)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -85,9 +93,11 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: Dump Frame\n'
             f'HTML:\n'
             f'{insert_newlines(html, every=200)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -97,8 +107,10 @@ class SequenceDiagram:
         self.statement(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open()')
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
             f'Event: Window Open\n'
             f'URL: {insert_newlines(frame.href)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -107,7 +119,9 @@ class SequenceDiagram:
         self.statement(f'participant "{frame.opener.hierarchy()}"')
         self.statement(
             f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
             f'Event: Window Close\n'
+            f'</code>\n'
             f'end note'
         )
         self.statement(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')
@@ -118,9 +132,11 @@ class SequenceDiagram:
         self.statement(f'"{sender}" -> "{receiver}": window.postMessage()')
         self.statement(
             f'note right of "{receiver}"\n'
+            f'<code>\n'
             f'Event: PostMessage Received\n'
             f'Data Type: {datatype}\n'
             f'Data: {insert_newlines(data)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -128,9 +144,11 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: LocalStorage Set\n'
             f'Key: {insert_newlines(key)}\n'
             f'Value: {insert_newlines(val)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -138,9 +156,11 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: SessionStorage Set\n'
             f'Key: {insert_newlines(key)}\n'
             f'Value: {insert_newlines(val)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -148,8 +168,10 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: Cookie Set\n'
             f'Value: {insert_newlines(val)}\n'
+            f'</code>\n'
             f'end note'
         )
     
@@ -157,12 +179,14 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: IndexedDB Set\n'
             f'Database: {insert_newlines(db)}\n'
             f'Object Store: {insert_newlines(objectstore)}\n'
             f'Key Path: {insert_newlines(keypath)}\n'
             f'Key: {insert_newlines(key)}\n'
             f'Value: {insert_newlines(val)}\n'
+            f'</code>\n'
             f'end note'
         )
 
@@ -170,10 +194,12 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: Window Property New\n'
             f'Key: {insert_newlines(key)}\n'
             f'Value Type: {insert_newlines(valtype)}\n'
             f'Value: {insert_newlines(val)}\n'
+            f'</code>\n'
             f'end note'
         )
     
@@ -181,10 +207,12 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: Window Property Changed\n'
             f'Key: {insert_newlines(key)}\n'
             f'Value Type: {insert_newlines(valtype)}\n'
             f'Value: {insert_newlines(val)}\n'
+            f'</code>\n'
             f'end note'
         )
     
@@ -192,7 +220,9 @@ class SequenceDiagram:
         self.statement(f'participant "{hierarchy}"')
         self.statement(
             f'note right of "{hierarchy}"\n'
+            f'<code>\n'
             f'Event: Closed Accessed\n'
             f'Closed: {closed}\n'
+            f'</code>\n'
             f'end note'
         )

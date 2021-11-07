@@ -49,15 +49,6 @@ let detect_frame = () => {
         }
     });
 
-    /* SOURCE CODE */
-
-    /* Dump the current frame (href, hierarchy, html) when dumpframe event is received */
-    window._sso._addEventListener("message", (e) => {
-        if (e.data.cmd === "dumpframe") {
-            _sso._event("dumpframe", {html: _sso._html()});
-        }
-    });
-
     console.info("detect_frame.js initialized");
 }
 

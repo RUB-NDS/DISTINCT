@@ -73,8 +73,7 @@ let detect_flow = () => {
             _sso._event("result", {key: "initiator", val: "sp"});
             _sso._event("result", {key: "authnrespurl", val: location.href});
 
-            // _sso._postMessageAll({cmd: "dumpframe"});
-            window.postMessage({cmd: "dumpframe"}, "*");
+            _sso._event("dumpframe", {html: _sso._html()});
         }
 
     });
