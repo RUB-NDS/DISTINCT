@@ -6,8 +6,8 @@ import subprocess
 import json
 
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.proxy import Proxy, ProxyType
+from selenium_stealth import stealth
 
 from helpers import file_path, dir_path, parsed_url
 
@@ -135,13 +135,16 @@ def store_all_cookies(driver, outputdir):
 """ Chrome Driver """
 
 def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver_path=None):
-    options = Options()
+    options = webdriver.ChromeOptions()
     options.add_argument("--ignore-certificate-errors") # for proxy support
     options.add_argument("--load-extension=./chrome_extension") # generates in-browser events
     options.add_argument("--disable-web-security") # full access to cross-origin windows
     options.add_argument("--disable-site-isolation-trials") # access window.opener cross-origin
     options.add_argument(f"--user-data-dir={chromeprofile}") # cookies for idps
     options.add_argument('--disable-features=MediaRouter') # avoid "accept incoming network connections?"
+    options.add_argument("start-maximized") # bypass selenium detection
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])  # bypass selenium detection
+    options.add_experimental_option("useAutomationExtension", False)  # bypass selenium detection
     
     if chromium_binary:
         options.binary_location = chromium_binary
@@ -164,6 +167,16 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
             options=options,
             desired_capabilities=capabilities
         )
+
+    # Bypass selenium detection
+    stealth(driver,
+        languages=["en-US", "en"],
+        vendor="Google Inc.",
+        platform="Win32",
+        webgl_vendor="Intel Inc.",
+        renderer="Intel Iris OpenGL Engine",
+        fix_hairline=True
+    )
     
     return driver
 
