@@ -44,7 +44,6 @@ let helpers = () => {
     }
 
     /* Creates a json object including fields in the form */
-    /* Source: https://jordanfinners.dev/blogs/how-to-easily-convert-html-form-to-json */
     function form2json(form) {
         const data = new FormData(form);
         return Array.from(data.keys()).reduce((result, key) => {

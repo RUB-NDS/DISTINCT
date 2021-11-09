@@ -20,12 +20,6 @@ class CliPrompt(Cmd):
         self.chromeprofile = chromeprofile
         self.event_handler = event_handler
 
-    def do_compile(self, params):
-        self.event_handler.execution_context.sequencediagram.compile()
-
-    def do_dumpcookies(self, params):
-        store_all_cookies(self.driver, self.outputdir)
-
     def do_exit(self, params):
         """ Exit the tool """
 

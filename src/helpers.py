@@ -20,18 +20,3 @@ def parsed_url(url):
     """ Return parsed URL """
     parsed_url = urllib.parse.urlparse(url)
     return parsed_url
-
-def insert_newlines(string, every=100, escape=False):
-    """ Insert newlines after x characters """
-    lines = str(string).splitlines() # we may get json objects here ...
-    newlined = []
-    for line in lines:
-        for i in range(0, len(line), every):
-            # new need an invisible space as first char because plantuml
-            # treats lines that begin with ' or /' as comments, which could
-            # lead to rendering issues ...
-            newlined.append(f" {line[i:i+every]}")
-    if escape:
-        return "\\n".join(newlined)
-    else:
-        return "\n".join(newlined)

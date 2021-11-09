@@ -1,240 +1,237 @@
-import webbrowser
-import plantuml
 import os
-
-from helpers import insert_newlines
+import json
 
 class SequenceDiagram:
 
-    def __init__(self):
-        outputdir = os.environ.get("OUTPUTDIR")
-        self.sequencefile = f"{outputdir}/sequencediagram.txt"
-        
-        self.statements = []
-        self.statement("@startuml")
+    def __init__(self, outputdir):
+        """ Constructor """
+        self.sequencefile = f"{outputdir}/sequencediagram.txt" # setup output file
+        self.stm("@startuml") # first line to start sequence diagram
 
-    def __str__(self):
-        stm = self.statements.copy()
-        stm.append("@enduml")
-        return "\n".join(stm)
-
-    def statement(self, stm):
-        self.statements.append(stm)
+    def stm(self, stm):
+        """ Add statement to sequence diagram """
         with open(f"{self.sequencefile}", "a+") as f:
             f.write(stm + "\n")
 
-    def plot(self):
-        code = plantuml.deflate_and_encode(str(self))
-        webbrowser.open("https://plantuml-server.kkeisuke.dev/svg/" + code)
-
     def compile(self):
         with open(f"{self.sequencefile}", "a+") as f:
-            f.write("@enduml") # last line to end uml plot
-        os.system(f"java -jar ../plantuml/plantuml.jar -svg {self.sequencefile}") # compile
-        os.system(f"sed -i '' -e '$ d' {self.sequencefile}") # delete last line (works only on macos!)
+            f.write("@enduml") # last line to end sequence diagram
+        os.system(f"java -jar ../plantuml/plantuml.jar -svg {self.sequencefile}")
 
-    def show(self):
-        sequencefilesvg = self.sequencefile.replace(".txt", ".svg")
-        print(sequencefilesvg)
+    @staticmethod
+    def linebreaks(input: str, every: int = 200, escape: bool = False):
+        """ Returns input string with linebreaks after x characters """
+        lines = input.splitlines()
+        newlined = []
+        
+        for line in lines:
+            for i in range(0, len(line), every):
+                # We need a space as first char because plantuml treats lines that begin with
+                # ' or /' as comments, which leads to rendering errors
+                if len(line) >= 1 and line[i] == "'":
+                    newlined.append(f" {line[i:i+every]}")
+                elif len(line) >= 2 and line[i:i+2] == "/'":
+                    newlined.append(f" {line[i:i+every]}")
+                else:
+                    newlined.append(line[i:i+every])
+        
+        if escape:
+            return "\\n".join(newlined) # escape line breaks
+        else:
+            return "\n".join(newlined) # do not escape line breaks
 
-    """ REPORTS """
+    """ Print events to sequence diagram """
 
     def extensioninit(self, frame):
-        self.statement(f'participant "{frame.hierarchy()}"')
-        self.statement(
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(
             f'note right of "{frame.hierarchy()}"\n'
             f'<code>\n'
             f'Event: Extension Init\n'
-            f'URL: {insert_newlines(frame.href)}\n'
+            f'URL: {self.linebreaks(frame.href)}\n'
             f'</code>\n'
             f'end note'
         )
 
     def documentinteractive(self, frame):
-        self.statement(f'participant "{frame.hierarchy()}"')
-        if frame.opener:
-            self.statement(
-                f'note right of "{frame.hierarchy()}"\n'
-                f'<code>\n'
-                f'Event: Document Interactive\n'
-                f'URL: {insert_newlines(frame.href)}\n'
-                f'HTML: {insert_newlines(frame.html)}\n'
-                f'</code>\n'
-                f'end note'
-            )
-        else:
-            self.statement(
-                f'note right of "{frame.hierarchy()}"\n'
-                f'<code>\n'
-                f'Event: Document Interactive\n'
-                f'URL: {insert_newlines(frame.href)}\n'
-                f'HTML: REDACTED\n'
-                f'</code>\n'
-                f'end note'
-            )
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
+            f'Event: Document Interactive\n'
+            f'URL: {self.linebreaks(frame.href)}\n'
+            f'HTML:\n'
+            f'{self.linebreaks(frame.html, every=500)}\n'
+            f'</code>\n'
+            f'end note'
+        )
 
     def documentbeforeunload(self, frame):
-        self.statement(f'participant "{frame.hierarchy()}"')
-        self.statement(f'note right of "{frame.hierarchy()}": Event: Document Before Unload')
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
+            f'Event: Document Before Unload\n'
+            f'</code>\n'
+            f'end note'
+        )
 
     def formsubmit(self, frame, formbody):
-        self.statement(f'participant "{frame.hierarchy()}"')
-        self.statement(
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(
             f'note right of "{frame.hierarchy()}"\n'
             f'<code>\n'
             f'Event: Form Submit\n'
-            f'URL: {insert_newlines(frame.href)}\n'
-            f'Body: {insert_newlines(formbody)}\n'
+            f'URL: {self.linebreaks(frame.href)}\n'
+            f'Body: {self.linebreaks(json.dumps(formbody))}\n'
             f'</code>\n'
             f'end note'
         )
 
     def dumpframe(self, hierarchy, html):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Dump Frame\n'
             f'HTML:\n'
-            f'{insert_newlines(html, every=200)}\n'
+            f'{self.linebreaks(html, every=500)}\n'
             f'</code>\n'
             f'end note'
         )
 
     def windowopen(self, frame):
-        self.statement(f'participant "{frame.hierarchy()}"')
-        self.statement(f'participant "{frame.opener.hierarchy()}"')
-        self.statement(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open()')
-        self.statement(
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(f'participant "{frame.opener.hierarchy()}"')
+        self.stm(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open()')
+        self.stm(
             f'note right of "{frame.hierarchy()}"\n'
             f'<code>\n'
             f'Event: Window Open\n'
-            f'URL: {insert_newlines(frame.href)}\n'
+            f'URL: {self.linebreaks(frame.href)}\n'
             f'</code>\n'
             f'end note'
         )
 
     def windowclose(self, frame):
-        self.statement(f'participant "{frame.hierarchy()}"')
-        self.statement(f'participant "{frame.opener.hierarchy()}"')
-        self.statement(
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(f'participant "{frame.opener.hierarchy()}"')
+        self.stm(
             f'note right of "{frame.hierarchy()}"\n'
             f'<code>\n'
             f'Event: Window Close\n'
             f'</code>\n'
             f'end note'
         )
-        self.statement(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')
+        self.stm(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')
 
-    def postmessagereceived(self, receiver, sender, data, datatype, targetorigincheck, sourceoriginaccessed):
-        self.statement(f'participant "{receiver}"')
-        self.statement(f'participant "{sender}"')
-        self.statement(f'"{sender}" -> "{receiver}": window.postMessage()')
+    def postmessagereceived(self, receiver, sender, data, datatype, targetorigincheck):
+        self.stm(f'participant "{receiver}"')
+        self.stm(f'participant "{sender}"')
+        self.stm(f'"{sender}" -> "{receiver}": window.postMessage()')
         
         if targetorigincheck == "*":
-            self.statement(
+            self.stm(
                 f'note right of "{receiver}" #red\n'
                 f'<code>\n'
                 f'Event: PostMessage Received\n'
                 f'Target Origin Check: {targetorigincheck}\n'
-                f'Source Origin Accessed: {sourceoriginaccessed}\n'
                 f'Data Type: {datatype}\n'
-                f'Data: {insert_newlines(data)}\n'
+                f'Data: {self.linebreaks(json.dumps(data))}\n'
                 f'</code>\n'
                 f'end note'
             )
         else:
-            self.statement(
+            self.stm(
                 f'note right of "{receiver}" #green\n'
                 f'<code>\n'
                 f'Event: PostMessage Received\n'
                 f'Target Origin Check: {targetorigincheck}\n'
-                f'Source Origin Accessed: {sourceoriginaccessed}\n'
                 f'Data Type: {datatype}\n'
-                f'Data: {insert_newlines(data)}\n'
+                f'Data: {self.linebreaks(json.dumps(data))}\n'
                 f'</code>\n'
                 f'end note'
             )
 
     def localstorageset(self, hierarchy, key, val):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: LocalStorage Set\n'
-            f'Key: {insert_newlines(key)}\n'
-            f'Value: {insert_newlines(val)}\n'
+            f'Key: {self.linebreaks(key)}\n'
+            f'Value: {self.linebreaks(val)}\n'
             f'</code>\n'
             f'end note'
         )
 
     def sessionstorageset(self, hierarchy, key, val):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: SessionStorage Set\n'
-            f'Key: {insert_newlines(key)}\n'
-            f'Value: {insert_newlines(val)}\n'
+            f'Key: {self.linebreaks(key)}\n'
+            f'Value: {self.linebreaks(val)}\n'
             f'</code>\n'
             f'end note'
         )
 
     def cookieset(self, hierarchy, val):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Cookie Set\n'
-            f'Value: {insert_newlines(val)}\n'
+            f'Value: {self.linebreaks(val)}\n'
             f'</code>\n'
             f'end note'
         )
     
     def idbset(self, hierarchy, db, objectstore, keypath, key, val):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: IndexedDB Set\n'
-            f'Database: {insert_newlines(db)}\n'
-            f'Object Store: {insert_newlines(objectstore)}\n'
-            f'Key Path: {insert_newlines(keypath)}\n'
-            f'Key: {insert_newlines(key)}\n'
-            f'Value: {insert_newlines(val)}\n'
+            f'Database: {self.linebreaks(db)}\n'
+            f'Object Store: {self.linebreaks(objectstore)}\n'
+            f'Key Path: {self.linebreaks(keypath)}\n'
+            f'Key: {self.linebreaks(key)}\n'
+            f'Value: {self.linebreaks(val)}\n'
             f'</code>\n'
             f'end note'
         )
 
     def windowpropnew(self, hierarchy, key, val, valtype):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Window Property New\n'
-            f'Key: {insert_newlines(key)}\n'
-            f'Value Type: {insert_newlines(valtype)}\n'
-            f'Value: {insert_newlines(val)}\n'
+            f'Key: {self.linebreaks(key)}\n'
+            f'Value Type: {self.linebreaks(valtype)}\n'
+            f'Value: {self.linebreaks(json.dumps(val))}\n'
             f'</code>\n'
             f'end note'
         )
     
     def windowpropchanged(self, hierarchy, key, val, valtype):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Window Property Changed\n'
-            f'Key: {insert_newlines(key)}\n'
-            f'Value Type: {insert_newlines(valtype)}\n'
-            f'Value: {insert_newlines(val)}\n'
+            f'Key: {self.linebreaks(key)}\n'
+            f'Value Type: {self.linebreaks(valtype)}\n'
+            f'Value: {self.linebreaks(json.dumps(val))}\n'
             f'</code>\n'
             f'end note'
         )
     
     def closedaccessed(self, hierarchy, closed):
-        self.statement(f'participant "{hierarchy}"')
-        self.statement(
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Closed Accessed\n'

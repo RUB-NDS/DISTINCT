@@ -15,7 +15,7 @@ class ExecutionContext():
         
         self.results = {} # Results received from chrome extension (i.e., detected SDKs, ...)
         self.history = [] # History of all events received from chrome extension
-        self.sequencediagram = SequenceDiagram() # Events as visual representation
+        self.sequencediagram = SequenceDiagram(os.environ["OUTPUTDIR"]) # Events as visual representation
 
         self.add_result("starttime", os.environ["STARTTIME"])
         self.add_result("outputdir", os.environ["OUTPUTDIR"])
@@ -143,7 +143,7 @@ class ExecutionContext():
             """ FRAME DUMPED
                 -> href, hierarchy, html
             """
-            self.sequencediagram.dumpframe(val["hierarchy"], val["html"])
+            # self.sequencediagram.dumpframe(val["hierarchy"], val["html"])
         
         elif key == "result":
             """ RESULT
@@ -185,8 +185,7 @@ class ExecutionContext():
                 val["sender"],
                 val["data"],
                 val["datatype"],
-                val["targetorigincheck"],
-                val["sourceoriginaccessed"]
+                val["targetorigincheck"]
             )
 
         elif key == "localstorageset":
