@@ -13,7 +13,7 @@ class ExecutionContext():
     def __init__(self):
         self.topframe = None
         
-        self.results = {} # Results received from chrome extension (i.e., detected SDKs, ...)
+        self.reports = {} # Results received from chrome extension (i.e., detected SDKs, ...)
         self.history = [] # History of all events received from chrome extension
         self.sequencediagram = SequenceDiagram(os.environ["OUTPUTDIR"]) # Events as visual representation
 
@@ -48,10 +48,10 @@ class ExecutionContext():
         return dump["val"]
 
     def add_result(self, key, val):
-        if key not in self.results:
-            self.results[key] = [val]
+        if key not in self.reports:
+            self.reports[key] = [val]
         else:
-            self.results[key].append(val)
+            self.reports[key].append(val)
 
     def process_event(self, event):
         self.history.append({"timestamp": str(time.time()), "event": event})

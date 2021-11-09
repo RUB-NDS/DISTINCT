@@ -1,7 +1,6 @@
 import logging
 import argparse
 import os
-import shutil
 import subprocess
 import json
 
@@ -95,10 +94,6 @@ def setup_chromeprofile(outputdir):
     chromeprofile = f"{outputdir}/chromeprofile"
     logger.info(f"Creating chrome profile: {chromeprofile}")
     return chromeprofile
-
-def delete_chromeprofile(chromeprofile):
-    logger.info(f"Deleting chrome profile: {chromeprofile}")
-    shutil.rmtree(chromeprofile)
 
 def set_all_cookies(driver, cookiefile):
     """ Load all cookies into browser """

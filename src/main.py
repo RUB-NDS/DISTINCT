@@ -2,6 +2,7 @@
 
 import logging
 import os
+import json
 
 from time import time
 from selenium.common.exceptions import WebDriverException
@@ -9,9 +10,9 @@ from selenium.common.exceptions import WebDriverException
 from config import setup_outputdir, setup_argparser, setup_logger, git_version
 from config import setup_chromeprofile, setup_chromedriver
 from config import setup_proxy, set_all_cookies
+from config import terminate_proxy, store_all_cookies
 from event.EventDispatcher import EventDispatcher
 from event.EventHandler import EventHandler
-from cli import CliPrompt
 
 logger = logging.getLogger(__name__)
 
@@ -52,15 +53,36 @@ def main():
         set_all_cookies(driver, args.cookie_file)
 
     # Load URL
+    print(f"[+] Website: {url}")
     logger.info(f"URL: {url}")
     try:
         driver.get(url)
     except WebDriverException as e:
         logger.exception(e)
     
-    # Switch in CLI loop
-    cliprompt = CliPrompt(driver, proxy, outputdir, chromeprofile, event_handler)
-    cliprompt.cmdloop()
+    # Wait for user to log in with SSO
+    input("[+] Log in with Single Sign-On and press ENTER once logged in")
+    
+    # Terminate the proxy
+    terminate_proxy(proxy)
+    
+    # Store all browser cookies in file
+    store_all_cookies(driver, outputdir)
+
+    # Store event history
+    historyfile = f"{outputdir}/history.json"
+    with open(historyfile, "w+") as f:
+        json.dump(event_handler.execution_context.history, f)
+        logger.info(f"Saved event history: {historyfile}")
+
+    # Store event report
+    reportfile = f"{outputdir}/report.json"
+    with open(reportfile, "w+") as f:
+        json.dump(event_handler.execution_context.reports, f)
+        logger.info(f"Saved event results: {reportfile}")
+
+    # Compile plantuml sequence diagram to svg
+    event_handler.execution_context.sequencediagram.compile()
 
 if __name__ == "__main__":
     main()
