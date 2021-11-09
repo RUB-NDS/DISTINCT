@@ -3,7 +3,6 @@
 import argparse
 import json
 
-from time import sleep
 from selenium import webdriver
 from selenium_stealth import stealth
 
@@ -39,25 +38,15 @@ def main():
     # Open Google's account page for signin
     # and wait for interrupt signal from user hitting CTRL+C
     print("[+] Loading Google's signin page ...")
-    try:
-        driver.get("https://accounts.google.com")
-        print("[+] Please sign into Google and hit CTRL+C when finished")
-        while True:
-            sleep(1)
-    except KeyboardInterrupt:
-        pass
+    driver.get("https://accounts.google.com")
+    input("[+] Please sign into Google and hit ENTER when finished")
 
     # Open Facebook's account page for signin
     # and wait for interrupt signal from user hitting CTRL+C
     print("[+] Loading Facebook's signin page ...")
-    try:
-        driver.get("https://www.facebook.com")
-        print("[+] Please sign into Facebook and hit CTRL+C when finished")
-        while True:
-            sleep(1)
-    except KeyboardInterrupt:
-        pass
-
+    driver.get("https://www.facebook.com")
+    input("[+] Please sign into Facebook and hit ENTER when finished")
+    
     # Retrieve all browser cookies
     cookies = driver.execute_cdp_cmd("Network.getAllCookies", {})
     with open(args.output, "w+") as f:
