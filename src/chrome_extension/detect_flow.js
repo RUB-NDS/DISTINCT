@@ -2,6 +2,43 @@ let detect_flow = () => {
 
     window.addEventListener("load", (e) => {
 
+        /* Apple AuthnReq */
+        if (
+            location.host === "appleid.apple.com"
+            && location.pathname === "/auth/authorize"
+        ) {
+            _sso._event("result", {"key": "idp", "val": "apple"});
+            _sso._event("result", {"key": "authnrequrl", "val": location.href});
+        }
+
+        /* Facebook AuthnReq */
+        if (
+            location.host.endswith("facebook.com")
+            && location.path.endswith("/dialog/oauth")
+        ) {
+            _sso._event("result", {"key": "idp", "val": "facebook"});
+            _sso._event("result", {"key": "authnrequrl", "val": location.href});
+        }
+
+        /* Google AuthnReq */
+        if (
+            location.host === "accounts.google.com"
+            && location.pathname === "/o/oauth2/v2/auth"
+        ) {
+            _sso._event("result", {"key": "idp", "val": "google"});
+            _sso._event("result", {"key": "authnrequrl", "val": location.href});
+        }
+
+        /* AuthnResp */
+        if (
+            "code" in _sso._qparams
+            || "code" in _sso._hparams
+            || "access_token" in _sso._hparams
+            || "id_token" in _sso._hparams
+        ) {
+            _sso._event("result", {"key": "authnrespurl", "val": location.href});
+        }
+
         /* Apple AuthnReq opened in popup */
         /* Docs: https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/incorporating_sign_in_with_apple_into_other_platforms */
         if (

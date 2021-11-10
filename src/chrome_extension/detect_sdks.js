@@ -97,6 +97,7 @@ let detect_sdks = () => {
         let url = arguments[1] || undefined;
         if (
             url 
+            && window.parent
             && url.startsWith("/gsi/issue")
             && url.includes("select_by=user_1ta")
         ) {

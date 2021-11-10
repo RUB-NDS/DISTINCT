@@ -188,8 +188,8 @@ def setup_proxy(outputdir, proxyport):
             "--listen-port", str(proxyport),
             "--save-stream-file", f"{outputdir}/proxy.dump",
             "--quiet",
-            "--scripts", "./proxy/har_dump.py",
-            "--scripts", "./proxy/detect_flow.py",
+            "--scripts", "./mitmproxy/har.py", # Export HARs
+            "--scripts", "./mitmproxy/redirects.py", # Transform HTTP/3** redirects to HTTP/200 docs
             "--set", f"hardump={outputdir}/proxy.har"
         ], stdout=out, stderr=err)
     

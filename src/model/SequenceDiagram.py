@@ -76,6 +76,19 @@ class SequenceDiagram:
             f'end note'
         )
 
+    def httpredirect(self, frame, status_code, location):
+        self.stm(f'participant "{frame.hierarchy()}"')
+        self.stm(
+            f'note right of "{frame.hierarchy()}"\n'
+            f'<code>\n'
+            f'Event: HTTP Redirect\n'
+            f'Status Code: {status_code}\n'
+            f'Source: {self.linebreaks(frame.href)}\n'
+            f'Location: {self.linebreaks(location)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
     def formsubmit(self, frame, formbody):
         self.stm(f'participant "{frame.hierarchy()}"')
         self.stm(

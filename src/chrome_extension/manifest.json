@@ -14,13 +14,15 @@
                 "detect_postmessage.js",
                 "detect_storage.js",
                 "detect_sdks.js",
-                "detect_flow.js"
+                "detect_flow.js",
+                "content_redirects.js"
             ]
         }
     ],
     "permissions": [
-        "webRequest", "webRequestBlocking", "http://*/*", "https://*/*",
-        "tabs", "debugger"
+        "http://*/*", "https://*/*",
+        "tabs", "debugger", "webRequest",
+        "webRequestBlocking"
     ],
     "background": {
         "scripts": [

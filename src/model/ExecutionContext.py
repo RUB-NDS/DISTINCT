@@ -156,6 +156,13 @@ class ExecutionContext():
                 -> href, hierarchy, event
             """
             pass
+
+        elif key == "httpredirect":
+            """ HTTP REDIRECT
+                -> href, hierarchy, status_code, location
+            """
+            frame = self.get_frame(val["hierarchy"])
+            self.sequencediagram.httpredirect(frame, val["status_code"], val["location"])
         
         elif key == "formsubmit":
             """ FORM SUBMITTED
