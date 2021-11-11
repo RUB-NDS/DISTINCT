@@ -27,7 +27,10 @@ def response(flow: HTTPFlow) -> None:
     """ Transform HTTP/3** redirects to HTTP/200 documents """
 
     status_code = flow.response.status_code
-    if status_code in [302]:
+    if status_code in [
+        301, 308, # permanent redirects
+        302, 303, 307 # temporary redirects
+    ]:
         location : str = flow.response.headers["Location"]
 
         # Transform HTTP/3** response to HTTP/200 response
