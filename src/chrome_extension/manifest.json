@@ -11,7 +11,7 @@
                 "content_init.js",
                 "content_frame.js",
                 "content_props.js",
-                "content_pm.js",
+                "content_messaging.js",
                 "content_storage.js",
                 "content_sdk.js",
                 "content_flow.js",

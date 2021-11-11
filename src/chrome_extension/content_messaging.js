@@ -1,13 +1,19 @@
 /**
- * This content script emulates the postMessage API.
- * We use it to intercept the registration of message event listeners and for the analysis of
- * postMessages. More specific, we get automatic access to the postMessage receiver origin check.
- * That is, we can validate the content of the postMessage function's second parameter:
+ * This content script monitors the use of web messaging:
+ *      - PostMessage API
+ *      - Channel Messaging API
+ *      - Broadcast Channel API
+ *      - Custom Events 
  * 
- * Syntax: window.postMessage(data, receiver_origin)
+ * The postMessage API is emulated.
+ * We use it to intercept the registration of message event listeners and for the analysis of
+ * postMessages. We get automatic access to the postMessage receiver origin check.
+ * That is, we can extract the content of the postMessage function's second parameter.
+ * 
+ * Syntax: window.postMessage(data, receiver_origin, ...)
  */
 
-let content_pm = () => {
+let content_messaging = () => {
 
     // Blacklisted origins from/to which we want to ignore postMessages
     // Reason: Ads and analytics are agressively sending a huge amount of postMessages
@@ -231,7 +237,7 @@ let content_pm = () => {
     console.info("content_pm.js initialized");
 }
 
-let content_pm_script = document.createElement("script");
-content_pm_script.classList.add("chromeextension");
-content_pm_script.textContent = "(" + content_pm.toString() + ")()";
-document.documentElement.prepend(content_pm_script);
+let content_messaging_script = document.createElement("script");
+content_messaging_script.classList.add("chromeextension");
+content_messaging_script.textContent = "(" + content_messaging.toString() + ")()";
+document.documentElement.prepend(content_messaging_script);
