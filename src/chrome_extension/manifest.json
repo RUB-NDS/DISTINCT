@@ -8,13 +8,13 @@
             "all_frames": true,
             "run_at": "document_start",
             "js": [
-                "helpers.js",
-                "detect_frame.js",
-                "detect_communication.js",
-                "detect_postmessage.js",
-                "detect_storage.js",
-                "detect_sdks.js",
-                "detect_flow.js",
+                "content_init.js",
+                "content_frame.js",
+                "content_props.js",
+                "content_pm.js",
+                "content_storage.js",
+                "content_sdk.js",
+                "content_flow.js",
                 "content_redirects.js"
             ]
         }
@@ -26,8 +26,8 @@
     ],
     "background": {
         "scripts": [
-            "disable_csp.js",
-            "pm_debugger.js"
+            "background_csp.js",
+            "background_pm.js"
         ],
         "persistent": true
     }

@@ -6,3 +6,7 @@
    - mitmproxy
    - Selenium webdriver
    - Chrome / Chromium
+
+## Versions
+
+- ChromeDriver 95.0.4638.69
