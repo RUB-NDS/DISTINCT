@@ -176,12 +176,6 @@ class ExecutionContext():
             else:
                 self.insert_frame(val["hierarchy"], new_frame)
                 self.sequencediagram.formsubmit(new_frame, val["form"])
-        
-        elif key == "formpost":
-            """ FORM POST RESPONSE TYPE
-                -> href, hierarchy, action, form
-            """
-            pass
 
         elif key == "postmessagereceived":
             """ POSTMESSAGE RECEIVED
