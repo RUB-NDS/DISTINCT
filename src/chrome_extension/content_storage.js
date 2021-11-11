@@ -1,4 +1,4 @@
-let detect_storage = () => {
+let content_storage = () => {
 
     /* BROWSER STORAGE */
 
@@ -162,10 +162,10 @@ let detect_storage = () => {
         return _put.call(this, value, ...args);
     }
 
-    console.info("detect_storage.js initialized");
+    console.info("content_storage.js initialized");
 }
 
-let detect_storage_script = document.createElement("script");
-detect_storage_script.classList.add("chromeextension");
-detect_storage_script.textContent = "(" + detect_storage.toString() + ")()";
-document.documentElement.prepend(detect_storage_script);
+let content_storage_script = document.createElement("script");
+content_storage_script.classList.add("chromeextension");
+content_storage_script.textContent = "(" + content_storage.toString() + ")()";
+document.documentElement.prepend(content_storage_script);

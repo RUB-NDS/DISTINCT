@@ -1,4 +1,4 @@
-let detect_frame = () => {
+let content_frame = () => {
 
     /* DOCUMENT */
 
@@ -49,10 +49,10 @@ let detect_frame = () => {
         }
     });
 
-    console.info("detect_frame.js initialized");
+    console.info("content_frame.js initialized");
 }
 
-let detect_frame_script = document.createElement("script");
-detect_frame_script.classList.add("chromeextension");
-detect_frame_script.textContent = "(" + detect_frame.toString() + ")()";
-document.documentElement.prepend(detect_frame_script);
+let content_frame_script = document.createElement("script");
+content_frame_script.classList.add("chromeextension");
+content_frame_script.textContent = "(" + content_frame.toString() + ")()";
+document.documentElement.prepend(content_frame_script);

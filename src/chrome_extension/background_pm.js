@@ -171,3 +171,5 @@ function extractPostMessageSource(
         });
     });
 }
+
+console.info("background_pm.js initialized");

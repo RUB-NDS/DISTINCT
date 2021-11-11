@@ -1,4 +1,4 @@
-let helpers = () => {
+let content_init = () => {
 
     /* Parse and return URL query parameters */
     function query_params() {
@@ -236,10 +236,10 @@ let helpers = () => {
     window._sso._close = window.close.bind(window);
     window._sso._closed_get = Object.getOwnPropertyDescriptor(window, "closed").get.bind(window);
 
-    console.info("helpers.js initialized");
+    console.info("content_init.js initialized");
 }
 
-let helpers_script = document.createElement("script");
-helpers_script.classList.add("chromeextension");
-helpers_script.textContent = "(" + helpers.toString() + ")()";
-document.documentElement.prepend(helpers_script);
+let content_init_script = document.createElement("script");
+content_init_script.classList.add("chromeextension");
+content_init_script.textContent = "(" + content_init.toString() + ")()";
+document.documentElement.prepend(content_init_script);

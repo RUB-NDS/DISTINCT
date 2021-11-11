@@ -1,24 +1,4 @@
-let detect_communication = () => {
-
-    /* CROSS-FRAME COMMUNICATION */
-
-    /* Report when postMessage is received */
-
-    window._sso._addEventListener("message", (e) => {
-        let receiver = _sso._hierarchy(self);
-        let sender = _sso._hierarchy(e.source);
-        let data = typeof e.data == "string" ? e.data : JSON.stringify(e.data);
-
-        _sso._event("postmessagereceived", {
-            "receiver": receiver,
-            "sender": sender,
-            "data": data,
-            "datatype": typeof data,
-            "targetorigincheck": "N/A",
-            "sourceoriginaccessed": "N/A"
-        });
-
-    });
+let content_props = () => {
 
     /* Report when properties are set on global window object */
 
@@ -63,10 +43,10 @@ let detect_communication = () => {
 
     setInterval(check_props, 500);
 
-    console.info("detect_communication.js initialized");
+    console.info("content_props.js initialized");
 }
 
-let detect_communication_script = document.createElement("script");
-detect_communication_script.classList.add("chromeextension");
-detect_communication_script.textContent = "(" + detect_communication.toString() + ")()";
-document.documentElement.prepend(detect_communication_script);
+let content_props_script = document.createElement("script");
+content_props_script.classList.add("chromeextension");
+content_props_script.textContent = "(" + content_props.toString() + ")()";
+document.documentElement.prepend(content_props_script);

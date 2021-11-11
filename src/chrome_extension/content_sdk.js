@@ -1,4 +1,4 @@
-let detect_sdks = () => {
+let content_sdk = () => {
 
     window.addEventListener("load", (e) => {
 
@@ -109,10 +109,10 @@ let detect_sdks = () => {
         return window._sso._xmlhttprequest_open.apply(this, arguments);
     };
 
-    console.info("detect_sdks.js initialized");
+    console.info("content_sdk.js initialized");
 }
 
-let detect_sdks_script = document.createElement("script");
-detect_sdks_script.classList.add("chromeextension");
-detect_sdks_script.textContent = "(" + detect_sdks.toString() + ")()";
-document.documentElement.prepend(detect_sdks_script);
+let content_sdk_script = document.createElement("script");
+content_sdk_script.classList.add("chromeextension");
+content_sdk_script.textContent = "(" + content_sdk.toString() + ")()";
+document.documentElement.prepend(content_sdk_script);

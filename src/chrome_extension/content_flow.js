@@ -1,4 +1,4 @@
-let detect_flow = () => {
+let content_flow = () => {
 
     window.addEventListener("load", (e) => {
 
@@ -138,10 +138,10 @@ let detect_flow = () => {
     HTMLFormElement.prototype._submit = HTMLFormElement.prototype.submit;
     HTMLFormElement.prototype.submit = formsubmit; // Submission with .submit() call
 
-    console.info("detect_flow.js initialized");
+    console.info("content_flow.js initialized");
 }
 
-let detect_flow_script = document.createElement("script");
-detect_flow_script.classList.add("chromeextension");
-detect_flow_script.textContent = "(" + detect_flow.toString() + ")()";
-document.documentElement.prepend(detect_flow_script);
+let content_flow_script = document.createElement("script");
+content_flow_script.classList.add("chromeextension");
+content_flow_script.textContent = "(" + content_flow.toString() + ")()";
+document.documentElement.prepend(content_flow_script);
