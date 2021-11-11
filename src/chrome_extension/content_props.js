@@ -1,11 +1,15 @@
+/**
+ * This content script monitors all properties that are set on the global window object.
+ * Each time a new property is set or an existing property is modified, it reports an event.
+ */
+
 let content_props = () => {
 
-    /* Report when properties are set on global window object */
-
+    // Ignore all properties that are set by the chrome extension
     let blacklistedprops = ["_sso"];
 
     // At this time when the extension runs, no custom properties should be set
-    // with exception of custom properties defined in the extension itself (see blacklist)
+    // with exception of custom properties defined in the extension itself
     window._sso._customprops = {};
     window._sso._defaultprops = Object.keys(window).filter((item) => {
         return !blacklistedprops.includes(item);
@@ -13,6 +17,7 @@ let content_props = () => {
 
     function check_props() {
         Object.keys(window).filter((item) => {
+            // Filter out all default and blacklisted properties
             return (!_sso._defaultprops.includes(item)) && (!blacklistedprops.includes(item));
         }).forEach((item) => {
             

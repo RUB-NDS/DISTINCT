@@ -1,9 +1,17 @@
+/**
+ * This content script contains the code that is executed first on the website.
+ * It is executed before any other extension code and before the website's code.
+ * It creates useful helper functions that are used by other content scripts.
+ * Also, it saves the "original" APIs that are overwritten in other content scripts.
+ */
+
 let content_init = () => {
 
     /* Parse and return URL query parameters */
     function query_params() {
         let params = {};
         location.search.substr(1).split("&").forEach((keyval) => {
+            if (keyval == "") return;
             let keyvalsplitted = keyval.split("=");
             let key = decodeURIComponent(keyvalsplitted[0]);
             let val = decodeURIComponent(keyvalsplitted[1]);
@@ -16,6 +24,7 @@ let content_init = () => {
     function hash_params() {
         let params = {};
         location.hash.substr(1).split("&").forEach((keyval) => {
+            if (keyval == "") return;
             let keyvalsplitted = keyval.split("=");
             let key = decodeURIComponent(keyvalsplitted[0]);
             let val = decodeURIComponent(keyvalsplitted[1]);
@@ -56,33 +65,37 @@ let content_init = () => {
         }, {});
     };
 
-    /* Get target window's hierarchy, i.e., top.popups[0].frames[0] */
+    /**
+     * Algorithm 1: Determine window hierarchy
+     * Idea: Determine the relation of the frame to the primary window.
+     * Example: "top.popups[0].frames[0]" represents the first iframe embedded on the first popup
+     * that is opened by the primary window.
+     */
     function hierarchy(target) {
 		var path = "";
-		function go_up(current) {
+        function go_up(current) {
 			if (current.parent !== current) {
-				// Which child am I?
+                // Parent is set -> I am an iframe.
+                // Which child iframe am I?
 				for (let i = 0; i < current.parent.frames.length; i++) {
 					if (current.parent.frames[i] === current) {
 						path = `frames[${i}]` + (path.length ? "." : "") + path;
 					}
 				}
 				go_up(current.parent, path);
-			} else {
-				// We reached the top
-				// If opener is set, go up in opener context
-				if (current.opener) {
-                    // Which popup am I?
-                    for (let i = 0; i < current.opener._sso._popups.length; i++) {
-                        if (current.opener._sso._popups[i] === current) {
-                            path = `popups[${i}]` + (path.length ? "." : "") + path;
-                        }
+			} else if (current.opener) {
+				// Opener is set -> I am a popup.
+                // Which child popup am I?
+                for (let i = 0; i < current.opener._sso._popups.length; i++) {
+                    if (current.opener._sso._popups[i] === current) {
+                        path = `popups[${i}]` + (path.length ? "." : "") + path;
                     }
-					go_up(current.opener, path)
-				} else {
-                    path = "top" + (path.length ? "." : "") + path;
                 }
-			}
+                go_up(current.opener, path);
+			} else {
+                // We reached the top -> we are the primary window.
+                path = "top" + (path.length ? "." : "") + path;
+            }
 		}
 		go_up(target);
 		return path;
@@ -152,6 +165,15 @@ let content_init = () => {
         // Where did this event trigger?
         val["hierarchy"] = _sso._hierarchy(self);
         val["href"] = location.href;
+        val["hrefparts"] = {
+            "protocol": location.protocol,
+            "hostname": location.hostname,
+            "port": location.port,
+            "pathname": location.pathname,
+            "query": _sso._qparams,
+            "hash": _sso._hparams,
+            "origin": location.origin
+        }
 
         // We are working with a promise
         // This allows us to either send event and don't care of whether it was

@@ -1,12 +1,16 @@
+/**
+ * This content script monitors the use of client-side storage mechanisms.
+ * Following storage mechanisms are available in Chromium:
+ *      - LocalStorage
+ *      - SessionStorage
+ *      - IndexedDB
+ *      - Cookies
+ *      - ~WebSQL~ -> the Web SQL Database specification is no longer being maintained 
+ *        and support may be dropped in future versions (https://caniuse.com/sql-storage)
+ *      - ~Trust Tokens~ -> we cannot store data in trust tokens
+ */
+
 let content_storage = () => {
-
-    /* BROWSER STORAGE */
-
-    /* LocalStorage, SessionStorage, IndexedDB, ~WebSQL~, Cookies, ~Trust Tokens~
-       - We cannot store data in trust tokens
-       - The Web SQL Database specification is no longer being maintained
-       and support may be dropped in future versions. (https://caniuse.com/sql-storage)
-     */
 
     /* Report when data is written to localStorage */
     /* LocalStorage items can be set in two different ways:

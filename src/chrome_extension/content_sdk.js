@@ -1,94 +1,79 @@
+/**
+ * This content script detects certain SSO SDKs provided by Apple, Facebook, and Google.
+ * Following SDKs are detected:
+ *      - Sign in with Apple SDK
+ *      - Sign in with Google SDK
+ *      - Google Sign-In SDK
+ *      - Google One Tap SDK
+ *      - Facebook Login SDK
+ */
+
 let content_sdk = () => {
 
-    window.addEventListener("load", (e) => {
+    /* Sign in with Apple SDK */
+    /* Docs: https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/configuring_your_webpage_for_sign_in_with_apple */
+    if (
+        location.host === "appleid.apple.com"
+        && location.pathname === "/auth/authorize"
+        && "m" in _sso._qparams
+        && "v" in _sso._qparams
+        && "frame_id" in _sso._qparams
+    ) {
+        _sso._event("result", {key: "sdk", val: "siwa"});
+        _sso._event("result", {key: "sdk-idp", val: "apple"});
+        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+    }
 
-        /* Sign in with Apple SDK */
-        /* Docs: https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/configuring_your_webpage_for_sign_in_with_apple */
-        if (
-            window.opener
-            && location.host === "appleid.apple.com"
-            && location.pathname === "/auth/authorize"
-            && "response_mode" in _sso._qparams
-            && _sso._qparams["response_mode"] === "web_message"
-            && "m" in _sso._qparams
-            && "v" in _sso._qparams
-            && "frame_id" in _sso._qparams
-        ) {
-            _sso._event("result", {key: "idp", val: "apple"});
-            _sso._event("result", {key: "sdk", val: "siwa"});
-            _sso._event("result", {key: "initiator", val: "idp"});
-            _sso._event("result", {key: "authnrequrl", val: location.href});
-        }
+    /* Facebook Login SDK */
+    /* Docs: https://developers.facebook.com/docs/facebook-login/web */
+    if (
+        window.opener
+        && location.host.endsWith("facebook.com") // www.facebook.com, web.facebook.com, ...
+        && location.pathname.endsWith("/dialog/oauth") // /v11.0/dialog/oauth
+        && "app_id" in _sso._qparams
+        && "display" in _sso._qparams
+        && _sso._qparams["display"] === "popup"
+        && "channel_url" in _sso._qparams
+    ) {
+        _sso._event("result", {key: "sdk", val: "fl"});
+        _sso._event("result", {key: "sdk-idp", val: "facebook"});
+        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+    }
 
-        /* Facebook Login SDK */
-        /* Docs: https://developers.facebook.com/docs/facebook-login/web */
-        if (
-            window.opener
-            && location.host.endsWith("facebook.com") // Found www.facebook.com and web.facebook.com
-            && location.pathname.endsWith("/dialog/oauth") // /v11.0/dialog/oauth
-            && "app_id" in _sso._qparams
-            && "display" in _sso._qparams
-            && _sso._qparams["display"] === "popup"
-            && "channel_url" in _sso._qparams
-            && "ref" in _sso._qparams
-            && _sso._qparams["ref"] === "LoginButton"
-        ) {
-            _sso._event("result", {key: "idp", val: "facebook"});
-            _sso._event("result", {key: "sdk", val: "fl"});
-            _sso._event("result", {key: "initiator", val: "idp"});
-            _sso._event("result", {key: "authnrequrl", val: location.href});
-        }
+    /* Google Sign-In SDK (Legacy) */
+    /* https://developers.google.com/identity/sign-in/web/sign-in */
+    if (
+        window.opener
+        && location.host === "accounts.google.com"
+        && location.pathname === "/o/oauth2/auth"
+        && "redirect_uri" in _sso._qparams
+        && _sso._qparams["redirect_uri"].startsWith("storagerelay://")
+    ) {
+        _sso._event("result", {key: "sdk", val: "gsi"});
+        _sso._event("result", {key: "sdk-idp", val: "google"});
+        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+    }
 
-        /* Facebook Login Button SDK */
-        /* Docs: https://developers.facebook.com/docs/facebook-login/web */
-        // if (
-        //     window.parent
-        //     && location.host.includes("facebook.com")
-        //     && location.pathname.endsWith("/plugins/login_button.php")
-        //     && "app_id" in _sso._qparams
-        //     && "channel" in _sso._qparams
-        //     && "sdk" in _sso._qparams
-        //     && _sso._qparams["sdk"] === "joey"
-        //     && "use_continue_as" in _sso._qparams
-        //     && _sso._qparams["use_continue_as"] === "true"
-        // ) {
-        // 
-        // }
-
-        /* Google Sign-In SDK (Legacy) */
-        /* https://developers.google.com/identity/sign-in/web/sign-in */
-        if (
-            window.opener
-            && location.host === "accounts.google.com"
-            && location.pathname === "/o/oauth2/auth"
-            && "redirect_uri" in _sso._qparams
-            && _sso._qparams["redirect_uri"].startsWith("storagerelay://")
-        ) {
-            _sso._event("result", {key: "idp", val: "google"});
-            _sso._event("result", {key: "sdk", val: "gsi"});
-            _sso._event("result", {key: "initiator", val: "idp"});
-            _sso._event("result", {key: "authnrequrl", val: location.href});
-        }
-
-        /* Sign in with Google Button SDK */
-        /* Docs: https://developers.google.com/identity/gsi/web/guides/personalized-button */
-        if (
-            window.opener
-            && location.host === "accounts.google.com"
-            && location.pathname === "/gsi/select"
-            && "ux_mode" in _sso._qparams
-            && "ui_mode" in _sso._qparams
-            && "channel_id" in _sso._qparams
-            && "as" in _sso._qparams
-            && "origin" in _sso._qparams
-        ) {
-            _sso._event("result", {key: "idp", val: "google"});
-            _sso._event("result", {key: "sdk", val: "siwg"});
-            _sso._event("result", {key: "initiator", val: "idp"});
-            _sso._event("result", {key: "authnrequrl", val: location.href});
-        }
-
-    });
+    /* Sign in with Google Button SDK */
+    /* Docs: https://developers.google.com/identity/gsi/web/guides/personalized-button */
+    if (
+        window.opener
+        && location.host === "accounts.google.com"
+        && location.pathname === "/gsi/select"
+        && "ux_mode" in _sso._qparams
+        && "ui_mode" in _sso._qparams
+        && "channel_id" in _sso._qparams
+        && "as" in _sso._qparams
+        && "origin" in _sso._qparams
+    ) {
+        _sso._event("result", {key: "sdk", val: "siwg"});
+        _sso._event("result", {key: "sdk-idp", val: "google"});
+        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+    }
 
     /* Google One Tap SDK */
     /* Docs: https://developers.google.com/identity/gsi/web/guides/features */
@@ -96,15 +81,15 @@ let content_sdk = () => {
     window.XMLHttpRequest.prototype.open = function open() {
         let url = arguments[1] || undefined;
         if (
-            url 
+            url
             && window.parent
             && url.startsWith("/gsi/issue")
             && url.includes("select_by=user_1ta")
         ) {
-            _sso._event("result", {key: "idp", val: "google"});
             _sso._event("result", {key: "sdk", val: "got"});
-            _sso._event("result", {key: "initiator", val: "idp"});
-            _sso._event("result", {key: "authnrequrl", val: url});
+            _sso._event("result", {key: "sdk-idp", val: "google"});
+            _sso._event("result", {key: "sdk-loginrequrl", val: url});
+            _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
         }
         return window._sso._xmlhttprequest_open.apply(this, arguments);
     };

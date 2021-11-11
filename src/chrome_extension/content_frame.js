@@ -1,32 +1,34 @@
+/**
+ * This content script reports on events related to basic frame operations.
+ * These include the reporting of different document loading stages and the handling with popups.
+ */
+
 let content_frame = () => {
 
-    /* DOCUMENT */
-
-    /* Report when this extension is executed */
+    /* Report when the document is initialized / when this extension is executed */
     _sso._event("documentinit", {});
 
-    /* Report when document finished loading */
+    /* Report the different document loading stages */
     document.onreadystatechange = () => {
         switch(document.readyState) {
             case "loading":
-                _sso._event("documentloading", {})
+                _sso._event("documentloading", {});
             case "interactive":
-                _sso._event("documentinteractive", {html: _sso._html()})
+                _sso._event("documentinteractive", {html: _sso._html()});
             case "complete":
-                _sso._event("documentcomplete", {})
+                _sso._event("documentcomplete", {});
         }
     };
 
-    /* Report when document is unloaded */
+    /* Report when the document is unloaded */
     window._sso._addEventListener("beforeunload", () => {
         _sso._event("documentbeforeunload", {});
     });
 
-    /* POPUPS */
+    /* Save popup references in list similar to window.frames */
+    window._sso._popups = [];
 
-    window._sso._popups = []; // Save popups in list similar to window.frames
-
-    /* Wrapper of window.open function */
+    /* Wrapper of window.open function: save popup references in list when opened */
     window.open = function open(...args) {
         let popup = window._sso._open(...args);
         window._sso._popups.push(popup);
@@ -34,10 +36,10 @@ let content_frame = () => {
         return popup;
     }
 
-    /* Wrapper of window.close function */
+    /* Wrapper of window.close function: report when popup is closed */
     window.close = function close(...args) {
         _sso._event("windowclose", {}).finally(() => {
-            window._sso._close(...args); // Close window once event is acknowledged
+            window._sso._close(...args); // Close window once backend acknowledges event received
         });
     }
 
