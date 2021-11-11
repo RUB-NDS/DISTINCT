@@ -1,7 +1,7 @@
-/*
-    Disable CSP header such that our requests to localhost:20200
-    do not get blocked by website's CSP policy.
-*/
+/**
+ * This background script disables the Content Security Policy header of all websites such that the
+ * POST requests to the event server (localhost:20200) are not blocked by the website's CSP policy.
+ */
 
 chrome.webRequest.onHeadersReceived.addListener((details) => {
     let headers = details.responseHeaders;
@@ -10,13 +10,13 @@ chrome.webRequest.onHeadersReceived.addListener((details) => {
             header.value = "";
         }
     }
-    return {responseHeaders: headers}
+    return {responseHeaders: headers};
 }, {
-    urls: ["*://*/*"],
+    urls: ["http://*/*", "https://*/*"],
     types: ["main_frame", "sub_frame", "object"],
 }, [
     "blocking",
     "responseHeaders"
 ]);
 
-console.info("disable_csp.js initialized");
+console.info("background_csp.js initialized");

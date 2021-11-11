@@ -13,8 +13,8 @@ let detect_flow = () => {
 
         /* Facebook AuthnReq */
         if (
-            location.host.endswith("facebook.com")
-            && location.path.endswith("/dialog/oauth")
+            location.host.endsWith("facebook.com")
+            && location.path.endsWith("/dialog/oauth")
         ) {
             _sso._event("result", {"key": "idp", "val": "facebook"});
             _sso._event("result", {"key": "authnrequrl", "val": location.href});

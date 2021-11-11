@@ -1,40 +1,55 @@
-let detect_postmessage = () => {
+/**
+ * This content script emulates the postMessage API.
+ * We use it to intercept the registration of message event listeners and for the analysis of
+ * postMessages. More specific, we get automatic access to the postMessage receiver origin check.
+ * That is, we can validate the content of the postMessage function's second parameter:
+ * 
+ * Syntax: window.postMessage(data, receiver_origin)
+ */
 
-    // Blacklist
+let content_pm = () => {
 
+    // Blacklisted origins from/to which we want to ignore postMessages
+    // Reason: Ads and analytics are agressively sending a huge amount of postMessages
+    // which we are not interested in.
+    
     window._sso._pmblacklist = [
         "safeframe.googlesyndication.com"
     ]
 
-    // Helpers
-
+    // If executed in frame X, this function sets the window._sso._source_frame property
+    // in all other frames that can be reached by frame X.
+    // This property holds a reference to frame X.
+    // If a sender sends a postMessage to a receiver, the sender executes this function to indicate
+    // that the postMessage was sent by itself.
+    
     window._sso._advertise = function() {
         function go_down(current) {
             for (let i = 0; i < current.frames.length; i++) {
                 // Child
-                current.frames[i].source_frame = window.self;
+                current.frames[i]._sso._source_frame = window.self;
                 go_down(current.frames[i]);
             }
             for (let i = 0; i < current._sso._popups.length, current._sso._popups[i] != undefined; i++) {
                 // Popup
-                current._sso._popups[i].source_frame = window.self;
+                current._sso._popups[i]._sso._source_frame = window.self;
                 go_down(current._sso._popups[i]);
             }
         }
         function go_up(current) {
             if (current.parent !== current) {
                 // Parent
-                current.parent.source_frame = window.self;
+                current.parent._sso._source_frame = window.self;
                 // Enumerate Popups
                 for (let i = 0; i < current.parent._sso._popups.length, current.parent._sso._popups[i] != undefined; i++) {
-                    current.parent._sso._popups[i].source_frame = window.self;
+                    current.parent._sso._popups[i]._sso._source_frame = window.self;
                     go_down(current.parent._sso._popups[i]);
                 }
                 // Enumerate Frames
                 for (let i = 0; i < current.parent.frames.length; i++) {
                     if (current.parent.frames[i] !== current) {
                         // Sibling
-                        current.parent.frames[i].source_frame = window.self;
+                        current.parent.frames[i]._sso._source_frame = window.self;
                         go_down(current.parent.frames[i]);
                     }
                 }
@@ -43,88 +58,33 @@ let detect_postmessage = () => {
                 // We reached the top
                 if (current.opener) {
                     // Opener
-                    current.opener.source_frame = window.self;
+                    current.opener._sso._source_frame = window.self;
                     for (let i = 0; i < current.opener._sso._popups.length, current.opener._sso._popups[i] != undefined; i++) {
-                        current.opener._sso._popups[i].source_frame = window.self;
+                        current.opener._sso._popups[i]._sso._source_frame = window.self;
                         go_down(current.opener._sso._popups[i]);
                     }
                     go_up(current.opener);
                 }
             }
         }
-        window.source_frame = window.self;
+        window._sso._source_frame = window.self;
         go_down(window);
         go_up(window);
     }
 
-    // Custom PostMessage Receiver and Callbacks
+    // PostMessage Callbacks
 
     window._sso._callbacks = [];
+    window._sso._onmessage = null;
 
-    window._sso._addEventListener("messagesent", (event) => {
-
-        // Proxy message event
-
-        const proxyhandler = {
-            get: function(target, prop, receiver) {
-                if (prop == "origin") {
-                    target._origin_accessed = true;
-                }
-                return Reflect.get(...arguments);
-            }
-        };
-        let target = event.detail.event;
-        const proxy = new Proxy(target, proxyhandler);
-
-        // Invoke message event handlers
-
-        for (let cb of window._sso._callbacks)
-            cb(proxy);
-
-        if (window._sso._onmessage)
-            window._sso._onmessage(proxy);
-
-        if (proxy._origin_accessed) {
-            event.detail.log.source_origin_accessed = "TRUE";
-        } else {
-            event.detail.log.source_origin_accessed = "FALSE";
-        }
-        
-        // Filter out messages from sources in blacklist
-        
-        for (let blacklisted of window._sso._pmblacklist) {
-            if (new URL(event.detail.log.source_origin).host.includes(blacklisted))
-                return;
-            if (new URL(event.detail.log.target_origin).host.includes(blacklisted))
-                return;
-        }
-
-        // Logging
-
-        if (event.detail.log["target_origin_check"] == "*")
-            console.warn(`[PM Callalyzer] Message sent: ${JSON.stringify(event.detail.log)}`);
-        else
-            console.info(`[PM Callalyzer] Message sent: ${JSON.stringify(event.detail.log)}`);
-
-        // Report
-
-        _sso._event("postmessagereceived", {
-            "receiver": event.detail.log.target_frame,
-            "sender": event.detail.log.source_frame,
-            "data": event.detail.log.message_payload,
-            "datatype": event.detail.log.message_type,
-            "targetorigincheck": event.detail.log.target_origin_check,
-            "sourceoriginaccessed": event.detail.log.source_origin_accessed
-        });
-
-    });
-
-    // Wrap window.onmessage and window.addEventListener function
+    // Wrappers of window.onmessage and window.addEventListener
     
     Object.defineProperties(window, {
         onmessage: {
             set: (cb) => {
-                console.info(`[PM Callalyzer] window.onmessage = ${cb ? cb.toString() : JSON.stringify(cb)}`);
+                let cbstring = cb ? cb.toString() : JSON.stringify(cb);
+                console.info(`window.onmessage = ${cbstring}`);
+                
                 window._sso._onmessage = cb;
             },
             get: () => window._sso._onmessage
@@ -133,7 +93,9 @@ let detect_postmessage = () => {
             value: (...args) => {
                 let [type, callback, options] = args;
                 if (type == "message") {
-                    console.info(`[PM Callalyzer] window.addEventListener("message", ${callback ? callback.toString() : JSON.stringify(callback)}, ${options})`);
+                    let cbstring = callback ? callback.toString() : JSON.stringify(callback);
+                    console.info(`window.addEventListener("message", ${cbstring}, ${options})`);
+                    
                     window._sso._callbacks.push(callback);
                 } else {
                     window._sso._addEventListener(...args);
@@ -144,7 +106,9 @@ let detect_postmessage = () => {
             value: (...args) => {
                 let [type, callback, options] = args;
                 if (type == "message") {
-                    console.info(`[PM Callalyzer] window.removeEventListener("message", ${callback ? callback.toString() : JSON.stringify(callback)}, ${options})`);
+                    let cbstring = callback ? callback.toString() : JSON.stringify(callback);
+                    console.info(`window.removeEventListener("message", ${cbstring}, ${options})`);
+
                     for (let i = 0; i < window._sso._callbacks.length; i++) {
                         if (window._sso._callbacks[i] === callback)
                             window._sso._callbacks.splice(i, 1);
@@ -156,12 +120,13 @@ let detect_postmessage = () => {
         }
     });
 
-    // Wrap window.postMessage function
+    // Wrapper of window.postMessage
 
     window.postMessage = function postMessage(...args) {
 
-        // Halt execution such that we get access to source information
-        debugger; // Now we can access source_frame, source_hierarchy, and source_origin variables
+        // Halt execution to get access to source information
+        debugger;
+        // Now we can access _sso._source_frame, _sso._source_hierarchy, and _sso._source_origin vars
         
         let [message, targetOrigin, transfer] = args;
 
@@ -180,41 +145,93 @@ let detect_postmessage = () => {
         let ports = [];
         if (transfer) {
             for (let item of transfer) {
-                if (item instanceof MessagePort) ports.push(item);
+                if (item instanceof MessagePort)
+                    ports.push(item);
             }
         }
 
         // Dispatch Message
 
-        let messagesent = new CustomEvent("messagesent", {
-            detail: {
-                "log": {
-                    "source_frame": source_hierarchy,
-                    "source_origin": source_origin,
-                    "target_frame": _sso._hierarchy(window),
-                    "target_origin": window.location.href,
-                    "target_origin_check": (typeof targetOrigin == "string") ? targetOrigin : JSON.stringify(targetOrigin),
-                    "message_type": message_type,
-                    "message_payload": message_string,
-                    "transfer": (transfer ? transfer.toString() : "N/A"),
-                },
-                "event": {
-                    "data": message,
-                    "origin": (new URL(source_origin)).origin,
-                    "source": source_frame,
-                    "lastEventId": "",
-                    "ports": ports
-                }
+        let pm = {
+            "log": {
+                "source_frame": _sso._source_hierarchy,
+                "source_origin": _sso._source_origin,
+                "target_frame": _sso._hierarchy(window),
+                "target_origin": window.location.href,
+                "target_origin_check": (typeof targetOrigin == "string") ? targetOrigin : JSON.stringify(targetOrigin),
+                "message_type": message_type,
+                "message_payload": message_string,
+                "transfer": (transfer ? transfer.toString() : "N/A"),
+            },
+            "event": {
+                "data": message,
+                "origin": (new URL(_sso._source_origin)).origin,
+                "source": _sso._source_frame,
+                "lastEventId": "",
+                "ports": ports
             }
+        };
+        
+        // Proxy postMessage
+
+        let proxyhandler = {
+            get: function(target, prop, receiver) {
+                if (prop == "origin") {
+                    target._origin_accessed = true;
+                }
+                return Reflect.get(...arguments);
+            }
+        };
+        let target = pm.event;
+        let proxy = new Proxy(target, proxyhandler);
+
+        // Invoke message event handlers
+
+        for (let cb of window._sso._callbacks)
+            cb(proxy);
+
+        if (window._sso._onmessage)
+            window._sso._onmessage(proxy);
+
+        if (proxy._origin_accessed) {
+            pm.log.source_origin_accessed = "yes";
+        } else {
+            pm.log.source_origin_accessed = "no";
+        }
+        
+        // Filter out postMessage from/to blacklisted origins
+        
+        for (let blacklisted of window._sso._pmblacklist) {
+            if (new URL(pm.log.source_origin).host.includes(blacklisted))
+                return;
+            if (new URL(pm.log.target_origin).host.includes(blacklisted))
+                return;
+        }
+
+        // Logging
+
+        if (pm.log["target_origin_check"] == "*")
+            console.warn(`PostMessage sent: ${JSON.stringify(pm.log)}`);
+        else
+            console.info(`PostMessage sent: ${JSON.stringify(pm.log)}`);
+
+        // Report
+
+        _sso._event("postmessagereceived", {
+            "receiver":pm.log.target_frame,
+            "sender": pm.log.source_frame,
+            "data": pm.log.message_payload,
+            "datatype": pm.log.message_type,
+            "targetorigincheck": pm.log.target_origin_check,
+            "sourceoriginaccessed": pm.log.source_origin_accessed
         });
         
-        window._sso._dispatchEvent(messagesent);
     }
 
-    console.info("detect_postmessage.js initialized");
+    console.info("content_pm.js initialized");
 }
 
-let detect_postmessage_script = document.createElement("script");
-detect_postmessage_script.classList.add("chromeextension");
-detect_postmessage_script.textContent = "(" + detect_postmessage.toString() + ")()";
-document.documentElement.prepend(detect_postmessage_script);
+let content_pm_script = document.createElement("script");
+content_pm_script.classList.add("chromeextension");
+content_pm_script.textContent = "(" + content_pm.toString() + ")()";
+document.documentElement.prepend(content_pm_script);
