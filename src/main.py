@@ -21,14 +21,11 @@ def main():
     argparser = setup_argparser()
     args = argparser.parse_args()
     
-    # Setup global config variables
+    # Setup config
     url = args.url.geturl()
     starttime = str(int(time())) # UNIX timestamp
     outputdir = setup_outputdir(args.out, args.url, starttime)
-    os.environ["URL"] = url
-    os.environ["STARTTIME"] = starttime
-    os.environ["OUTPUTDIR"] = outputdir
-    os.environ["GITVERSION"] = git_version()
+    gitversion = git_version()
 
     # Setup logger
     setup_logger(outputdir, args.verbosity)
@@ -38,7 +35,12 @@ def main():
 
     # Setup event dispatcher and handler threads
     event_dispatcher = EventDispatcher()
-    event_handler = EventHandler(event_dispatcher)
+    event_handler = EventHandler(event_dispatcher, {
+        "url": url,
+        "starttime": starttime,
+        "outputdir": outputdir,
+        "gitversion": gitversion
+    })
     event_handler.start()
     event_dispatcher.start()
 

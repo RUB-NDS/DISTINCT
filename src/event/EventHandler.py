@@ -9,18 +9,19 @@ logger = logging.getLogger(__name__)
 
 class EventHandler(Thread):
 
-    def __init__(self, event_dispatcher):
+    def __init__(self, event_dispatcher, config = {}):
         logger.info("Initializing event handler thread")
         super(EventHandler, self).__init__()
-        self.daemon = True
         
+        self.daemon = True
         self.queue = Queue()
+        self.execution_context = ExecutionContext(config)
+
         event_dispatcher.register_handler(self)
 
     def run(self):
         logger.info("Started event handler thread")
 
-        self.execution_context = ExecutionContext()
         while True:
             # Events from chrome extension:
             # {"event": {"key": "...", "val": {...}}}

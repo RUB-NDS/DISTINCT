@@ -10,17 +10,28 @@ logger = logging.getLogger(__name__)
 
 class ExecutionContext():
 
-    def __init__(self):
+    def __init__(self, config = {}):
         self.topframe = None
         
-        self.reports = {} # Results received from chrome extension (i.e., detected SDKs, ...)
-        self.history = [] # History of all events received from chrome extension
-        self.sequencediagram = SequenceDiagram(os.environ["OUTPUTDIR"]) # Events as visual representation
+        # Results received from chrome extension (i.e., detected SDKs, ...)
+        self.reports = {}
 
-        self.add_result("starttime", os.environ["STARTTIME"])
-        self.add_result("outputdir", os.environ["OUTPUTDIR"])
-        self.add_result("url", os.environ["URL"])
-        self.add_result("gitversion", os.environ["GITVERSION"])
+        # History of all events received from chrome extension
+        self.history = []
+
+        # Events as visual representation
+        self.sequencediagram = SequenceDiagram(
+            config["outputdir"] if "outputdir" in config else None
+        )
+
+        if "starttime" in config:
+            self.process_report("config-starttime", config["starttime"])
+        if "outputdir" in config:
+            self.process_report("config-outputdir", config["outputdir"])
+        if "url" in config:
+            self.process_report("config-url", config["url"])
+        if "gitversion" in config:
+            self.process_report("config-gitversion", config["gitversion"])
 
     def __str__(self):
         """ String representation of execution context is a tree hierarchy
@@ -47,7 +58,7 @@ class ExecutionContext():
         go_down(self.topframe, dump, 1)
         return dump["val"]
 
-    def add_result(self, key, val):
+    def process_report(self, key, val):
         if key not in self.reports:
             self.reports[key] = [val]
         else:
@@ -149,7 +160,7 @@ class ExecutionContext():
             """ RESULT
                 -> href, hierarchy, key, val
             """
-            self.add_result(val["key"], val["val"])
+            self.process_report(val["key"], val["val"])
         
         elif key == "event":
             """ EVENT

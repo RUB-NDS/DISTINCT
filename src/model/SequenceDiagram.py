@@ -3,15 +3,22 @@ import json
 
 class SequenceDiagram:
 
-    def __init__(self, outputdir):
+    def __init__(self, outputdir = None):
         """ Constructor """
-        self.sequencefile = f"{outputdir}/sequencediagram.txt" # setup output file
-        self.stm("@startuml") # first line to start sequence diagram
+        # Setup output file
+        if outputdir:
+            self.sequencefile = f"{outputdir}/sequencediagram.txt"
+        else:
+            self.sequencefile = None
+        
+        # First line to start sequence diagram
+        self.stm("@startuml")
 
     def stm(self, stm):
         """ Add statement to sequence diagram """
-        with open(f"{self.sequencefile}", "a+") as f:
-            f.write(stm + "\n")
+        if self.sequencefile:
+            with open(f"{self.sequencefile}", "a+") as f:
+                f.write(stm + "\n")
 
     def compile(self):
         with open(f"{self.sequencefile}", "a+") as f:
