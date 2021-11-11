@@ -21,7 +21,7 @@ class SequenceDiagram:
     @staticmethod
     def linebreaks(input: str, every: int = 200, escape: bool = False):
         """ Returns input string with linebreaks after x characters """
-        lines = input.splitlines()
+        lines = str(input).splitlines()
         newlined = []
         
         for line in lines:
@@ -42,12 +42,12 @@ class SequenceDiagram:
 
     """ Print events to sequence diagram """
 
-    def extensioninit(self, frame):
+    def documentinit(self, frame):
         self.stm(f'participant "{frame.hierarchy()}"')
         self.stm(
             f'note right of "{frame.hierarchy()}"\n'
             f'<code>\n'
-            f'Event: Extension Init\n'
+            f'Event: Document Init\n'
             f'URL: {self.linebreaks(frame.href)}\n'
             f'</code>\n'
             f'end note'

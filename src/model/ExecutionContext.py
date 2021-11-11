@@ -59,10 +59,10 @@ class ExecutionContext():
         key = event["key"]
         val = event["val"]
         
-        if key == "extensioninit":
-            """ EXTENSION INIT
-                The chrome extension is executed. Since the extension is executed
-                before any other scripts on the page, it catches the page before any
+        if key == "documentinit":
+            """ DOCUMENT INIT
+                The document is initiated. Since the extension is executed
+                before any other scripts on the page, this state catches the page before any
                 other JS redirects or similar are executed.
                 -> href, hierarchy
             """
@@ -77,7 +77,7 @@ class ExecutionContext():
             else:
                 self.insert_frame(val["hierarchy"], new_frame)
             
-            self.sequencediagram.extensioninit(new_frame)
+            self.sequencediagram.documentinit(new_frame)
 
         elif key == "documentloading":
             """ DOCUMENT LOADING

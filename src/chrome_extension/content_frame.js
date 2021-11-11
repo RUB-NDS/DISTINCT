@@ -3,7 +3,7 @@ let content_frame = () => {
     /* DOCUMENT */
 
     /* Report when this extension is executed */
-    _sso._event("extensioninit", {});
+    _sso._event("documentinit", {});
 
     /* Report when document finished loading */
     document.onreadystatechange = () => {

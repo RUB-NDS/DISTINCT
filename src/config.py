@@ -137,6 +137,7 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
     options.add_argument("--disable-site-isolation-trials") # access window.opener cross-origin
     options.add_argument(f"--user-data-dir={chromeprofile}") # cookies for idps
     options.add_argument('--disable-features=MediaRouter') # avoid "accept incoming network connections?"
+    options.add_argument("--disable-http2") # for proxy support
     options.add_argument("start-maximized") # bypass selenium detection
     options.add_experimental_option("excludeSwitches", ["enable-automation"])  # bypass selenium detection
     options.add_experimental_option("useAutomationExtension", False)  # bypass selenium detection
