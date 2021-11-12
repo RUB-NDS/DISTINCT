@@ -100,7 +100,7 @@ def setup_logger(outputdir, verbosity):
     filehandler.setFormatter(logformatter)
     rootlogger.addHandler(filehandler)
 
-def git_version():
+def code_version():
     """ Return the version of the current git checkout """
     version = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
     return version

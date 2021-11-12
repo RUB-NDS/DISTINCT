@@ -6,12 +6,12 @@ import json
 from time import time
 from selenium.common.exceptions import WebDriverException
 
-from config import setup_outputdir, setup_argparser, setup_logger, git_version
+from config import setup_outputdir, setup_argparser, setup_logger, code_version
 from config import setup_chromeprofile, setup_chromedriver
 from config import setup_proxy, set_all_cookies
 from config import terminate_proxy, store_all_cookies
-from event.EventDispatcher import EventDispatcher
-from event.EventHandler import EventHandler
+from model.EventDispatcher import EventDispatcher
+from model.EventHandler import EventHandler
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ def main():
     url = args.url.geturl()
     starttime = str(int(time())) # UNIX timestamp
     outputdir = setup_outputdir(args.out, args.url, starttime)
-    gitversion = git_version()
+    codeversion = code_version()
 
     # Setup logger
     setup_logger(outputdir, args.verbosity)
@@ -38,7 +38,7 @@ def main():
         "url": url,
         "starttime": starttime,
         "outputdir": outputdir,
-        "gitversion": gitversion
+        "codeversion": codeversion
     })
     event_handler.start()
     event_dispatcher.start()

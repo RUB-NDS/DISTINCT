@@ -11,25 +11,24 @@ class ExecutionContext():
     def __init__(self, config = {}):
         self.topframe = None
         
-        # Results received from chrome extension (i.e., detected SDKs, ...)
+        # Reports received from chrome extension (i.e., flows, SDKs, ...)
         self.reports = {}
 
         # History of all events received from chrome extension
         self.history = []
 
         # Events as visual representation
-        self.sequencediagram = SequenceDiagram(
-            config["outputdir"] if "outputdir" in config else None
-        )
+        outputdir = config["outputdir"] if "outputdir" in config else None
+        self.sequencediagram = SequenceDiagram(outputdir)
 
         if "starttime" in config:
-            self.process_report("config-starttime", config["starttime"])
+            self.process_report("starttime", config["starttime"])
         if "outputdir" in config:
-            self.process_report("config-outputdir", config["outputdir"])
+            self.process_report("outputdir", config["outputdir"])
         if "url" in config:
-            self.process_report("config-url", config["url"])
-        if "gitversion" in config:
-            self.process_report("config-gitversion", config["gitversion"])
+            self.process_report("url", config["url"])
+        if "codeversion" in config:
+            self.process_report("codeversion", config["codeversion"])
 
     def __str__(self):
         """ String representation of execution context is a tree hierarchy

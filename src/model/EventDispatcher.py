@@ -4,7 +4,7 @@ import time
 from threading import Thread
 from http.server import HTTPServer
 
-from event.EventServerHandler import EventServerHandler
+from model.EventServerHandler import EventServerHandler
 
 logger = logging.getLogger(__name__)
 
