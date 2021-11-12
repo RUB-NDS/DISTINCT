@@ -23,8 +23,7 @@ class EventHandler(Thread):
         logger.info("Started event handler thread")
 
         while True:
-            # Events from chrome extension:
-            # {"event": {"key": "...", "val": {...}}}
+            # {"event": {"id": 0, "key": "...", "val": ...}}
             event = self.queue.get()
             logger.debug(f"Dispatch event: {event}")
 

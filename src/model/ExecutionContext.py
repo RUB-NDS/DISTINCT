@@ -45,7 +45,7 @@ class ExecutionContext():
         
         dump = {"val": "top"}
         def go_down(current, dump, indent):
-            for i in range(0, len(current.frames)):
+            for i in current.frames.keys():
                 dump["val"] += "\n{}-> frames[{}]".format('\t'*indent, i)
                 go_down(current.frames[i], dump, indent+1)
             for i in current.popups.keys():
@@ -66,6 +66,7 @@ class ExecutionContext():
     def process_event(self, event):
         self.history.append({"timestamp": str(time.time()), "event": event})
         
+        id = event["id"]
         key = event["key"]
         val = event["val"]
         
@@ -78,7 +79,11 @@ class ExecutionContext():
             """
             frame = Frame(href=val["href"])
             new_frame = self.insert_frame(val["hierarchy"], frame)
-            self.sequencediagram.documentinit(new_frame)
+            
+            self.sequencediagram.documentinit(
+                val["hierarchy"],
+                val["href"]
+            )
 
         elif key == "documentloading":
             """ DOCUMENT LOADING
@@ -95,7 +100,12 @@ class ExecutionContext():
             """
             frame = Frame(href=val["href"], html=val["html"])
             new_frame = self.insert_frame(val["hierarchy"], frame)
-            self.sequencediagram.documentinteractive(new_frame)
+            
+            self.sequencediagram.documentinteractive(
+                val["hierarchy"],
+                val["href"],
+                val["html"]
+            )
 
         elif key == "documentcomplete":
             """ DOCUMENT COMPLETED
@@ -111,7 +121,9 @@ class ExecutionContext():
             """
             frame = self.get_frame(val["hierarchy"])
             if frame:
-                self.sequencediagram.documentbeforeunload(frame)
+                self.sequencediagram.documentbeforeunload(
+                    val["hierarchy"]
+                )
                 self.remove_frame(val["hierarchy"])
             
         elif key == "windowopen":
@@ -120,22 +132,29 @@ class ExecutionContext():
             """
             frame = Frame(href=val["url"])
             new_frame = self.insert_frame(val["popup_hierarchy"], frame)
-            self.sequencediagram.windowopen(new_frame)
+            
+            self.sequencediagram.windowopen(
+                val["popup_hierarchy"],
+                val["hierarchy"],
+                val["url"]
+            )
         
         elif key == "windowclose":
             """ POPUP CLOSED
-                -> href, hierarchy
+                -> href, hierarchy, opener_hierarchy
             """
             old_frame = self.get_frame(val["hierarchy"])
             if old_frame:
-                self.sequencediagram.windowclose(old_frame)
+                self.sequencediagram.windowclose(
+                    val["hierarchy"],
+                    val["opener_hierarchy"]
+                )
                 self.remove_frame(val["hierarchy"])
 
         elif key == "dumpframe":
             """ FRAME DUMPED
                 -> href, hierarchy, html
             """
-            # self.sequencediagram.dumpframe(val["hierarchy"], val["html"])
             pass
         
         elif key == "result":
@@ -143,19 +162,19 @@ class ExecutionContext():
                 -> href, hierarchy, key, val
             """
             self.process_report(val["key"], val["val"])
-        
-        elif key == "event":
-            """ EVENT
-                -> href, hierarchy, event
-            """
-            pass
 
         elif key == "httpredirect":
             """ HTTP REDIRECT
                 -> href, hierarchy, status_code, location
             """
             frame = self.get_frame(val["hierarchy"])
-            self.sequencediagram.httpredirect(frame, val["status_code"], val["location"])
+            
+            self.sequencediagram.httpredirect(
+                val["hierarchy"],
+                val["href"],
+                val["status_code"],
+                val["location"]
+            )
         
         elif key == "formsubmit":
             """ FORM SUBMITTED
@@ -163,7 +182,12 @@ class ExecutionContext():
             """
             frame = Frame(href=val["action"])
             new_frame = self.insert_frame(val["hierarchy"], frame)
-            self.sequencediagram.formsubmit(new_frame, val["form"])
+            
+            self.sequencediagram.formsubmit(
+                val["hierarchy"],
+                val["action"],
+                val["form"]
+            )
 
         elif key == "postmessagereceived":
             """ POSTMESSAGE RECEIVED

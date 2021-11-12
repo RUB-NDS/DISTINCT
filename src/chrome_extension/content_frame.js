@@ -38,7 +38,7 @@ let content_frame = () => {
 
     /* Wrapper of window.close function: report when popup is closed */
     window.close = function close(...args) {
-        _sso._event("windowclose", {}).finally(() => {
+        _sso._event("windowclose", {opener_hierarchy: _sso._hierarchy(opener)}).finally(() => {
             window._sso._close(...args); // Close window once backend acknowledges event received
         });
     }

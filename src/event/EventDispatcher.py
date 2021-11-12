@@ -14,6 +14,7 @@ class EventDispatcher(Thread):
         super(EventDispatcher, self).__init__()
         self.daemon = True
 
+        self.event_ctr = 0
         self.registered_handlers = []
     
     def run(self):
@@ -29,5 +30,12 @@ class EventDispatcher(Thread):
         self.registered_handlers.append(thread)
     
     def dispatch_event(self, event):
+        # event = {"event": {"key": "...", "val": ...}}
+        
+        # Each event gets a unique id
+        event["event"]["id"] = self.event_ctr
+        self.event_ctr += 1
+        
+        # Add event to the event handler's queues
         for thread in self.registered_handlers:
             thread.queue_event(event)

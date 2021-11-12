@@ -21,6 +21,7 @@ class SequenceDiagram:
                 f.write(stm + "\n")
 
     def compile(self):
+        """ Compile sequence diagram to SVG """
         with open(f"{self.sequencefile}", "a+") as f:
             f.write("@enduml") # last line to end sequence diagram
         os.system(f"java -jar ../tools/plantuml.jar -svg {self.sequencefile}")
@@ -47,62 +48,62 @@ class SequenceDiagram:
         else:
             return "\n".join(newlined) # do not escape line breaks
 
-    """ Print events to sequence diagram """
+    """ Events """
 
-    def documentinit(self, frame):
-        self.stm(f'participant "{frame.hierarchy()}"')
+    def documentinit(self, hierarchy, href):
+        self.stm(f'participant "{hierarchy}"')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Document Init\n'
-            f'URL: {self.linebreaks(frame.href)}\n'
+            f'URL: {self.linebreaks(href)}\n'
             f'</code>\n'
             f'end note'
         )
 
-    def documentinteractive(self, frame):
-        self.stm(f'participant "{frame.hierarchy()}"')
+    def documentinteractive(self, hierarchy, href, html):
+        self.stm(f'participant "{hierarchy}"')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Document Interactive\n'
-            f'URL: {self.linebreaks(frame.href)}\n'
+            f'URL: {self.linebreaks(href)}\n'
             f'HTML:\n'
-            f'{self.linebreaks(frame.html, every=500)}\n'
+            f'{self.linebreaks(html, every=500)}\n'
             f'</code>\n'
             f'end note'
         )
 
-    def documentbeforeunload(self, frame):
-        self.stm(f'participant "{frame.hierarchy()}"')
+    def documentbeforeunload(self, hierarchy):
+        self.stm(f'participant "{hierarchy}"')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Document Before Unload\n'
             f'</code>\n'
             f'end note'
         )
 
-    def httpredirect(self, frame, status_code, location):
-        self.stm(f'participant "{frame.hierarchy()}"')
+    def httpredirect(self, hierarchy, href, status_code, location):
+        self.stm(f'participant "{hierarchy}"')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: HTTP Redirect\n'
             f'Status Code: {status_code}\n'
-            f'Source: {self.linebreaks(frame.href)}\n'
+            f'Source: {self.linebreaks(href)}\n'
             f'Location: {self.linebreaks(location)}\n'
             f'</code>\n'
             f'end note'
         )
 
-    def formsubmit(self, frame, formbody):
-        self.stm(f'participant "{frame.hierarchy()}"')
+    def formsubmit(self, hierarchy, href, formbody):
+        self.stm(f'participant "{hierarchy}"')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Form Submit\n'
-            f'URL: {self.linebreaks(frame.href)}\n'
+            f'URL: {self.linebreaks(href)}\n'
             f'Body: {self.linebreaks(json.dumps(formbody))}\n'
             f'</code>\n'
             f'end note'
@@ -120,30 +121,30 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def windowopen(self, frame):
-        self.stm(f'participant "{frame.hierarchy()}"')
-        self.stm(f'participant "{frame.opener.hierarchy()}"')
-        self.stm(f'"{frame.opener.hierarchy()}" -> "{frame.hierarchy()}": window.open()')
+    def windowopen(self, hierarchy, opener_hierarchy, url):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(f'participant "{opener_hierarchy}"')
+        self.stm(f'"{opener_hierarchy}" -> "{hierarchy}": window.open()')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Window Open\n'
-            f'URL: {self.linebreaks(frame.href)}\n'
+            f'URL: {self.linebreaks(url)}\n'
             f'</code>\n'
             f'end note'
         )
 
-    def windowclose(self, frame):
-        self.stm(f'participant "{frame.hierarchy()}"')
-        self.stm(f'participant "{frame.opener.hierarchy()}"')
+    def windowclose(self, hierarchy, opener_hierarchy):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(f'participant "{opener_hierarchy}"')
         self.stm(
-            f'note right of "{frame.hierarchy()}"\n'
+            f'note right of "{hierarchy}"\n'
             f'<code>\n'
             f'Event: Window Close\n'
             f'</code>\n'
             f'end note'
         )
-        self.stm(f'"{frame.hierarchy()}" -> "{frame.opener.hierarchy()}": window.close()')
+        self.stm(f'"{hierarchy}" -> "{opener_hierarchy}": window.close()')
 
     def postmessagereceived(self, receiver, sender, data, datatype, targetorigincheck):
         self.stm(f'participant "{receiver}"')
