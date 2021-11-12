@@ -23,7 +23,7 @@ class SequenceDiagram:
     def compile(self):
         with open(f"{self.sequencefile}", "a+") as f:
             f.write("@enduml") # last line to end sequence diagram
-        os.system(f"java -jar ../plantuml/plantuml.jar -svg {self.sequencefile}")
+        os.system(f"java -jar ../tools/plantuml.jar -svg {self.sequencefile}")
 
     @staticmethod
     def linebreaks(input: str, every: int = 200, escape: bool = False):

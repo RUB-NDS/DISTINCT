@@ -3,12 +3,11 @@ import argparse
 import os
 import subprocess
 import json
+import urllib.parse
 
 from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium_stealth import stealth
-
-from helpers import file_path, dir_path, parsed_url
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +49,24 @@ def setup_argparser():
         help="set port of proxy"
     )
     return parser
+
+def file_path(string):
+    """ Check if file exists and return absolute path """
+    if os.path.isfile(string):
+        return os.path.abspath(string)
+    else:
+        raise FileNotFoundError(string)
+
+def dir_path(string):
+    """ Check if directory exists and return absolute path """
+    if os.path.isdir(string):
+        return os.path.abspath(string)
+    else:
+        raise NotADirectoryError(string)
+
+def parsed_url(url):
+    """ Return parsed URL """
+    return urllib.parse.urlparse(url)
 
 """ Logging and Output """
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import logging
-import os
 import json
 
 from time import time
@@ -48,26 +47,34 @@ def main():
     chromeprofile = setup_chromeprofile(outputdir)
 
     # Setup chromedriver
-    driver = setup_chromedriver(chromeprofile, args.port_proxy, args.chromium_path, args.webdriver_path)
+    driver = setup_chromedriver(
+        chromeprofile,
+        args.port_proxy,
+        args.chromium_path,
+        args.webdriver_path
+    )
 
     # Setup cookies
     if args.cookie_file:
         set_all_cookies(driver, args.cookie_file)
 
     # Load URL
-    print(f"[+] Website: {url}")
     logger.info(f"URL: {url}")
+    print(f"[+] URL: {url}")
     try:
         driver.get(url)
     except WebDriverException as e:
         logger.exception(e)
+        print(e)
+    else:
+        # Wait for user to log in with SSO
+        input("[+] Log in with Single Sign-On and press ENTER once logged in")
     
-    # Wait for user to log in with SSO
-    input("[+] Log in with Single Sign-On and press ENTER once logged in")
-    
+    print("[+] Shutting down ...")
+
     # Terminate the proxy
     terminate_proxy(proxy)
-    
+
     # Store all browser cookies in file
     store_all_cookies(driver, outputdir)
 
@@ -81,7 +88,7 @@ def main():
     reportfile = f"{outputdir}/report.json"
     with open(reportfile, "w+") as f:
         json.dump(event_handler.execution_context.reports, f)
-        logger.info(f"Saved event results: {reportfile}")
+        logger.info(f"Saved event reports: {reportfile}")
 
     # Compile plantuml sequence diagram to svg
     event_handler.execution_context.sequencediagram.compile()
