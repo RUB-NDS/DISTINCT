@@ -147,13 +147,13 @@ class TestExecutionContext(unittest.TestCase):
         ctx.remove_frame("top.popups[1].frames[0]") # frame 2 should be deleted
         ctx.remove_frame("top.frames[1]") # frame 5 should be deleted
 
-        self.assertListEqual(ctx.topframe.popups[0].frames, [])
+        self.assertEqual(ctx.topframe.popups[0].frames, {})
         
-        self.assertListEqual(ctx.topframe.popups[1].frames, [frame3])
+        self.assertEqual(ctx.topframe.popups[1].frames, {0: frame3})
         self.assertEqual(ctx.topframe.popups[1].frames[0], frame3)
         self.assertEqual(ctx.topframe.popups[1].frames[0].hierarchy(), "top.popups[1].frames[0]")
 
-        self.assertListEqual(ctx.topframe.frames, [frame4, frame6])
+        self.assertEqual(ctx.topframe.frames, {0: frame4, 1: frame6})
 
         ctx.remove_frame("top.popups[0]")
         self.assertEqual(ctx.topframe.popups[0].closed, True)

@@ -1,7 +1,6 @@
 import re
 import time
 import logging
-import os
 
 from model.Frame import Frame
 from model.SequenceDiagram import SequenceDiagram
@@ -277,7 +276,7 @@ class ExecutionContext():
                 frame_idx = int(frames.group(1))
                 try:
                     current = current.frames[frame_idx]
-                except IndexError as e:
+                except KeyError as e:
                     return None
             elif popups:
                 popup_idx = int(popups.group(1))
@@ -291,12 +290,12 @@ class ExecutionContext():
         popups = re.search("popups\[(\d)+\]", last)
 
         if last == "top":
-            return self.topframe # This is our topframe
+            return self.topframe
         elif frames:
             frame_idx = int(frames.group(1))
             try:
                 return current.frames[frame_idx]
-            except IndexError as e:
+            except KeyError as e:
                 return None
         elif popups:
             popup_idx = int(popups.group(1))
@@ -330,7 +329,7 @@ class ExecutionContext():
                 frame_idx = int(frames.group(1))
                 try:
                     current = current.frames[frame_idx]
-                except IndexError as e:
+                except KeyError as e:
                     # Create intermediate iframe
                     logger.debug(
                         f""" Creating new intermediate iframe with index {frame_idx}
@@ -339,13 +338,7 @@ class ExecutionContext():
                     inter_frame = Frame()
                     inter_frame.parent = current
                     inter_frame.opener = None
-                    idx = current.insert_frame(inter_frame)
-                    if idx != frame_idx:
-                        logger.error(
-                            f""" New iframe was inserted at index {idx} but expected
-                            to be inserted at index {frame_idx} in frame '{current.hierarchy()}'"""
-                        )
-                        return None
+                    idx = current.insert_iframe(frame_idx, inter_frame)
                     current = current.frames[frame_idx]
             elif popups:
                 popup_idx = int(popups.group(1))
@@ -361,12 +354,6 @@ class ExecutionContext():
                     inter_frame.parent = None
                     inter_frame.opener = current
                     idx = current.insert_popup(popup_idx, inter_frame)
-                    if idx != popup_idx:
-                        logger.error(
-                            f""" New popup was inserted at index {idx} but expected
-                            to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
-                        )
-                        return None
                     current = current.popups[popup_idx]
             elif path[i] == "top" and current == None:
                 # Create topframe
@@ -385,29 +372,12 @@ class ExecutionContext():
             frame_idx = int(frames.group(1))
             frame.parent = current
             frame.opener = None
-            if frame_idx < len(current.frames):
-                # Update frame
-                idx = current.update_frame(frame_idx, frame)
-            else:
-                # Append frame
-                idx = current.insert_frame(frame)
-            if idx != frame_idx:
-                logger.error(
-                    f""" New iframe was inserted at index {idx} but expected
-                    to be inserted at index {frame_idx} in frame '{current.hierarchy()}'"""
-                )
-                return None
+            current.insert_iframe(frame_idx, frame)
         elif popups:
             popup_idx = int(popups.group(1))
             frame.parent = None
             frame.opener = current
-            idx = current.insert_popup(popup_idx, frame) # popups are dict -> overwrite
-            if idx != popup_idx:
-                logger.error(
-                    f""" New popup was inserted at index {idx} but expected
-                    to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
-                )
-                return None
+            current.insert_popup(popup_idx, frame)
         elif last == "top" and not self.topframe:
             self.topframe = frame
 
@@ -429,7 +399,7 @@ class ExecutionContext():
                 frame_idx = int(frames.group(1))
                 try:
                     current = current.frames[frame_idx]
-                except IndexError as e:
+                except KeyError as e:
                     logger.warning(f"""
                         Failed to remove frame '{hierarchy}' 
                         because frame '{current.hierarchy()}'
@@ -453,12 +423,14 @@ class ExecutionContext():
         popups = re.search("popups\[(\d)+\]", last)
 
         if last == "top":
-            self.topframe = None # This is our topframe
+            self.topframe = None
         elif frames:
             frame_idx = int(frames.group(1))
-            current.delete_frame(frame_idx)
+            if frame_idx in current.frames:
+                current.delete_iframe(frame_idx)
         elif popups:
             popup_idx = int(popups.group(1))
-            current.delete_popup(popup_idx)
+            if popup_idx in current.popups:
+                current.delete_popup(popup_idx)
 
         return True
