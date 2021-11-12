@@ -78,16 +78,7 @@ class ExecutionContext():
                 -> href, hierarchy
             """
             new_frame = Frame(href=val["href"])
-           
-            # If frame already exists, just update its properties
-            # but keep it in hierarchy tree with references to parents and children
-            old_frame = self.get_frame(val["hierarchy"])
-            if old_frame:
-                self.update_frame(old_frame, new_frame)
-                new_frame = old_frame
-            else:
-                self.insert_frame(val["hierarchy"], new_frame)
-            
+            self.insert_frame(val["hierarchy"], new_frame)
             self.sequencediagram.documentinit(new_frame)
 
         elif key == "documentloading":
@@ -104,16 +95,7 @@ class ExecutionContext():
                 -> href, hierarchy, html
             """
             new_frame = Frame(href=val["href"], html=val["html"])
-           
-            # If frame already exists, just update its properties
-            # but keep it in hierarchy tree with references to parents and children
-            old_frame = self.get_frame(val["hierarchy"])
-            if old_frame:
-                self.update_frame(old_frame, new_frame)
-                new_frame = old_frame
-            else:
-                self.insert_frame(val["hierarchy"], new_frame)
-            
+            self.insert_frame(val["hierarchy"], new_frame)
             self.sequencediagram.documentinteractive(new_frame)
 
         elif key == "documentcomplete":
@@ -334,6 +316,13 @@ class ExecutionContext():
             Returns True, if frame inserted successfully
             Returns False, if frame not inserted successfully
         """
+        # If frame already exists, just update its properties
+        # but keep it in hierarchy tree with references to parents and children
+        old_frame = self.get_frame(hierarchy)
+        if old_frame:
+            self.update_frame(old_frame, frame)
+            return True
+
         path = hierarchy.split(".")
 
         current = self.topframe

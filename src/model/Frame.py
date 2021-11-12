@@ -7,7 +7,7 @@ class Frame():
         self.parent = None
         self.opener = None
 
-        self.popups = {} # {0: Frame, 1: Frame, ...} -> ._popups[0], ._popups[1]
+        self.popups = {} # {0: Frame, 1: Frame, ...} -> ._sso._popups[0], ._sso._popups[1]
         self.frames = [] # [Frame, Frame, ...] -> .frames[0], .frames[1]
 
         self.closed = False
@@ -16,25 +16,24 @@ class Frame():
         return self.hierarchy()
 
     def hierarchy(self):
+        """ Algorithm 1: Determine frame hierarchy """
         path = {"val": ""}
         def go_up(current, path):
             if current.parent:
-                # Which child am I
+                # I am an iframe. -> Which child iframe am I?
                 for i in range(0, len(current.parent.frames)):
                     if current.parent.frames[i] == current:
                         path["val"] = f"frames[{i}]" + ("." if len(path["val"]) else "") + path["val"]
                 go_up(current.parent, path)
+            elif current.opener:
+                # I am a popup. -> Which popup am I?
+                for i in range(0, len(current.opener.popups)):
+                    if current.opener.popups[i] == current:
+                        path["val"] = f"popups[{i}]" + ("." if len(path["val"]) else "") + path["val"]
+                go_up(current.opener, path)
             else:
-                # We reached the top
-                # If opener is set, go up in opener context
-                if current.opener:
-                    # Which popup am I?
-                    for i in range(0, len(current.opener.popups)):
-                        if current.opener.popups[i] == current:
-                            path["val"] = f"popups[{i}]" + ("." if len(path["val"]) else "") + path["val"]
-                    go_up(current.opener, path)
-                else:
-                    path["val"] = "top" + ("." if len(path["val"]) else "") + path["val"]
+                # I am the primary window.
+                path["val"] = "top" + ("." if len(path["val"]) else "") + path["val"]
         go_up(self, path)
         return path["val"]
 
