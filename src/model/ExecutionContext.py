@@ -157,7 +157,7 @@ class ExecutionContext():
             """
             pass
         
-        elif key == "result":
+        elif key == "report":
             """ RESULT
                 -> href, hierarchy, key, val
             """

@@ -15,16 +15,16 @@ let content_flow = () => {
         && "redirect_uri" in _sso._qparams
         && "response_type" in _sso._qparams
     ) {
-        _sso._event("result", {"key": "idp", "val": "apple"});
-        _sso._event("result", {"key": "loginrequrl", "val": location.href});
-        _sso._event("result", {"key": "loginreqframe", "val": _sso._hierarchy(window)});
+        _sso._event("report", {"key": "idp", "val": "apple"});
+        _sso._event("report", {"key": "loginrequrl", "val": location.href});
+        _sso._event("report", {"key": "loginreqframe", "val": _sso._hierarchy(window)});
 
         if (window.parent === self && window.opener == null) {
-            _sso._event("result", {"key": "flow", "val": "textbook"});
+            _sso._event("report", {"key": "flow", "val": "textbook"});
         } else if (window.opener) {
-            _sso._event("result", {"key": "flow", "val": "popup"});
+            _sso._event("report", {"key": "flow", "val": "popup"});
         } else if (window.parent !== self) {
-            _sso._event("result", {"key": "flow", "val": "iframe"});
+            _sso._event("report", {"key": "flow", "val": "iframe"});
         }
     }
 
@@ -35,16 +35,16 @@ let content_flow = () => {
         && location.pathname.endsWith("/dialog/oauth") // /v11.0/dialog/oauth
         && ("client_id" in _sso._qparams || "app_id" in _sso._qparams)
     ) {
-        _sso._event("result", {"key": "idp", "val": "facebook"});
-        _sso._event("result", {"key": "loginrequrl", "val": location.href});
-        _sso._event("result", {"key": "loginreqframe", "val": _sso._hierarchy(window)});
+        _sso._event("report", {"key": "idp", "val": "facebook"});
+        _sso._event("report", {"key": "loginrequrl", "val": location.href});
+        _sso._event("report", {"key": "loginreqframe", "val": _sso._hierarchy(window)});
 
         if (window.parent === self && window.opener == null) {
-            _sso._event("result", {"key": "flow", "val": "textbook"});
+            _sso._event("report", {"key": "flow", "val": "textbook"});
         } else if (window.opener) {
-            _sso._event("result", {"key": "flow", "val": "popup"});
+            _sso._event("report", {"key": "flow", "val": "popup"});
         } else if (window.parent !== self) {
-            _sso._event("result", {"key": "flow", "val": "iframe"});
+            _sso._event("report", {"key": "flow", "val": "iframe"});
         }
     }
 
@@ -57,16 +57,16 @@ let content_flow = () => {
         && "redirect_uri" in _sso._qparams
         && "response_type" in _sso._qparams
     ) {
-        _sso._event("result", {"key": "idp", "val": "google"});
-        _sso._event("result", {"key": "loginrequrl", "val": location.href});
-        _sso._event("result", {"key": "loginreqframe", "val": _sso._hierarchy(window)});
+        _sso._event("report", {"key": "idp", "val": "google"});
+        _sso._event("report", {"key": "loginrequrl", "val": location.href});
+        _sso._event("report", {"key": "loginreqframe", "val": _sso._hierarchy(window)});
 
         if (window.parent === self && window.opener == null) {
-            _sso._event("result", {"key": "flow", "val": "textbook"});
+            _sso._event("report", {"key": "flow", "val": "textbook"});
         } else if (window.opener) {
-            _sso._event("result", {"key": "flow", "val": "popup"});
+            _sso._event("report", {"key": "flow", "val": "popup"});
         } else if (window.parent !== self) {
-            _sso._event("result", {"key": "flow", "val": "iframe"});
+            _sso._event("report", {"key": "flow", "val": "iframe"});
         }
     }
 
@@ -82,9 +82,9 @@ let content_flow = () => {
         || "id_token" in _sso._hparams
         // state is optional
     ) {
-        _sso._event("result", {"key": "loginrespurl", "val": location.href});
-        _sso._event("result", {"key": "loginrespframe", "val": _sso._hierarchy(window)});
-        _sso._event("result", {"key": "loginresptype", "val": "GET"});
+        _sso._event("report", {"key": "loginrespurl", "val": location.href});
+        _sso._event("report", {"key": "loginrespframe", "val": _sso._hierarchy(window)});
+        _sso._event("report", {"key": "loginresptype", "val": "GET"});
 
         if (window.opener) {
             _sso._event("dumpframe", {html: _sso._html()});
@@ -105,9 +105,9 @@ let content_flow = () => {
             || Object.keys(jsonform).includes("access_token")
             || Object.keys(jsonform).includes("id_token")
         ) {
-            _sso._event("result", {"key": "loginrespurl", "val": target.action});
-            _sso._event("result", {"key": "loginrespframe", "val": _sso._hierarchy(window)});
-            _sso._event("result", {"key": "loginresptype", "val": "POST"});
+            _sso._event("report", {"key": "loginrespurl", "val": target.action});
+            _sso._event("report", {"key": "loginrespframe", "val": _sso._hierarchy(window)});
+            _sso._event("report", {"key": "loginresptype", "val": "POST"});
         }
 
         target._submit();

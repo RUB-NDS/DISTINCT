@@ -19,10 +19,10 @@ let content_sdk = () => {
         && "v" in _sso._qparams
         && "frame_id" in _sso._qparams
     ) {
-        _sso._event("result", {key: "sdk", val: "siwa"});
-        _sso._event("result", {key: "sdk-idp", val: "apple"});
-        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
-        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+        _sso._event("report", {key: "sdk", val: "siwa"});
+        _sso._event("report", {key: "sdk-idp", val: "apple"});
+        _sso._event("report", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("report", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
     }
 
     /* Facebook Login SDK */
@@ -36,10 +36,10 @@ let content_sdk = () => {
         && _sso._qparams["display"] === "popup"
         && "channel_url" in _sso._qparams
     ) {
-        _sso._event("result", {key: "sdk", val: "fl"});
-        _sso._event("result", {key: "sdk-idp", val: "facebook"});
-        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
-        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+        _sso._event("report", {key: "sdk", val: "fl"});
+        _sso._event("report", {key: "sdk-idp", val: "facebook"});
+        _sso._event("report", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("report", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
     }
 
     /* Google Sign-In SDK (Legacy) */
@@ -51,10 +51,10 @@ let content_sdk = () => {
         && "redirect_uri" in _sso._qparams
         && _sso._qparams["redirect_uri"].startsWith("storagerelay://")
     ) {
-        _sso._event("result", {key: "sdk", val: "gsi"});
-        _sso._event("result", {key: "sdk-idp", val: "google"});
-        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
-        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+        _sso._event("report", {key: "sdk", val: "gsi"});
+        _sso._event("report", {key: "sdk-idp", val: "google"});
+        _sso._event("report", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("report", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
     }
 
     /* Sign in with Google Button SDK */
@@ -69,10 +69,10 @@ let content_sdk = () => {
         && "as" in _sso._qparams
         && "origin" in _sso._qparams
     ) {
-        _sso._event("result", {key: "sdk", val: "siwg"});
-        _sso._event("result", {key: "sdk-idp", val: "google"});
-        _sso._event("result", {key: "sdk-loginrequrl", val: location.href});
-        _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+        _sso._event("report", {key: "sdk", val: "siwg"});
+        _sso._event("report", {key: "sdk-idp", val: "google"});
+        _sso._event("report", {key: "sdk-loginrequrl", val: location.href});
+        _sso._event("report", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
     }
 
     /* Google One Tap SDK */
@@ -86,10 +86,10 @@ let content_sdk = () => {
             && url.startsWith("/gsi/issue")
             && url.includes("select_by=user_1ta")
         ) {
-            _sso._event("result", {key: "sdk", val: "got"});
-            _sso._event("result", {key: "sdk-idp", val: "google"});
-            _sso._event("result", {key: "sdk-loginrequrl", val: url});
-            _sso._event("result", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
+            _sso._event("report", {key: "sdk", val: "got"});
+            _sso._event("report", {key: "sdk-idp", val: "google"});
+            _sso._event("report", {key: "sdk-loginrequrl", val: url});
+            _sso._event("report", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
         }
         return window._sso._xmlhttprequest_open.apply(this, arguments);
     };
