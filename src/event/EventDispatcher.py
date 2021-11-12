@@ -1,4 +1,5 @@
 import logging
+import time
 
 from threading import Thread
 from http.server import HTTPServer
@@ -35,6 +36,9 @@ class EventDispatcher(Thread):
         # Each event gets a unique id
         event["event"]["id"] = self.event_ctr
         self.event_ctr += 1
+
+        # Each event gets a timestamp
+        event["event"]["timestamp"] = str(time.time())
         
         # Add event to the event handler's queues
         for thread in self.registered_handlers:

@@ -1,5 +1,4 @@
 import re
-import time
 import logging
 
 from model.Frame import Frame
@@ -64,7 +63,7 @@ class ExecutionContext():
             self.reports[key].append(val)
 
     def process_event(self, event):
-        self.history.append({"timestamp": str(time.time()), "event": event})
+        self.history.append(event)
         
         id = event["id"]
         key = event["key"]
