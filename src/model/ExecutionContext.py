@@ -77,8 +77,8 @@ class ExecutionContext():
                 other JS redirects or similar are executed.
                 -> href, hierarchy
             """
-            new_frame = Frame(href=val["href"])
-            self.insert_frame(val["hierarchy"], new_frame)
+            frame = Frame(href=val["href"])
+            new_frame = self.insert_frame(val["hierarchy"], frame)
             self.sequencediagram.documentinit(new_frame)
 
         elif key == "documentloading":
@@ -94,8 +94,8 @@ class ExecutionContext():
                 But sub-resources such as scripts and frames are still loading.
                 -> href, hierarchy, html
             """
-            new_frame = Frame(href=val["href"], html=val["html"])
-            self.insert_frame(val["hierarchy"], new_frame)
+            frame = Frame(href=val["href"], html=val["html"])
+            new_frame = self.insert_frame(val["hierarchy"], frame)
             self.sequencediagram.documentinteractive(new_frame)
 
         elif key == "documentcomplete":
@@ -119,8 +119,8 @@ class ExecutionContext():
             """ POPUP OPENED
                 -> href, hierarchy, url, popup_hierarchy
             """
-            new_frame = Frame(href=val["url"])
-            self.insert_frame(val["popup_hierarchy"], new_frame)
+            frame = Frame(href=val["url"])
+            new_frame = self.insert_frame(val["popup_hierarchy"], frame)
             self.sequencediagram.windowopen(new_frame)
         
         elif key == "windowclose":
@@ -137,6 +137,7 @@ class ExecutionContext():
                 -> href, hierarchy, html
             """
             # self.sequencediagram.dumpframe(val["hierarchy"], val["html"])
+            pass
         
         elif key == "result":
             """ RESULT
@@ -161,14 +162,9 @@ class ExecutionContext():
             """ FORM SUBMITTED
                 -> href, hierarchy, action, form
             """
-            old_frame = self.get_frame(val["hierarchy"])
-            new_frame = Frame(href=val["action"])
-            if old_frame:
-                self.update_frame(old_frame, new_frame)
-                self.sequencediagram.formsubmit(old_frame, val["form"])
-            else:
-                self.insert_frame(val["hierarchy"], new_frame)
-                self.sequencediagram.formsubmit(new_frame, val["form"])
+            frame = Frame(href=val["action"])
+            new_frame = self.insert_frame(val["hierarchy"], frame)
+            self.sequencediagram.formsubmit(new_frame, val["form"])
 
         elif key == "postmessagereceived":
             """ POSTMESSAGE RECEIVED
@@ -313,15 +309,15 @@ class ExecutionContext():
 
     def insert_frame(self, hierarchy, frame):
         """ Insert frame and all superior frames and superior popups in tree (if not existent)
-            Returns True, if frame inserted successfully
-            Returns False, if frame not inserted successfully
+            Returns frame, if frame inserted successfully
+            Returns None, if frame not inserted successfully
         """
         # If frame already exists, just update its properties
         # but keep it in hierarchy tree with references to parents and children
         old_frame = self.get_frame(hierarchy)
         if old_frame:
             self.update_frame(old_frame, frame)
-            return True
+            return old_frame
 
         path = hierarchy.split(".")
 
@@ -349,7 +345,7 @@ class ExecutionContext():
                             f""" New iframe was inserted at index {idx} but expected
                             to be inserted at index {frame_idx} in frame '{current.hierarchy()}'"""
                         )
-                        return False
+                        return None
                     current = current.frames[frame_idx]
             elif popups:
                 popup_idx = int(popups.group(1))
@@ -370,7 +366,7 @@ class ExecutionContext():
                             f""" New popup was inserted at index {idx} but expected
                             to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
                         )
-                        return False
+                        return None
                     current = current.popups[popup_idx]
             elif path[i] == "top" and current == None:
                 # Create topframe
@@ -400,7 +396,7 @@ class ExecutionContext():
                     f""" New iframe was inserted at index {idx} but expected
                     to be inserted at index {frame_idx} in frame '{current.hierarchy()}'"""
                 )
-                return False
+                return None
         elif popups:
             popup_idx = int(popups.group(1))
             frame.parent = None
@@ -411,11 +407,11 @@ class ExecutionContext():
                     f""" New popup was inserted at index {idx} but expected
                     to be inserted at index {popup_idx} in frame '{current.hierarchy()}'"""
                 )
-                return False
+                return None
         elif last == "top" and not self.topframe:
             self.topframe = frame
 
-        return True
+        return frame
 
     def remove_frame(self, hierarchy):
         """ Removes frame and all subframes and subpopups from tree
