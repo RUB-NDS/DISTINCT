@@ -65,10 +65,17 @@ class ExecutionContext():
         self.history.append(event)
         
         id = event["id"]
+        timestamp = event["timestamp"]
         key = event["key"]
         val = event["val"]
         
-        if key == "documentinit":
+        if key == "report":
+            """ REPORT
+                -> href, hierarchy, key, val
+            """
+            self.process_report(val["key"], val["val"])
+        
+        elif key == "documentinit":
             """ DOCUMENT INIT
                 The document is initiated. Since the extension is executed
                 before any other scripts on the page, this state catches the page before any
@@ -123,43 +130,6 @@ class ExecutionContext():
                     val["hierarchy"]
                 )
                 self.remove_frame(val["hierarchy"])
-            
-        elif key == "windowopen":
-            """ POPUP OPENED
-                -> href, hierarchy, url, popup_hierarchy
-            """
-            frame = Frame(href=val["url"])
-            new_frame = self.insert_frame(val["popup_hierarchy"], frame)
-            
-            self.sequencediagram.windowopen(
-                val["popup_hierarchy"],
-                val["hierarchy"],
-                val["url"]
-            )
-        
-        elif key == "windowclose":
-            """ POPUP CLOSED
-                -> href, hierarchy, opener_hierarchy
-            """
-            old_frame = self.get_frame(val["hierarchy"])
-            if old_frame:
-                self.sequencediagram.windowclose(
-                    val["hierarchy"],
-                    val["opener_hierarchy"]
-                )
-                self.remove_frame(val["hierarchy"])
-
-        elif key == "dumpframe":
-            """ FRAME DUMPED
-                -> href, hierarchy, html
-            """
-            pass
-        
-        elif key == "report":
-            """ RESULT
-                -> href, hierarchy, key, val
-            """
-            self.process_report(val["key"], val["val"])
 
         elif key == "httpredirect":
             """ HTTP REDIRECT
@@ -186,6 +156,40 @@ class ExecutionContext():
                 val["action"],
                 val["form"]
             )
+            
+        elif key == "windowopen":
+            """ POPUP OPENED
+                -> href, hierarchy, url, popup_hierarchy
+            """
+            frame = Frame(href=val["url"])
+            new_frame = self.insert_frame(val["popup_hierarchy"], frame)
+            
+            self.sequencediagram.windowopen(
+                val["popup_hierarchy"],
+                val["hierarchy"],
+                val["url"]
+            )
+        
+        elif key == "windowclose":
+            """ POPUP CLOSED
+                -> href, hierarchy, opener_hierarchy
+            """
+            old_frame = self.get_frame(val["hierarchy"])
+            if old_frame:
+                self.sequencediagram.windowclose(
+                    val["hierarchy"],
+                    val["opener_hierarchy"]
+                )
+                self.remove_frame(val["hierarchy"])
+
+        elif key == "closedaccessed":
+            """ CLOSED ACCESSED
+                -> href, hierarchy, closed
+            """
+            self.sequencediagram.closedaccessed(
+                val["hierarchy"],
+                val["closed"]
+            )
 
         elif key == "postmessagereceived":
             """ POSTMESSAGE RECEIVED
@@ -197,6 +201,28 @@ class ExecutionContext():
                 val["data"],
                 val["datatype"],
                 val["targetorigincheck"]
+            )
+
+        elif key == "addeventlistener":
+            """ ADD EVENT LISTENER
+                -> href, hierarchy, type, method, callback
+            """
+            self.sequencediagram.addeventlistener(
+                val["hierarchy"],
+                val["type"],
+                val["method"],
+                val["callback"]
+            )
+
+        elif key == "removeeventlistener":
+            """ REMOVE EVENT LISTENER
+                -> href, hierarchy, type, method, callback
+            """
+            self.sequencediagram.removeeventlistener(
+                val["hierarchy"],
+                val["type"],
+                val["method"],
+                val["callback"]
             )
 
         elif key == "localstorageset":
@@ -261,15 +287,6 @@ class ExecutionContext():
                 val["key"],
                 val["val"],
                 val["valtype"]
-            )
-
-        elif key == "closedaccessed":
-            """ CLOSED ACCESSED
-                -> href, hierarchy, closed
-            """
-            self.sequencediagram.closedaccessed(
-                val["hierarchy"],
-                val["closed"]
             )
 
     def update_frame(self, old_frame, new_frame):

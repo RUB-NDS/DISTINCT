@@ -89,7 +89,13 @@ let content_messaging = () => {
         onmessage: {
             set: (cb) => {
                 let cbstring = cb ? cb.toString() : JSON.stringify(cb);
+                
                 console.info(`window.onmessage = ${cbstring}`);
+                _sso._event("addeventlistener", {
+                    type: "message",
+                    method: "onmessage",
+                    callback: cbstring
+                });
                 
                 window._sso._onmessage = cb;
             },
@@ -100,7 +106,13 @@ let content_messaging = () => {
                 let [type, callback, options] = args;
                 if (type == "message") {
                     let cbstring = callback ? callback.toString() : JSON.stringify(callback);
+                    
                     console.info(`window.addEventListener("message", ${cbstring}, ${options})`);
+                    _sso._event("addeventlistener", {
+                        type: type,
+                        method: "window.addEventListener",
+                        callback: cbstring
+                    });
                     
                     window._sso._callbacks.push(callback);
                 } else {
@@ -113,7 +125,13 @@ let content_messaging = () => {
                 let [type, callback, options] = args;
                 if (type == "message") {
                     let cbstring = callback ? callback.toString() : JSON.stringify(callback);
+                    
                     console.info(`window.removeEventListener("message", ${cbstring}, ${options})`);
+                    _sso._event("removeeventlistener", {
+                        type: type,
+                        method: "window.removeEventListener",
+                        callback: cbstring
+                    });
 
                     for (let i = 0; i < window._sso._callbacks.length; i++) {
                         if (window._sso._callbacks[i] === callback)

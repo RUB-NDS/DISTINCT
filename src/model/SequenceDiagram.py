@@ -48,7 +48,7 @@ class SequenceDiagram:
         else:
             return "\n".join(newlined) # do not escape line breaks
 
-    """ Events """
+    """ Events: Document """
 
     def documentinit(self, hierarchy, href):
         self.stm(f'participant "{hierarchy}"')
@@ -109,18 +109,6 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def dumpframe(self, hierarchy, html):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'Event: Dump Frame\n'
-            f'HTML:\n'
-            f'{self.linebreaks(html, every=500)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
     def windowopen(self, hierarchy, opener_hierarchy, url):
         self.stm(f'participant "{hierarchy}"')
         self.stm(f'participant "{opener_hierarchy}"')
@@ -145,6 +133,19 @@ class SequenceDiagram:
             f'end note'
         )
         self.stm(f'"{hierarchy}" -> "{opener_hierarchy}": window.close()')
+    
+    def closedaccessed(self, hierarchy, closed):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'Event: Closed Accessed\n'
+            f'Closed: {closed}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    """ Events: Web Messaging """
 
     def postmessagereceived(self, receiver, sender, data, datatype, targetorigincheck):
         self.stm(f'participant "{receiver}"')
@@ -173,6 +174,34 @@ class SequenceDiagram:
                 f'</code>\n'
                 f'end note'
             )
+
+    def addeventlistener(self, hierarchy, type, method, callback):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'Event: Add Event Listener\n'
+            f'Type: {type}\n'
+            f'Method: {method}\n'
+            f'Callback: {self.linebreaks(callback)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    def removeeventlistener(self, hierarchy, type, method, callback):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'Event: Remove Event Listener\n'
+            f'Type: {type}\n'
+            f'Method: {method}\n'
+            f'Callback: {self.linebreaks(callback)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    """ Events: Storage """
 
     def localstorageset(self, hierarchy, key, val):
         self.stm(f'participant "{hierarchy}"')
@@ -224,6 +253,8 @@ class SequenceDiagram:
             f'end note'
         )
 
+    """ Events: Props """
+
     def windowpropnew(self, hierarchy, key, val, valtype):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
@@ -246,17 +277,6 @@ class SequenceDiagram:
             f'Key: {self.linebreaks(key)}\n'
             f'Value Type: {self.linebreaks(valtype)}\n'
             f'Value: {self.linebreaks(json.dumps(val))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-    
-    def closedaccessed(self, hierarchy, closed):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'Event: Closed Accessed\n'
-            f'Closed: {closed}\n'
             f'</code>\n'
             f'end note'
         )
