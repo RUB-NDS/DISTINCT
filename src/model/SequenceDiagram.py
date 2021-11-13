@@ -201,6 +201,32 @@ class SequenceDiagram:
             f'end note'
         )
 
+    def customeventnew(self, hierarchy, type, data, data_type):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'Event: Custom Event New\n'
+            f'Type: {type}\n'
+            f'Data Type: {data_type}\n'
+            f'Data: {self.linebreaks(json.dumps(data))}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    def customeventreceived(self, hierarchy, type, data, data_type):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'Event: Custom Event Received\n'
+            f'Type: {type}\n'
+            f'Data Type: {data_type}\n'
+            f'Data: {self.linebreaks(json.dumps(data))}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
     """ Events: Storage """
 
     def localstorageset(self, hierarchy, key, val):

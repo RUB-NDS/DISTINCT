@@ -23,6 +23,23 @@ let content_messaging = () => {
         "safeframe.googlesyndication.com"
     ]
 
+    // Default events that can be dispatched on the window
+    // If we want to detect the listening for / dispatching of custom events, we need to know
+    // all default window events such that we exclude them from being classified as custom events.
+    // Source: https://developer.mozilla.org/en-US/docs/Web/Events (list under "Window")
+    window._sso._default_window_events = [
+        "afterprint", "animationcancel", "animationend", "animationiteration",
+        "animationstart", "appinstalled", "beforeprint", "beforeunload", "blur", "copy", "cut",
+        "devicemotion", "deviceorientation", "DOMContentLoaded", "error", "focus",
+        "gamepadconnected", "gamepaddisconnected", "hashchange", "languagechange", "load",
+        "messageerror", "message", "offline", "online", "orientationchange", "pagehide",
+        "pageshow", "paste", "popstate", "rejectionhandled", "resize", "storage",
+        "transitioncancel", "transitionend", "transitionrun", "transitionstart",
+        "unhandledrejection", "unload", "vrdisplayactivate", "vrdisplayblur", "vrdisplayconnect",
+        "vrdisplaydeactivate", "vrdisplaydisconnect", "vrdisplayfocus",
+        "vrdisplaypointerrestricted", "vrdisplaypointerunrestricted", "vrdisplaypresentchange"
+    ]
+
     // If executed in frame X, this function sets the window._sso._source_frame property
     // in all other frames that can be reached by frame X.
     // This property holds a reference to frame X.
@@ -104,9 +121,9 @@ let content_messaging = () => {
         addEventListener: {
             value: (...args) => {
                 let [type, callback, options] = args;
+                let cbstring = callback ? callback.toString() : JSON.stringify(callback);
+                
                 if (type == "message") {
-                    let cbstring = callback ? callback.toString() : JSON.stringify(callback);
-                    
                     console.info(`window.addEventListener("message", ${cbstring}, ${options})`);
                     _sso._event("addeventlistener", {
                         type: type,
@@ -116,6 +133,15 @@ let content_messaging = () => {
                     
                     window._sso._callbacks.push(callback);
                 } else {
+                    if (!_sso._default_window_events.includes(type)) {
+                        // This event listener listens for a custom event
+                        _sso._event("addeventlistener", {
+                            type: type,
+                            method: "window.addEventListener",
+                            callback: cbstring
+                        });
+                    }
+
                     window._sso._addEventListener(...args);
                 }
             }
@@ -123,9 +149,9 @@ let content_messaging = () => {
         removeEventListener: {
             value: (...args) => {
                 let [type, callback, options] = args;
-                if (type == "message") {
-                    let cbstring = callback ? callback.toString() : JSON.stringify(callback);
-                    
+                let cbstring = callback ? callback.toString() : JSON.stringify(callback);
+                
+                if (type == "message") {    
                     console.info(`window.removeEventListener("message", ${cbstring}, ${options})`);
                     _sso._event("removeeventlistener", {
                         type: type,
@@ -138,6 +164,15 @@ let content_messaging = () => {
                             window._sso._callbacks.splice(i, 1);
                     }
                 } else {
+                    if (!_sso._default_window_events.includes(type)) {
+                        // This event listener listened for a custom event
+                        _sso._event("removeeventlistener", {
+                            type: type,
+                            method: "window.removeEventListener",
+                            callback: cbstring
+                        });
+                    }
+
                     window._sso._removeEventListener(...args);
                 }
             }
@@ -250,6 +285,44 @@ let content_messaging = () => {
             "sourceoriginaccessed": pm.log.source_origin_accessed
         });
         
+    }
+
+    // Wrapper of CustomEvent constructor
+
+    window.CustomEvent = function CustomEvent(...args) {
+        let type = args[0];
+        let data = undefined;
+        let data_type = typeof undefined;
+
+        if (args[1] && args[1]["detail"]) {
+            data = args[1]["detail"];
+            data_type = typeof data;
+        }
+
+        _sso._event("customeventnew", {
+            type: type,
+            data: data,
+            data_type: data_type
+        });
+
+        return new window._sso._CustomEvent(...args);
+    }
+
+    // Wrapper of window.dispatchEvent
+
+    window.dispatchEvent = function dispatchEvent(...args) {
+        let event = args[0];
+        let type = event.type;
+        let data = event.detail || undefined;
+        let data_type = typeof data;
+        
+        _sso._event("customeventreceived", {
+            type: type,
+            data: data,
+            data_type: data_type
+        });
+
+        return window._sso._dispatchEvent(...args);
     }
 
     console.info("content_pm.js initialized");

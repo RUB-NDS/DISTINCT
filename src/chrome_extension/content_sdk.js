@@ -77,7 +77,6 @@ let content_sdk = () => {
 
     /* Google One Tap SDK */
     /* Docs: https://developers.google.com/identity/gsi/web/guides/features */
-    window._sso._xmlhttprequest_open = window.XMLHttpRequest.prototype.open;
     window.XMLHttpRequest.prototype.open = function open() {
         let url = arguments[1] || undefined;
         if (
@@ -91,7 +90,7 @@ let content_sdk = () => {
             _sso._event("report", {key: "sdk-loginrequrl", val: url});
             _sso._event("report", {key: "sdk-loginreqframe", val: _sso._hierarchy(window)});
         }
-        return window._sso._xmlhttprequest_open.apply(this, arguments);
+        return _sso._xmlhttprequest_open.apply(this, arguments);
     };
 
     console.info("content_sdk.js initialized");

@@ -225,6 +225,28 @@ class ExecutionContext():
                 val["callback"]
             )
 
+        elif key == "customeventnew":
+            """ CUSTOM EVENT NEW
+                -> href, hierarchy, type, data, data_type
+            """
+            self.sequencediagram.customeventnew(
+                val["hierarchy"],
+                val["type"],
+                val["data"],
+                val["data_type"]
+            )
+
+        elif key == "customeventreceived":
+            """ CUSTOM EVENT RECEIVED
+                -> href, hierarchy, type, data, data_type
+            """
+            self.sequencediagram.customeventreceived(
+                val["hierarchy"],
+                val["type"],
+                val["data"],
+                val["data_type"]
+            )
+
         elif key == "localstorageset":
             """ LOCALSTORAGE SET
                 -> href, hierarchy, key, val

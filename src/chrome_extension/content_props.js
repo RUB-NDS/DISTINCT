@@ -15,6 +15,11 @@ let content_props = () => {
         return !blacklistedprops.includes(item);
     });
 
+    // Include properties which our extension overwrites but which are not in default properties
+    window._sso._defaultprops = window._sso._defaultprops.concat([
+        "dispatchEvent"
+    ]);
+
     function check_props() {
         Object.keys(window).filter((item) => {
             // Filter out all default and blacklisted properties
