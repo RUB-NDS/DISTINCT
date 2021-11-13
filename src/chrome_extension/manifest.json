@@ -13,6 +13,7 @@
                 "content_props.js",
                 "content_messaging.js",
                 "content_storage.js",
+                "content_location.js",
                 "content_sdk.js",
                 "content_flow.js",
                 "content_redirects.js"

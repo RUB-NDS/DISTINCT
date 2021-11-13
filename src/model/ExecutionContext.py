@@ -311,6 +311,17 @@ class ExecutionContext():
                 val["valtype"]
             )
 
+        elif key == "locationset":
+            """ LOCATION SET
+                -> href, hierarchy, prop, target
+            """
+            self.sequencediagram.locationset(
+                val["hierarchy"],
+                val["href"],
+                val["prop"],
+                val["target"]
+            )
+
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame
             Properties: href, html

@@ -306,3 +306,18 @@ class SequenceDiagram:
             f'</code>\n'
             f'end note'
         )
+
+    """ Events: Location """
+
+    def locationset(self, hierarchy, href, prop, target):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'Event: Location Set\n'
+            f'Property: {prop}\n'
+            f'Source: {self.linebreaks(href)}\n'
+            f'Target: {self.linebreaks(target)}\n'
+            f'</code>\n'
+            f'end note'
+        )
