@@ -50,22 +50,24 @@ class SequenceDiagram:
 
     """ Events: Document """
 
-    def documentinit(self, hierarchy, href):
+    def documentinit(self, id, hierarchy, href):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
-            f'note right of "{hierarchy}"\n'
+            f'note right of "{hierarchy}" #orange\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Document Init\n'
             f'URL: {self.linebreaks(href)}\n'
             f'</code>\n'
             f'end note'
         )
 
-    def documentinteractive(self, hierarchy, href, html):
+    def documentinteractive(self, id, hierarchy, href, html):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Document Interactive\n'
             f'URL: {self.linebreaks(href)}\n'
             f'HTML:\n'
@@ -74,21 +76,23 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def documentbeforeunload(self, hierarchy):
+    def documentbeforeunload(self, id, hierarchy):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Document Before Unload\n'
             f'</code>\n'
             f'end note'
         )
 
-    def httpredirect(self, hierarchy, href, status_code, location):
+    def httpredirect(self, id, hierarchy, href, status_code, location):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: HTTP Redirect\n'
             f'Status Code: {status_code}\n'
             f'Source: {self.linebreaks(href)}\n'
@@ -97,11 +101,12 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def formsubmit(self, hierarchy, href, formbody):
+    def formsubmit(self, id, hierarchy, href, formbody):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Form Submit\n'
             f'URL: {self.linebreaks(href)}\n'
             f'Body: {self.linebreaks(json.dumps(formbody))}\n'
@@ -109,36 +114,39 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def windowopen(self, hierarchy, opener_hierarchy, url):
+    def windowopen(self, id, hierarchy, opener_hierarchy, url):
         self.stm(f'participant "{hierarchy}"')
         self.stm(f'participant "{opener_hierarchy}"')
         self.stm(f'"{opener_hierarchy}" -> "{hierarchy}": window.open()')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Window Open\n'
             f'URL: {self.linebreaks(url)}\n'
             f'</code>\n'
             f'end note'
         )
 
-    def windowclose(self, hierarchy, opener_hierarchy):
+    def windowclose(self, id, hierarchy, opener_hierarchy):
         self.stm(f'participant "{hierarchy}"')
         self.stm(f'participant "{opener_hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Window Close\n'
             f'</code>\n'
             f'end note'
         )
         self.stm(f'"{hierarchy}" -> "{opener_hierarchy}": window.close()')
     
-    def closedaccessed(self, hierarchy, closed):
+    def closedaccessed(self, id, hierarchy, closed):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Closed Accessed\n'
             f'Closed: {closed}\n'
             f'</code>\n'
@@ -147,7 +155,7 @@ class SequenceDiagram:
 
     """ Events: Web Messaging """
 
-    def postmessagereceived(self, receiver, sender, data, datatype, targetorigincheck):
+    def postmessagereceived(self, id, receiver, sender, data, datatype, targetorigincheck):
         self.stm(f'participant "{receiver}"')
         self.stm(f'participant "{sender}"')
         self.stm(f'"{sender}" -> "{receiver}": window.postMessage()')
@@ -156,6 +164,7 @@ class SequenceDiagram:
             self.stm(
                 f'note right of "{receiver}" #red\n'
                 f'<code>\n'
+                f'ID: #{id}\n'
                 f'Event: PostMessage Received\n'
                 f'Target Origin Check: {targetorigincheck}\n'
                 f'Data Type: {datatype}\n'
@@ -167,6 +176,7 @@ class SequenceDiagram:
             self.stm(
                 f'note right of "{receiver}" #green\n'
                 f'<code>\n'
+                f'ID: #{id}\n'
                 f'Event: PostMessage Received\n'
                 f'Target Origin Check: {targetorigincheck}\n'
                 f'Data Type: {datatype}\n'
@@ -175,11 +185,12 @@ class SequenceDiagram:
                 f'end note'
             )
 
-    def addeventlistener(self, hierarchy, type, method, callback):
+    def addeventlistener(self, id, hierarchy, type, method, callback):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Add Event Listener\n'
             f'Type: {type}\n'
             f'Method: {method}\n'
@@ -188,11 +199,12 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def removeeventlistener(self, hierarchy, type, method, callback):
+    def removeeventlistener(self, id, hierarchy, type, method, callback):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Remove Event Listener\n'
             f'Type: {type}\n'
             f'Method: {method}\n'
@@ -201,11 +213,12 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def customeventnew(self, hierarchy, type, data, data_type):
+    def customeventnew(self, id, hierarchy, type, data, data_type):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Custom Event New\n'
             f'Type: {type}\n'
             f'Data Type: {data_type}\n'
@@ -214,11 +227,12 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def customeventreceived(self, hierarchy, type, data, data_type):
+    def customeventreceived(self, id, hierarchy, type, data, data_type):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Custom Event Received\n'
             f'Type: {type}\n'
             f'Data Type: {data_type}\n'
@@ -229,11 +243,12 @@ class SequenceDiagram:
 
     """ Events: Storage """
 
-    def localstorageset(self, hierarchy, key, val):
+    def localstorageset(self, id, hierarchy, key, val):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: LocalStorage Set\n'
             f'Key: {self.linebreaks(key)}\n'
             f'Value: {self.linebreaks(val)}\n'
@@ -241,11 +256,12 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def sessionstorageset(self, hierarchy, key, val):
+    def sessionstorageset(self, id, hierarchy, key, val):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: SessionStorage Set\n'
             f'Key: {self.linebreaks(key)}\n'
             f'Value: {self.linebreaks(val)}\n'
@@ -253,22 +269,24 @@ class SequenceDiagram:
             f'end note'
         )
 
-    def cookieset(self, hierarchy, val):
+    def cookieset(self, id, hierarchy, val):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Cookie Set\n'
             f'Value: {self.linebreaks(val)}\n'
             f'</code>\n'
             f'end note'
         )
     
-    def idbset(self, hierarchy, db, objectstore, keypath, key, val):
+    def idbset(self, id, hierarchy, db, objectstore, keypath, key, val):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: IndexedDB Set\n'
             f'Database: {self.linebreaks(db)}\n'
             f'Object Store: {self.linebreaks(objectstore)}\n'
@@ -281,11 +299,12 @@ class SequenceDiagram:
 
     """ Events: Props """
 
-    def windowpropnew(self, hierarchy, key, val, valtype):
+    def windowpropnew(self, id, hierarchy, key, val, valtype):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Window Property New\n'
             f'Key: {self.linebreaks(key)}\n'
             f'Value Type: {self.linebreaks(valtype)}\n'
@@ -294,11 +313,12 @@ class SequenceDiagram:
             f'end note'
         )
     
-    def windowpropchanged(self, hierarchy, key, val, valtype):
+    def windowpropchanged(self, id, hierarchy, key, val, valtype):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Window Property Changed\n'
             f'Key: {self.linebreaks(key)}\n'
             f'Value Type: {self.linebreaks(valtype)}\n'
@@ -309,11 +329,12 @@ class SequenceDiagram:
 
     """ Events: Location """
 
-    def locationset(self, hierarchy, href, prop, target):
+    def locationset(self, id, hierarchy, href, prop, target):
         self.stm(f'participant "{hierarchy}"')
         self.stm(
             f'note right of "{hierarchy}"\n'
             f'<code>\n'
+            f'ID: #{id}\n'
             f'Event: Location Set\n'
             f'Property: {prop}\n'
             f'Source: {self.linebreaks(href)}\n'

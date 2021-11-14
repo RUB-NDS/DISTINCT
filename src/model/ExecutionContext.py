@@ -86,6 +86,7 @@ class ExecutionContext():
             new_frame = self.insert_frame(val["hierarchy"], frame)
             
             self.sequencediagram.documentinit(
+                id,
                 val["hierarchy"],
                 val["href"]
             )
@@ -107,6 +108,7 @@ class ExecutionContext():
             new_frame = self.insert_frame(val["hierarchy"], frame)
             
             self.sequencediagram.documentinteractive(
+                id,
                 val["hierarchy"],
                 val["href"],
                 val["html"]
@@ -127,6 +129,7 @@ class ExecutionContext():
             frame = self.get_frame(val["hierarchy"])
             if frame:
                 self.sequencediagram.documentbeforeunload(
+                    id,
                     val["hierarchy"]
                 )
                 self.remove_frame(val["hierarchy"])
@@ -138,6 +141,7 @@ class ExecutionContext():
             frame = self.get_frame(val["hierarchy"])
             
             self.sequencediagram.httpredirect(
+                id,
                 val["hierarchy"],
                 val["href"],
                 val["status_code"],
@@ -152,6 +156,7 @@ class ExecutionContext():
             new_frame = self.insert_frame(val["hierarchy"], frame)
             
             self.sequencediagram.formsubmit(
+                id,
                 val["hierarchy"],
                 val["action"],
                 val["form"]
@@ -165,6 +170,7 @@ class ExecutionContext():
             new_frame = self.insert_frame(val["popup_hierarchy"], frame)
             
             self.sequencediagram.windowopen(
+                id,
                 val["popup_hierarchy"],
                 val["hierarchy"],
                 val["url"]
@@ -177,6 +183,7 @@ class ExecutionContext():
             old_frame = self.get_frame(val["hierarchy"])
             if old_frame:
                 self.sequencediagram.windowclose(
+                    id,
                     val["hierarchy"],
                     val["opener_hierarchy"]
                 )
@@ -187,6 +194,7 @@ class ExecutionContext():
                 -> href, hierarchy, closed
             """
             self.sequencediagram.closedaccessed(
+                id,
                 val["hierarchy"],
                 val["closed"]
             )
@@ -196,6 +204,7 @@ class ExecutionContext():
                 -> href, hierarchy, receiver, sender, data, datatype
             """
             self.sequencediagram.postmessagereceived(
+                id,
                 val["receiver"],
                 val["sender"],
                 val["data"],
@@ -208,6 +217,7 @@ class ExecutionContext():
                 -> href, hierarchy, type, method, callback
             """
             self.sequencediagram.addeventlistener(
+                id,
                 val["hierarchy"],
                 val["type"],
                 val["method"],
@@ -219,6 +229,7 @@ class ExecutionContext():
                 -> href, hierarchy, type, method, callback
             """
             self.sequencediagram.removeeventlistener(
+                id,
                 val["hierarchy"],
                 val["type"],
                 val["method"],
@@ -230,6 +241,7 @@ class ExecutionContext():
                 -> href, hierarchy, type, data, data_type
             """
             self.sequencediagram.customeventnew(
+                id,
                 val["hierarchy"],
                 val["type"],
                 val["data"],
@@ -241,6 +253,7 @@ class ExecutionContext():
                 -> href, hierarchy, type, data, data_type
             """
             self.sequencediagram.customeventreceived(
+                id,
                 val["hierarchy"],
                 val["type"],
                 val["data"],
@@ -252,6 +265,7 @@ class ExecutionContext():
                 -> href, hierarchy, key, val
             """
             self.sequencediagram.localstorageset(
+                id,
                 val["hierarchy"],
                 val["key"],
                 val["val"]
@@ -262,6 +276,7 @@ class ExecutionContext():
                 -> href, hierarchy, key, val
             """
             self.sequencediagram.sessionstorageset(
+                id,
                 val["hierarchy"],
                 val["key"],
                 val["val"]
@@ -272,6 +287,7 @@ class ExecutionContext():
                 -> href, hierarchy, val
             """
             self.sequencediagram.cookieset(
+                id,
                 val["hierarchy"],
                 val["val"]
             )
@@ -281,6 +297,7 @@ class ExecutionContext():
                 -> href, hierarchy, db, objectstore, keypath, key, val
             """
             self.sequencediagram.idbset(
+                id,
                 val["hierarchy"],
                 val["db"],
                 val["objectstore"],
@@ -294,6 +311,7 @@ class ExecutionContext():
                 -> href, hierarchy, key, val, valtype
             """
             self.sequencediagram.windowpropnew(
+                id,
                 val["hierarchy"],
                 val["key"],
                 val["val"],
@@ -305,6 +323,7 @@ class ExecutionContext():
                 -> href, hierarchy, key, val, valtype
             """
             self.sequencediagram.windowpropchanged(
+                id,
                 val["hierarchy"],
                 val["key"],
                 val["val"],
@@ -316,6 +335,7 @@ class ExecutionContext():
                 -> href, hierarchy, prop, target
             """
             self.sequencediagram.locationset(
+                id,
                 val["hierarchy"],
                 val["href"],
                 val["prop"],
