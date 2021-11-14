@@ -201,12 +201,30 @@ let content_messaging = () => {
         }
 
         // Transfer
+
         let ports = [];
         if (transfer) {
             for (let item of transfer) {
-                if (item instanceof MessagePort)
+                if ("_channel_id" in item)
                     ports.push(item);
             }
+        }
+
+        let ports_log = [];
+        for (let port of ports) {
+            ports_log.push({
+                channel_id: port._channel_id,
+                port_id: port._port_id
+            });
+        }
+
+        // If this frame receives a port, then this frame is the target frame of all messages
+        // that are sent to this port.
+        // If this frame receives a port, then this frame is the source frame of all messages
+        // that are sent to the other port entangled to the received port.
+        for (let port of ports) {
+            port._target_frame = _sso._hierarchy(window);
+            port._other_port._source_frame = _sso._hierarchy(window);
         }
 
         // Dispatch Message
@@ -220,7 +238,7 @@ let content_messaging = () => {
                 "target_origin_check": (typeof targetOrigin == "string") ? targetOrigin : JSON.stringify(targetOrigin),
                 "message_type": message_type,
                 "message_payload": message_string,
-                "transfer": (transfer ? transfer.toString() : "N/A"),
+                "ports": ports_log
             },
             "event": {
                 "data": message,
@@ -281,6 +299,7 @@ let content_messaging = () => {
             "sender": pm.log.source_frame,
             "data": pm.log.message_payload,
             "datatype": pm.log.message_type,
+            "ports": pm.log.ports,
             "targetorigincheck": pm.log.target_origin_check,
             "sourceoriginaccessed": pm.log.source_origin_accessed
         });
@@ -325,7 +344,65 @@ let content_messaging = () => {
         return window._sso._dispatchEvent(...args);
     }
 
-    console.info("content_pm.js initialized");
+    // Wrapper of MessageChannel constructor
+
+    window.MessageChannel = function MessageChannel(...args) {
+
+        let channel = new window._sso._MessageChannel();
+        let channel_id = Math.floor(Math.random() * 1000);
+        
+        // Ports are identified by a pair of (Channel ID, Port ID)
+        channel.port1._channel_id = channel_id;
+        channel.port2._channel_id = channel_id;
+        channel.port1._port_id = "port1";
+        channel.port2._port_id = "port2";
+
+        // Save a reference to port2 on port1 and port1 on port2
+        channel.port1._other_port = channel.port2;
+        channel.port2._other_port = channel.port1;
+
+        // If we receive a message on port1 or port2, it was sent *from* this frame because port2
+        // and port1 are currently owned by this frame.
+        // We change that property once port1 or port2 are sent to another frame.
+        channel.port1._source_frame = _sso._hierarchy(window);
+        channel.port2._source_frame = _sso._hierarchy(window);
+
+        // If we receive a message on port1 or port2, it was sent *to* this frame because port1
+        // and port2 are currently owned by this frame.
+        // We change that property once port1 or port2 are sent to another frame.
+        channel.port1._target_frame = _sso._hierarchy(window);
+        channel.port2._target_frame = _sso._hierarchy(window);
+
+        channel.port1.addEventListener("message", (e) => {
+            _sso._event("channelmessagereceived", {
+                channel_id: e.target._channel_id,
+                port_id: e.target._port_id,
+                source_frame: e.target._source_frame,
+                target_frame: e.target._target_frame,
+                data: e.data,
+                data_type: typeof e.data
+            });
+        });
+
+        channel.port2.addEventListener("message", (e) => {
+            _sso._event("channelmessagereceived", {
+                channel_id: e.target._channel_id,
+                port_id: e.target._port_id,
+                source_frame: e.target._source_frame,
+                target_frame: e.target._target_frame,
+                data: e.data,
+                data_type: typeof e.data
+            });
+        });
+
+        _sso._event("messagechannelnew", {
+            channel_id: channel_id
+        });
+
+        return channel;
+    }
+
+    console.info("content_messaging.js initialized");
 }
 
 let content_messaging_script = document.createElement("script");

@@ -201,7 +201,8 @@ class ExecutionContext():
 
         elif key == "postmessagereceived":
             """ POSTMESSAGE RECEIVED
-                -> href, hierarchy, receiver, sender, data, datatype
+                -> href, hierarchy, receiver, sender, data, datatype,
+                ports = [{channel_id, port_id}], targetorigincheck, sourceoriginaccessed = "yes"/"no"
             """
             self.sequencediagram.postmessagereceived(
                 id,
@@ -209,6 +210,7 @@ class ExecutionContext():
                 val["sender"],
                 val["data"],
                 val["datatype"],
+                val["ports"],
                 val["targetorigincheck"]
             )
 
@@ -256,6 +258,30 @@ class ExecutionContext():
                 id,
                 val["hierarchy"],
                 val["type"],
+                val["data"],
+                val["data_type"]
+            )
+
+        elif key == "messagechannelnew":
+            """ MESSAGE CHANNEL NEW
+                -> href, hierarchy, channel_id
+            """
+            self.sequencediagram.messagechannelnew(
+                id,
+                val["hierarchy"],
+                val["channel_id"]
+            )
+
+        elif key == "channelmessagereceived":
+            """ CHANNEL MESSAGE RECEIVED
+                -> href, hierarchy, channel_id, port_id, source_frame, target_frame, data, data_type
+            """
+            self.sequencediagram.channelmessagereceived(
+                id,
+                val["channel_id"],
+                val["port_id"],
+                val["source_frame"],
+                val["target_frame"],
                 val["data"],
                 val["data_type"]
             )

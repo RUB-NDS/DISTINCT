@@ -255,6 +255,7 @@ let content_init = () => {
     window._sso._onmessage = window.onmessage;
     window._sso._CustomEvent = window.CustomEvent;
     window._sso._dispatchEvent = window.dispatchEvent.bind(window);
+    window._sso._MessageChannel = window.MessageChannel;
 
     window._sso._open = window.open.bind(window);
     window._sso._close = window.close.bind(window);
