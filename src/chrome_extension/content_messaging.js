@@ -348,7 +348,7 @@ let content_messaging = () => {
 
     window.MessageChannel = function MessageChannel(...args) {
 
-        let channel = new window._sso._MessageChannel();
+        let channel = new window._sso._MessageChannel(...args);
         let channel_id = Math.floor(Math.random() * 1000);
         
         // Ports are identified by a pair of (Channel ID, Port ID)
@@ -397,6 +397,40 @@ let content_messaging = () => {
 
         _sso._event("messagechannelnew", {
             channel_id: channel_id
+        });
+
+        return channel;
+    }
+
+    // Wrapper of BroadcastChannel constructor
+
+    window.BroadcastChannel = function BroadcastChannel(...args) {
+
+        let channel_name = args[0];
+        let channel = new window._sso._BroadcastChannel(...args);
+
+        channel._postMessage = channel.postMessage;
+        channel.postMessage = function postMessage(...args) {
+            _sso._event("broadcastmessagesent", {
+                channel_name: this.name,
+                source_frame: _sso._hierarchy(window),
+                data: args[0],
+                data_type: typeof args[0]
+            });
+            return this._postMessage(...args);
+        }
+
+        channel.addEventListener("message", (e) => {
+            _sso._event("broadcastmessagereceived", {
+                channel_name: channel_name,
+                target_frame: _sso._hierarchy(self),
+                data: e.data,
+                data_type: typeof e.data
+            });
+        });
+
+        _sso._event("broadcastchannelnew", {
+            channel_name: channel_name
         });
 
         return channel;

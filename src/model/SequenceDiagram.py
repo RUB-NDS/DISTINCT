@@ -272,6 +272,46 @@ class SequenceDiagram:
             f'end note'
         )
 
+    def broadcastchannelnew(self, id, hierarchy, channel_name):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Broadcast Channel New\n'
+            f'Channel Name: {channel_name}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    def broadcastmessagereceived(self, id, channel_name, target_frame, data, data_type):
+        self.stm(f'participant "{target_frame}"')
+        self.stm(
+            f'note right of "{target_frame}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Broadcast Message Received\n'
+            f'Channel Name: {channel_name}\n'
+            f'Data Type: {data_type}\n'
+            f'Data: {self.linebreaks(json.dumps(data))}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    def broadcastmessagesent(self, id, channel_name, source_frame, data, data_type):
+        self.stm(f'participant "{source_frame}"')
+        self.stm(
+            f'note right of "{source_frame}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Broadcast Message Sent\n'
+            f'Channel Name: {channel_name}\n'
+            f'Data Type: {data_type}\n'
+            f'Data: {self.linebreaks(json.dumps(data))}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
     """ Events: Storage """
 
     def localstorageset(self, id, hierarchy, key, val):

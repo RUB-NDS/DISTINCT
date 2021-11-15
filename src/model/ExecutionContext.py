@@ -286,6 +286,40 @@ class ExecutionContext():
                 val["data_type"]
             )
 
+        elif key == "broadcastchannelnew":
+            """ BROADCAST CHANNEL NEW
+                -> href, hierarchy, channel_name
+            """
+            self.sequencediagram.broadcastchannelnew(
+                id,
+                val["hierarchy"],
+                val["channel_name"]
+            )
+        
+        elif key == "broadcastmessagereceived":
+            """ BROADCAST MESSAGE RECEIVED
+                -> href, hierarchy, channel_name, target_frame, data, data_type
+            """
+            self.sequencediagram.broadcastmessagereceived(
+                id,
+                val["channel_name"],
+                val["target_frame"],
+                val["data"],
+                val["data_type"]
+            )
+
+        elif key == "broadcastmessagesent":
+            """ BROADCAST MESSAGE SENT
+                -> href, hierarchy, channel_name, source_frame, data, data_type
+            """
+            self.sequencediagram.broadcastmessagesent(
+                id,
+                val["channel_name"],
+                val["source_frame"],
+                val["data"],
+                val["data_type"]
+            )
+
         elif key == "localstorageset":
             """ LOCALSTORAGE SET
                 -> href, hierarchy, key, val
