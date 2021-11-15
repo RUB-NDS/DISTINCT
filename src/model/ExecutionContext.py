@@ -161,6 +161,29 @@ class ExecutionContext():
                 val["action"],
                 val["form"]
             )
+
+        elif key == "metaredirect":
+            """ META REDIRECT
+                -> href, hierarchy, wait_seconds, location
+            """
+            self.sequencediagram.metaredirect(
+                id,
+                val["hierarchy"],
+                val["href"],
+                val["wait_seconds"],
+                val["location"]
+            )
+
+        elif key == "metareload":
+            """ META RELOAD
+                -> href, hierarchy, wait_seconds
+            """
+            self.sequencediagram.metareload(
+                id,
+                val["hierarchy"],
+                val["href"],
+                val["wait_seconds"]
+            )
             
         elif key == "windowopen":
             """ POPUP OPENED

@@ -114,6 +114,33 @@ class SequenceDiagram:
             f'end note'
         )
 
+    def metaredirect(self, id, hierarchy, href, wait_seconds, location):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Meta Redirect\n'
+            f'Wait Seconds: {wait_seconds}\n'
+            f'Source: {self.linebreaks(href)}\n'
+            f'Location: {self.linebreaks(location)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    def metareload(self, id, hierarchy, href, wait_seconds):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Meta Reload\n'
+            f'Wait Seconds: {wait_seconds}\n'
+            f'Source: {self.linebreaks(href)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
     def windowopen(self, id, hierarchy, opener_hierarchy, url):
         self.stm(f'participant "{hierarchy}"')
         self.stm(f'participant "{opener_hierarchy}"')

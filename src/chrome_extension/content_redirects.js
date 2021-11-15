@@ -10,11 +10,44 @@
  * 
  * If these attributes are set, the content script redirects to the location by setting the
  * window.location with JavaScript. Also, the "httpredirect" event is logged.
+ * 
+ * This script also checks whether the current document contains any redirects using
+ * the <meta http-equiv="refresh" content="0; url=https://target.com"> tag.
  */
 
 let content_redirects = () => {
 
     window.onload = () => {
+
+        /**
+         * Check for Meta Redirects
+         * <meta http-equiv="refresh" content="0; url=https://target.com">
+         */
+
+        let meta_redirect = document.querySelector('meta[http-equiv="refresh"]');
+    
+        if (meta_redirect) {            
+            let [secs, target] = meta_redirect.content.split(";");
+
+            if (target) {
+                // This is a redirect using <meta>
+                _sso._event("metaredirect", {
+                    wait_seconds: secs,
+                    location: target.replace(/^(.*url=)/i, "")
+                });
+            } else {
+                // This is a reload using <meta>
+                _sso._event("metareload", {
+                    wait_seconds: secs
+                });
+            }
+        }
+
+        /**
+         * Check for HTTP Redirects
+         * once the page is fully loaded.
+         */
+
         let html = document.documentElement;
         if (
             "_sso._type" in html.attributes
