@@ -184,6 +184,31 @@ class ExecutionContext():
                 val["href"],
                 val["wait_seconds"]
             )
+
+        elif key == "refreshredirect":
+            """ REFRESH REDIRECT
+                -> href, hierarchy, wait_seconds, location, status_code
+            """
+            self.sequencediagram.refreshredirect(
+                id,
+                val["hierarchy"],
+                val["href"],
+                val["wait_seconds"],
+                val["location"],
+                val["status_code"]
+            )
+
+        elif key == "refreshreload":
+            """ REFRESH RELOAD
+                -> href, hierarchy, wait_seconds, status_code
+            """
+            self.sequencediagram.refreshreload(
+                id,
+                val["hierarchy"],
+                val["href"],
+                val["wait_seconds"],
+                val["status_code"]
+            )
             
         elif key == "windowopen":
             """ POPUP OPENED

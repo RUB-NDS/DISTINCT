@@ -141,6 +141,35 @@ class SequenceDiagram:
             f'end note'
         )
 
+    def refreshredirect(self, id, hierarchy, href, wait_seconds, location, status_code):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Refresh Redirect\n'
+            f'Status Code: {status_code}\n'
+            f'Wait Seconds: {wait_seconds}\n'
+            f'Source: {self.linebreaks(href)}\n'
+            f'Location: {self.linebreaks(location)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
+    def refreshreload(self, id, hierarchy, href, wait_seconds, status_code):
+        self.stm(f'participant "{hierarchy}"')
+        self.stm(
+            f'note right of "{hierarchy}"\n'
+            f'<code>\n'
+            f'ID: {id}\n'
+            f'Event: Refresh Reload\n'
+            f'Status Code: {status_code}\n'
+            f'Wait Seconds: {wait_seconds}\n'
+            f'Source: {self.linebreaks(href)}\n'
+            f'</code>\n'
+            f'end note'
+        )
+
     def windowopen(self, id, hierarchy, opener_hierarchy, url):
         self.stm(f'participant "{hierarchy}"')
         self.stm(f'participant "{opener_hierarchy}"')

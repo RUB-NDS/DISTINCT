@@ -1,18 +1,18 @@
 /**
- * This content script checks if the current HTTP/200 document is an HTTP/3** redirect transformed
- * by the mitmproxy. If it is a redirect, mitmproxy returns a special document that looks like this:
+ * This content script checks if the current HTTP/200 document is a redirect using "Location"
+ * transformed by the mitmproxy. If it is a redirect, mitmproxy returns a document like this:
  * 
  * <html
- *      _sso._type="redirect"
+ *      _sso._type="location"
  *      _sso._status_code="3**"
- *      _sso._location="https://target.com/redirected.html?1=2#3=4">
+ *      _sso._location="https://target.com/redirected">
  * </html>
  * 
  * If these attributes are set, the content script redirects to the location by setting the
  * window.location with JavaScript. Also, the "httpredirect" event is logged.
  * 
  * This script also checks whether the current document contains any redirects using
- * the <meta http-equiv="refresh" content="0; url=https://target.com"> tag.
+ * "Refresh" either as HTTP header or as <meta> tag.
  */
 
 let content_redirects = () => {
@@ -20,7 +20,7 @@ let content_redirects = () => {
     window.onload = () => {
 
         /**
-         * Check for Meta Redirects
+         * Check for Refresh Redirects in Meta
          * <meta http-equiv="refresh" content="0; url=https://target.com">
          */
 
@@ -44,16 +44,16 @@ let content_redirects = () => {
         }
 
         /**
-         * Check for HTTP Redirects
-         * once the page is fully loaded.
+         * Check for HTTP redirects using the "Location" header
          */
 
         let html = document.documentElement;
+
         if (
             "_sso._type" in html.attributes
-            && html.attributes["_sso._type"].value === "redirect" // this is an http redirect
-            && "_sso._status_code" in html.attributes // status code of the http redirect
-            && "_sso._location" in html.attributes // target of the http redirect
+            && html.attributes["_sso._type"].value === "location"
+            && "_sso._status_code" in html.attributes
+            && "_sso._location" in html.attributes
         ) {
             let status_code = html.attributes["_sso._status_code"].value;
             let target = html.attributes["_sso._location"].value;
@@ -65,6 +65,38 @@ let content_redirects = () => {
                 window.location = target; // redirect if event was received on backend
             });
         }
+
+        /**
+         * Check for HTTP response using the "Refresh" header
+         */
+
+         if (
+            "_sso._type" in html.attributes
+            && html.attributes["_sso._type"].value === "refresh"
+            && "_sso._status_code" in html.attributes
+            && "_sso._refresh" in html.attributes
+        ) {
+            let status_code = html.attributes["_sso._status_code"].value;
+            let refresh = html.attributes["_sso._refresh"].value;
+
+            let [secs, target] = refresh.split(";");
+
+            if (target) {
+                // This is a redirect using "Refresh"
+                _sso._event("refreshredirect", {
+                    wait_seconds: secs,
+                    location: target.replace(/^(.*url=)/i, ""),
+                    status_code: status_code
+                });
+            } else {
+                // This is a reload using "Refresh"
+                _sso._event("refreshreload", {
+                    wait_seconds: secs,
+                    status_code: status_code
+                });
+            }
+        }
+
     }
 
     console.info("content_redirects.js initialized");
