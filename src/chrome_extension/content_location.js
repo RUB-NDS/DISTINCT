@@ -46,7 +46,6 @@ let content_location = () => {
         set: (val) => {
             if (
                 "_sso._type" in document.documentElement.attributes
-                && document.documentElement.attributes["_sso._type"].value === "redirect"
             ) {
                 // This is our http redirect which we transformed into a location redirect.
                 // We do not want to log this location being set.

@@ -14,6 +14,6 @@ class ClosedAccessedProcessor(EventProcessor):
             self.timestamp,
             "Closed Accessed",
             {
-                "Closed": self.val["closed"]
+                "Closed": "True" if self.val["closed"] else "False"
             }
         )
