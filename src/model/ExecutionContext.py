@@ -4,6 +4,39 @@ import logging
 from model.Frame import Frame
 from model.SequenceDiagram import SequenceDiagram
 
+from processors.AddEventListenerProcessor import AddEventListenerProcessor
+from processors.BroadcastChannelNewProcessor import BroadcastChannelNewProcessor
+from processors.BroadcastMessageReceivedProcessor import BroadcastMessageReceivedProcessor
+from processors.BroadcastMessageSentProcessor import BroadcastMessageSentProcessor
+from processors.ClosedAccessedProcessor import ClosedAccessedProcessor
+from processors.CookieSetProcessor import CookieSetProcessor
+from processors.CustomEventNewProcessor import CustomEventNewProcessor
+from processors.CustomEventReceivedProcessor import CustomEventReceivedProcessor
+from processors.DocumentBeforeUnloadProcessor import DocumentBeforeUnloadProcessor
+from processors.DocumentCompleteProcessor import DocumentCompleteProcessor
+from processors.DocumentInitProcessor import DocumentInitProcessor
+from processors.DocumentInteractiveProcessor import DocumentInteractiveProcessor
+from processors.DocumentLoadingProcessor import DocumentLoadingProcessor
+from processors.FormSubmitProcessor import FormSubmitProcessor
+from processors.HTTPRedirectProcessor import HTTPRedirectProcessor
+from processors.IndexedDBSetProcessor import IndexedDBSetProcessor
+from processors.LocalStorageSetProcessor import LocalStorageSetProcessor
+from processors.LocationSetProcessor import LocationSetProcessor
+from processors.MessageChannelNewProcessor import MessageChannelNewProcessor
+from processors.MessageChannelReceivedProcessor import MessageChannelReceivedProcessor
+from processors.MetaRedirectProcessor import MetaRedirectProcessor
+from processors.MetaReloadProcessor import MetaReloadProcessor
+from processors.PostMessageReceivedProcessor import PostMessageReceivedProcessor
+from processors.RefreshRedirectProcessor import RefreshRedirectProcessor
+from processors.RefreshReloadProcessor import RefreshReloadProcessor
+from processors.RemoveEventListenerProcessor import RemoveEventListenerProcessor
+from processors.ReportProcessor import ReportProcessor
+from processors.SessionStorageSetProcessor import SessionStorageSetProcessor
+from processors.WindowCloseProcessor import WindowCloseProcessor
+from processors.WindowOpenProcessor import WindowOpenProcessor
+from processors.WindowPropChangedProcessor import WindowPropChangedProcessor
+from processors.WindowPropNewProcessor import WindowPropNewProcessor
+
 logger = logging.getLogger(__name__)
 
 class ExecutionContext():
@@ -17,9 +50,12 @@ class ExecutionContext():
         # History of all events received from chrome extension
         self.history = []
 
+        # History of all event processors
+        self.processors = []
+
         # Events as visual representation
-        outputdir = config["outputdir"] if "outputdir" in config else None
-        self.sequencediagram = SequenceDiagram(outputdir)
+        self.outputdir = config["outputdir"] if "outputdir" in config else None
+        self.sequencediagram = SequenceDiagram(self.outputdir)
 
         if "starttime" in config:
             self.process_report("starttime", config["starttime"])
@@ -31,13 +67,7 @@ class ExecutionContext():
             self.process_report("codeversion", config["codeversion"])
 
     def __str__(self):
-        """ String representation of execution context is a tree hierarchy
-            Example:
-            top
-                -> popups[0]
-                -> frames[0]
-                    -> frames[0]
-        """
+        """ String representation of execution context is a tree hierarchy """
         if not self.topframe:
             return ""
         
@@ -56,399 +86,128 @@ class ExecutionContext():
         return dump["val"]
 
     def process_report(self, key, val):
+        """ Process event reports """
         if key not in self.reports:
             self.reports[key] = [val]
         else:
             self.reports[key].append(val)
 
     def process_event(self, event):
-        self.history.append(event)
+        """ Process events """
+        self.history.append(event) # Save event history
         
-        id = event["id"]
-        timestamp = event["timestamp"]
         key = event["key"]
-        val = event["val"]
         
         if key == "report":
-            """ REPORT
-                -> href, hierarchy, key, val
-            """
-            self.process_report(val["key"], val["val"])
+            processor = ReportProcessor(self, event)
+            self.processors.append(processor)
         
+        # Document Events
         elif key == "documentinit":
-            """ DOCUMENT INIT
-                The document is initiated. Since the extension is executed
-                before any other scripts on the page, this state catches the page before any
-                other JS redirects or similar are executed.
-                -> href, hierarchy
-            """
-            frame = Frame(href=val["href"])
-            new_frame = self.insert_frame(val["hierarchy"], frame)
-            
-            self.sequencediagram.documentinit(
-                id,
-                val["hierarchy"],
-                val["href"]
-            )
-
+            processor = DocumentInitProcessor(self, event)
+            self.processors.append(processor)
         elif key == "documentloading":
-            """ DOCUMENT LOADING
-                The document is still loading.
-                -> href, hierarchy
-            """
-            pass
-        
+            processor = DocumentLoadingProcessor(self, event)
+            self.processors.append(processor)
         elif key == "documentinteractive":
-            """ DOCUMENT INTERACTIVE
-                The document has finished loading. We can now access the DOM elements.
-                But sub-resources such as scripts and frames are still loading.
-                -> href, hierarchy, html
-            """
-            frame = Frame(href=val["href"], html=val["html"])
-            new_frame = self.insert_frame(val["hierarchy"], frame)
-            
-            self.sequencediagram.documentinteractive(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["html"]
-            )
-
+            processor = DocumentInteractiveProcessor(self, event)
+            self.processors.append(processor)
         elif key == "documentcomplete":
-            """ DOCUMENT COMPLETED
-                The page is fully loaded.
-                -> href, hierarchy, html
-            """
-            pass
-        
+            processor = DocumentCompleteProcessor(self, event)
+            self.processors.append(processor)
         elif key == "documentbeforeunload":
-            """ DOCUMENT BEFOREUNLOAD
-                The document and its resources are about to be unloaded.
-                -> href, hierarchy
-            """
-            frame = self.get_frame(val["hierarchy"])
-            if frame:
-                self.sequencediagram.documentbeforeunload(
-                    id,
-                    val["hierarchy"]
-                )
-                self.remove_frame(val["hierarchy"])
-
-        elif key == "httpredirect":
-            """ HTTP REDIRECT
-                -> href, hierarchy, status_code, location
-            """
-            frame = self.get_frame(val["hierarchy"])
-            
-            self.sequencediagram.httpredirect(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["status_code"],
-                val["location"]
-            )
-        
-        elif key == "formsubmit":
-            """ FORM SUBMITTED
-                -> href, hierarchy, action, form
-            """
-            frame = Frame(href=val["action"])
-            new_frame = self.insert_frame(val["hierarchy"], frame)
-            
-            self.sequencediagram.formsubmit(
-                id,
-                val["hierarchy"],
-                val["action"],
-                val["form"]
-            )
-
-        elif key == "metaredirect":
-            """ META REDIRECT
-                -> href, hierarchy, wait_seconds, location
-            """
-            self.sequencediagram.metaredirect(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["wait_seconds"],
-                val["location"]
-            )
-
-        elif key == "metareload":
-            """ META RELOAD
-                -> href, hierarchy, wait_seconds
-            """
-            self.sequencediagram.metareload(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["wait_seconds"]
-            )
-
-        elif key == "refreshredirect":
-            """ REFRESH REDIRECT
-                -> href, hierarchy, wait_seconds, location, status_code
-            """
-            self.sequencediagram.refreshredirect(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["wait_seconds"],
-                val["location"],
-                val["status_code"]
-            )
-
-        elif key == "refreshreload":
-            """ REFRESH RELOAD
-                -> href, hierarchy, wait_seconds, status_code
-            """
-            self.sequencediagram.refreshreload(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["wait_seconds"],
-                val["status_code"]
-            )
-            
+            processor = DocumentBeforeUnloadProcessor(self, event)
+            self.processors.append(processor)
         elif key == "windowopen":
-            """ POPUP OPENED
-                -> href, hierarchy, url, popup_hierarchy
-            """
-            frame = Frame(href=val["url"])
-            new_frame = self.insert_frame(val["popup_hierarchy"], frame)
-            
-            self.sequencediagram.windowopen(
-                id,
-                val["popup_hierarchy"],
-                val["hierarchy"],
-                val["url"]
-            )
-        
+            processor = WindowOpenProcessor(self, event)
+            self.processors.append(processor)
         elif key == "windowclose":
-            """ POPUP CLOSED
-                -> href, hierarchy, opener_hierarchy
-            """
-            old_frame = self.get_frame(val["hierarchy"])
-            if old_frame:
-                self.sequencediagram.windowclose(
-                    id,
-                    val["hierarchy"],
-                    val["opener_hierarchy"]
-                )
-                self.remove_frame(val["hierarchy"])
-
+            processor = WindowCloseProcessor(self, event)
+            self.processors.append(processor)
+        
+        # URL Redirect Events
+        elif key == "httpredirect":
+            processor = HTTPRedirectProcessor(self, event)
+            self.processors.append(processor)
+        elif key == "formsubmit":
+            processor = FormSubmitProcessor(self, event)
+            self.processors.append(processor)
+        elif key == "metaredirect":
+            processor = MetaRedirectProcessor(self, event)
+            self.processors.append(processor)
+        elif key == "metareload":
+            processor = MetaReloadProcessor(self, event)
+            self.processors.append(processor)
+        elif key == "refreshredirect":
+            processor = RefreshRedirectProcessor(self, event)
+            self.processors.append(processor)
+        elif key == "refreshreload":
+            processor = RefreshReloadProcessor(self, event)
+            self.processors.append(processor)
+        
+        # JS Properties
         elif key == "closedaccessed":
-            """ CLOSED ACCESSED
-                -> href, hierarchy, closed
-            """
-            self.sequencediagram.closedaccessed(
-                id,
-                val["hierarchy"],
-                val["closed"]
-            )
-
+            processor = ClosedAccessedProcessor(self, event)
+            self.processors.append(processor)
+        
+        # Cross-Origin & Same-Origin Web Messaging
         elif key == "postmessagereceived":
-            """ POSTMESSAGE RECEIVED
-                -> href, hierarchy, receiver, sender, data, datatype,
-                ports = [{channel_id, port_id}], targetorigincheck, sourceoriginaccessed = "yes"/"no"
-            """
-            self.sequencediagram.postmessagereceived(
-                id,
-                val["receiver"],
-                val["sender"],
-                val["data"],
-                val["datatype"],
-                val["ports"],
-                val["targetorigincheck"]
-            )
-
+            processor = PostMessageReceivedProcessor(self, event)
+            self.processors.append(processor)
         elif key == "addeventlistener":
-            """ ADD EVENT LISTENER
-                -> href, hierarchy, type, method, callback
-            """
-            self.sequencediagram.addeventlistener(
-                id,
-                val["hierarchy"],
-                val["type"],
-                val["method"],
-                val["callback"]
-            )
-
+            processor = AddEventListenerProcessor(self, event)
+            self.processors.append(processor)
         elif key == "removeeventlistener":
-            """ REMOVE EVENT LISTENER
-                -> href, hierarchy, type, method, callback
-            """
-            self.sequencediagram.removeeventlistener(
-                id,
-                val["hierarchy"],
-                val["type"],
-                val["method"],
-                val["callback"]
-            )
-
+            processor = RemoveEventListenerProcessor(self, event)
+            self.processors.append(processor)
         elif key == "customeventnew":
-            """ CUSTOM EVENT NEW
-                -> href, hierarchy, type, data, data_type
-            """
-            self.sequencediagram.customeventnew(
-                id,
-                val["hierarchy"],
-                val["type"],
-                val["data"],
-                val["data_type"]
-            )
-
+            processor = CustomEventNewProcessor(self, event)
+            self.processors.append(processor)
         elif key == "customeventreceived":
-            """ CUSTOM EVENT RECEIVED
-                -> href, hierarchy, type, data, data_type
-            """
-            self.sequencediagram.customeventreceived(
-                id,
-                val["hierarchy"],
-                val["type"],
-                val["data"],
-                val["data_type"]
-            )
-
+            processor = CustomEventReceivedProcessor(self, event)
+            self.processors.append(processor)
         elif key == "messagechannelnew":
-            """ MESSAGE CHANNEL NEW
-                -> href, hierarchy, channel_id
-            """
-            self.sequencediagram.messagechannelnew(
-                id,
-                val["hierarchy"],
-                val["channel_id"]
-            )
-
+            processor = MessageChannelNewProcessor(self, event)
+            self.processors.append(processor)
         elif key == "channelmessagereceived":
-            """ CHANNEL MESSAGE RECEIVED
-                -> href, hierarchy, channel_id, port_id, source_frame, target_frame, data, data_type
-            """
-            self.sequencediagram.channelmessagereceived(
-                id,
-                val["channel_id"],
-                val["port_id"],
-                val["source_frame"],
-                val["target_frame"],
-                val["data"],
-                val["data_type"]
-            )
-
+            processor = MessageChannelReceivedProcessor(self, event)
+            self.processors.append(processor)
         elif key == "broadcastchannelnew":
-            """ BROADCAST CHANNEL NEW
-                -> href, hierarchy, channel_name
-            """
-            self.sequencediagram.broadcastchannelnew(
-                id,
-                val["hierarchy"],
-                val["channel_name"]
-            )
-        
+            processor = BroadcastChannelNewProcessor(self, event)
+            self.processors.append(processor)
         elif key == "broadcastmessagereceived":
-            """ BROADCAST MESSAGE RECEIVED
-                -> href, hierarchy, channel_name, target_frame, data, data_type
-            """
-            self.sequencediagram.broadcastmessagereceived(
-                id,
-                val["channel_name"],
-                val["target_frame"],
-                val["data"],
-                val["data_type"]
-            )
-
+            processor = BroadcastMessageReceivedProcessor(self, event)
+            self.processors.append(processor)
         elif key == "broadcastmessagesent":
-            """ BROADCAST MESSAGE SENT
-                -> href, hierarchy, channel_name, source_frame, data, data_type
-            """
-            self.sequencediagram.broadcastmessagesent(
-                id,
-                val["channel_name"],
-                val["source_frame"],
-                val["data"],
-                val["data_type"]
-            )
-
+            processor = BroadcastMessageSentProcessor(self, event)
+            self.processors.append(processor)
+        
+        # JS Storage
         elif key == "localstorageset":
-            """ LOCALSTORAGE SET
-                -> href, hierarchy, key, val
-            """
-            self.sequencediagram.localstorageset(
-                id,
-                val["hierarchy"],
-                val["key"],
-                val["val"]
-            )
-
+            processor = LocalStorageSetProcessor(self, event)
+            self.processors.append(processor)
         elif key == "sessionstorageset":
-            """ SESSIONSTORAGE SET
-                -> href, hierarchy, key, val
-            """
-            self.sequencediagram.sessionstorageset(
-                id,
-                val["hierarchy"],
-                val["key"],
-                val["val"]
-            )
-        
+            processor = SessionStorageSetProcessor(self, event)
+            self.processors.append(processor)
         elif key == "cookieset":
-            """ COOKIE SET
-                -> href, hierarchy, val
-            """
-            self.sequencediagram.cookieset(
-                id,
-                val["hierarchy"],
-                val["val"]
-            )
-        
+            processor = CookieSetProcessor(self, event)
+            self.processors.append(processor)
         elif key == "idbadd" or key == "idbput":
-            """ INDEXEDDB ADD/PUT
-                -> href, hierarchy, db, objectstore, keypath, key, val
-            """
-            self.sequencediagram.idbset(
-                id,
-                val["hierarchy"],
-                val["db"],
-                val["objectstore"],
-                val["keypath"],
-                val["key"],
-                val["val"]
-            )
+            processor = IndexedDBSetProcessor(self, event)
+            self.processors.append(processor)
 
+        # JS Direct Access
         elif key == "windowpropnew":
-            """ WINDOW PROP NEW
-                -> href, hierarchy, key, val, valtype
-            """
-            self.sequencediagram.windowpropnew(
-                id,
-                val["hierarchy"],
-                val["key"],
-                val["val"],
-                val["valtype"]
-            )
-        
+            processor = WindowPropNewProcessor(self, event)
+            self.processors.append(processor)
         elif key == "windowpropchanged":
-            """ WINDOW PROP CHANGED
-                -> href, hierarchy, key, val, valtype
-            """
-            self.sequencediagram.windowpropchanged(
-                id,
-                val["hierarchy"],
-                val["key"],
-                val["val"],
-                val["valtype"]
-            )
+            processor = WindowPropChangedProcessor(self, event)
+            self.processors.append(processor)
 
+        # JS Navigate & JS Reload
         elif key == "locationset":
-            """ LOCATION SET
-                -> href, hierarchy, prop, target
-            """
-            self.sequencediagram.locationset(
-                id,
-                val["hierarchy"],
-                val["href"],
-                val["prop"],
-                val["target"]
-            )
+            processor = LocationSetProcessor(self, event)
+            self.processors.append(processor)
 
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame

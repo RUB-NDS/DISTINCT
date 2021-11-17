@@ -1,10 +1,8 @@
 import os
-import json
 
 class SequenceDiagram:
 
     def __init__(self, outputdir = None):
-        """ Constructor """
         # Setup output file
         if outputdir:
             self.sequencefile = f"{outputdir}/sequencediagram.txt"
@@ -27,9 +25,9 @@ class SequenceDiagram:
         os.system(f"java -jar ../tools/plantuml.jar -svg {self.sequencefile}")
 
     @staticmethod
-    def linebreaks(input: str, every: int = 200, escape: bool = False):
+    def linebreaks(input, every = 200, escape = False):
         """ Returns input string with linebreaks after x characters """
-        lines = str(input).splitlines()
+        lines = input.splitlines()
         newlined = []
         
         for line in lines:
@@ -48,424 +46,31 @@ class SequenceDiagram:
         else:
             return "\n".join(newlined) # do not escape line breaks
 
-    """ Events: Document """
-
-    def documentinit(self, id, hierarchy, href):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}" #orange\n'
+    def note(self, participant, event_id, event_timestamp, event_name,
+        event_keyval, linebreaks = 200, color = None
+    ):
+        """ Add note to sequence diagram """
+        note = (
+            f'participant "{participant}"\n'
+            f'note right of "{participant}" {f"#{color}" if color else ""}\n'
             f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Document Init\n'
-            f'URL: {self.linebreaks(href)}\n'
-            f'</code>\n'
-            f'end note'
+            f'ID: {event_id}\n'
+            f'Event: {event_name}\n'
         )
-
-    def documentinteractive(self, id, hierarchy, href, html):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Document Interactive\n'
-            f'URL: {self.linebreaks(href)}\n'
-            f'HTML:\n'
-            f'{self.linebreaks(html, every=500)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def documentbeforeunload(self, id, hierarchy):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Document Before Unload\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def httpredirect(self, id, hierarchy, href, status_code, location):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: HTTP Redirect\n'
-            f'Status Code: {status_code}\n'
-            f'Source: {self.linebreaks(href)}\n'
-            f'Location: {self.linebreaks(location)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def formsubmit(self, id, hierarchy, href, formbody):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Form Submit\n'
-            f'URL: {self.linebreaks(href)}\n'
-            f'Body: {self.linebreaks(json.dumps(formbody))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def metaredirect(self, id, hierarchy, href, wait_seconds, location):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Meta Redirect\n'
-            f'Wait Seconds: {wait_seconds}\n'
-            f'Source: {self.linebreaks(href)}\n'
-            f'Location: {self.linebreaks(location)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def metareload(self, id, hierarchy, href, wait_seconds):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Meta Reload\n'
-            f'Wait Seconds: {wait_seconds}\n'
-            f'Source: {self.linebreaks(href)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def refreshredirect(self, id, hierarchy, href, wait_seconds, location, status_code):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Refresh Redirect\n'
-            f'Status Code: {status_code}\n'
-            f'Wait Seconds: {wait_seconds}\n'
-            f'Source: {self.linebreaks(href)}\n'
-            f'Location: {self.linebreaks(location)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def refreshreload(self, id, hierarchy, href, wait_seconds, status_code):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Refresh Reload\n'
-            f'Status Code: {status_code}\n'
-            f'Wait Seconds: {wait_seconds}\n'
-            f'Source: {self.linebreaks(href)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def windowopen(self, id, hierarchy, opener_hierarchy, url):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(f'participant "{opener_hierarchy}"')
-        self.stm(f'"{opener_hierarchy}" -> "{hierarchy}": window.open()')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Window Open\n'
-            f'URL: {self.linebreaks(url)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def windowclose(self, id, hierarchy, opener_hierarchy):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(f'participant "{opener_hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Window Close\n'
-            f'</code>\n'
-            f'end note'
-        )
-        self.stm(f'"{hierarchy}" -> "{opener_hierarchy}": window.close()')
-    
-    def closedaccessed(self, id, hierarchy, closed):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Closed Accessed\n'
-            f'Closed: {closed}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    """ Events: Web Messaging """
-
-    def postmessagereceived(self, id, receiver, sender, data, datatype, ports, targetorigincheck):
-        self.stm(f'participant "{receiver}"')
-        self.stm(f'participant "{sender}"')
-        self.stm(f'"{sender}" -> "{receiver}": window.postMessage()')
         
-        if targetorigincheck == "*":
-            self.stm(
-                f'note right of "{receiver}" #red\n'
-                f'<code>\n'
-                f'ID: {id}\n'
-                f'Event: PostMessage Received\n'
-                f'Target Origin Check: {targetorigincheck}\n'
-                f'Data Type: {datatype}\n'
-                f'Data: {self.linebreaks(json.dumps(data))}\n'
-                f'Ports: {self.linebreaks(json.dumps(ports))}\n'
-                f'</code>\n'
-                f'end note'
-            )
-        else:
-            self.stm(
-                f'note right of "{receiver}" #green\n'
-                f'<code>\n'
-                f'ID: {id}\n'
-                f'Event: PostMessage Received\n'
-                f'Target Origin Check: {targetorigincheck}\n'
-                f'Data Type: {datatype}\n'
-                f'Data: {self.linebreaks(json.dumps(data))}\n'
-                f'Ports: {self.linebreaks(json.dumps(ports))}\n'
-                f'</code>\n'
-                f'end note'
-            )
-
-    def addeventlistener(self, id, hierarchy, type, method, callback):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Add Event Listener\n'
-            f'Type: {type}\n'
-            f'Method: {method}\n'
-            f'Callback: {self.linebreaks(callback)}\n'
+        for key, val in event_keyval.items():
+            note += f"{key}: {self.linebreaks(val, every=linebreaks)}\n"
+        
+        note += (
             f'</code>\n'
             f'end note'
         )
+        self.stm(note)
 
-    def removeeventlistener(self, id, hierarchy, type, method, callback):
-        self.stm(f'participant "{hierarchy}"')
+    def arrow(self, participant_source: str, participant_target: str, event_name: str):
+        """ Add arrow from source to target in sequence diagram """
         self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Remove Event Listener\n'
-            f'Type: {type}\n'
-            f'Method: {method}\n'
-            f'Callback: {self.linebreaks(callback)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def customeventnew(self, id, hierarchy, type, data, data_type):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Custom Event New\n'
-            f'Type: {type}\n'
-            f'Data Type: {data_type}\n'
-            f'Data: {self.linebreaks(json.dumps(data))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def customeventreceived(self, id, hierarchy, type, data, data_type):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Custom Event Received\n'
-            f'Type: {type}\n'
-            f'Data Type: {data_type}\n'
-            f'Data: {self.linebreaks(json.dumps(data))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def messagechannelnew(self, id, hierarchy, channel_id):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Message Channel New\n'
-            f'Channel ID: #{channel_id}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def channelmessagereceived(self, id, channel_id, port_id, source_frame, target_frame, data, data_type):
-        self.stm(f'participant "{source_frame}"')
-        self.stm(f'participant "{target_frame}"')
-        self.stm(f'"{source_frame}" -> "{target_frame}": &#35;{channel_id}.{port_id}.postMessage()')
-        self.stm(
-            f'note right of "{target_frame}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Channel Message Received\n'
-            f'Channel ID: #{channel_id}\n'
-            f'Port ID: {port_id}\n'
-            f'Data Type: {data_type}\n'
-            f'Data: {self.linebreaks(json.dumps(data))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def broadcastchannelnew(self, id, hierarchy, channel_name):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Broadcast Channel New\n'
-            f'Channel Name: {channel_name}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def broadcastmessagereceived(self, id, channel_name, target_frame, data, data_type):
-        self.stm(f'participant "{target_frame}"')
-        self.stm(
-            f'note right of "{target_frame}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Broadcast Message Received\n'
-            f'Channel Name: {channel_name}\n'
-            f'Data Type: {data_type}\n'
-            f'Data: {self.linebreaks(json.dumps(data))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def broadcastmessagesent(self, id, channel_name, source_frame, data, data_type):
-        self.stm(f'participant "{source_frame}"')
-        self.stm(
-            f'note right of "{source_frame}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Broadcast Message Sent\n'
-            f'Channel Name: {channel_name}\n'
-            f'Data Type: {data_type}\n'
-            f'Data: {self.linebreaks(json.dumps(data))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    """ Events: Storage """
-
-    def localstorageset(self, id, hierarchy, key, val):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: LocalStorage Set\n'
-            f'Key: {self.linebreaks(key)}\n'
-            f'Value: {self.linebreaks(val)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def sessionstorageset(self, id, hierarchy, key, val):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: SessionStorage Set\n'
-            f'Key: {self.linebreaks(key)}\n'
-            f'Value: {self.linebreaks(val)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    def cookieset(self, id, hierarchy, val):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Cookie Set\n'
-            f'Value: {self.linebreaks(val)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-    
-    def idbset(self, id, hierarchy, db, objectstore, keypath, key, val):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: IndexedDB Set\n'
-            f'Database: {self.linebreaks(db)}\n'
-            f'Object Store: {self.linebreaks(objectstore)}\n'
-            f'Key Path: {self.linebreaks(keypath)}\n'
-            f'Key: {self.linebreaks(key)}\n'
-            f'Value: {self.linebreaks(val)}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    """ Events: Props """
-
-    def windowpropnew(self, id, hierarchy, key, val, valtype):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Window Property New\n'
-            f'Key: {self.linebreaks(key)}\n'
-            f'Value Type: {self.linebreaks(valtype)}\n'
-            f'Value: {self.linebreaks(json.dumps(val))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-    
-    def windowpropchanged(self, id, hierarchy, key, val, valtype):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Window Property Changed\n'
-            f'Key: {self.linebreaks(key)}\n'
-            f'Value Type: {self.linebreaks(valtype)}\n'
-            f'Value: {self.linebreaks(json.dumps(val))}\n'
-            f'</code>\n'
-            f'end note'
-        )
-
-    """ Events: Location """
-
-    def locationset(self, id, hierarchy, href, prop, target):
-        self.stm(f'participant "{hierarchy}"')
-        self.stm(
-            f'note right of "{hierarchy}"\n'
-            f'<code>\n'
-            f'ID: {id}\n'
-            f'Event: Location Set\n'
-            f'Property: {prop}\n'
-            f'Source: {self.linebreaks(href)}\n'
-            f'Target: {self.linebreaks(target)}\n'
-            f'</code>\n'
-            f'end note'
+            f'participant "{participant_source}"\n'
+            f'participant "{participant_target}"\n'
+            f'"{participant_source}" -> "{participant_target}": Event: {event_name}'
         )
