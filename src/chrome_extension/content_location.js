@@ -196,7 +196,7 @@ let content_location = () => {
         enumerable: true,
         value: (...args) => {
             window._sso._event("locationset", {
-                prop: "reload()",
+                prop: "reload",
                 target: ""
             }).finally(() => {
                 return _reload_descriptor.value.call(window.location, ...args);
@@ -211,7 +211,7 @@ let content_location = () => {
         value: (...args) => {
             let url = args[0];
             window._sso._event("locationset", {
-                prop: "assign()",
+                prop: "assign",
                 target: url
             }).finally(() => {
                 return _assign_descriptor.value.call(window.location, ...args);
@@ -226,7 +226,7 @@ let content_location = () => {
         value: (...args) => {
             let url = args[0];
             window._sso._event("locationset", {
-                prop: "replace()",
+                prop: "replace",
                 target: url
             }).finally(() => {
                 return _replace_descriptor.value.call(window.location, ...args);

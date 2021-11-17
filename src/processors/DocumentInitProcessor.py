@@ -21,6 +21,5 @@ class DocumentInitProcessor(EventProcessor):
             "Document Init",
             {
                 "URL": self.val["href"]
-            },
-            color="orange"
+            }
         )
