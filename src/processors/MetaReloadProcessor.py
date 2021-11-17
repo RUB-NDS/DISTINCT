@@ -14,7 +14,6 @@ class MetaReloadProcessor(EventProcessor):
             self.timestamp,
             "Meta Reload",
             {
-                "Wait Seconds": self.val["wait_seconds"],
-                "Source": self.val["href"]
+                "Wait Seconds": self.val["wait_seconds"]
             }
         )

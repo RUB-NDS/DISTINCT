@@ -16,7 +16,6 @@ class RefreshRedirectProcessor(EventProcessor):
             {
                 "Status Code": self.val["status_code"],
                 "Wait Seconds": self.val["wait_seconds"],
-                "Source": self.val["href"],
                 "Location": self.val["location"]
             }
         )

@@ -15,7 +15,6 @@ class MetaRedirectProcessor(EventProcessor):
             "Meta Redirect",
             {
                 "Wait Seconds": self.val["wait_seconds"],
-                "Source": self.val["href"],
                 "Location": self.val["location"]
             }
         )

@@ -14,6 +14,10 @@ let content_frame = () => {
             case "loading":
                 _sso._event("documentloading", {});
             case "interactive":
+                if (
+                    "_sso._type" in document.documentElement.attributes
+                    && document.documentElement.attributes["_sso._type"].value === "location"
+                ) return; // Do not send event if this document is a redirect
                 _sso._event("documentinteractive", {html: _sso._html()});
             case "complete":
                 _sso._event("documentcomplete", {});

@@ -15,7 +15,6 @@ class RefreshReloadProcessor(EventProcessor):
             "Refresh Reload",
             {
                 "Status Code": self.val["status_code"],
-                "Wait Seconds": self.val["wait_seconds"],
-                "Source": self.val["href"]
+                "Wait Seconds": self.val["wait_seconds"]
             }
         )

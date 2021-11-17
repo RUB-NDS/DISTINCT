@@ -15,7 +15,6 @@ class HTTPRedirectProcessor(EventProcessor):
             "HTTP Redirect",
             {
                 "Status Code": self.val["status_code"],
-                "Source": self.val["href"],
                 "Location": self.val["location"]
             }
         )
