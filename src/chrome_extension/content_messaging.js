@@ -324,7 +324,10 @@ let content_messaging = () => {
             data_type: data_type
         });
 
-        return new window._sso._CustomEvent(...args);
+        let custom_event = new window._sso._CustomEvent(...args);
+        custom_event._source_frame = _sso._hierarchy(window);
+
+        return custom_event;
     }
 
     // Wrapper of window.dispatchEvent
@@ -335,11 +338,16 @@ let content_messaging = () => {
         let data = event.detail || undefined;
         let data_type = typeof data;
         
-        _sso._event("customeventreceived", {
-            type: type,
-            data: data,
-            data_type: data_type
-        });
+        if (!_sso._default_window_events.includes(type)) {
+            // This is a custom event
+            _sso._event("customeventreceived", {
+                type: type,
+                data: data,
+                data_type: data_type,
+                source_frame: event._source_frame,
+                target_frame: _sso._hierarchy(window)
+            });
+        }
 
         return window._sso._dispatchEvent(...args);
     }

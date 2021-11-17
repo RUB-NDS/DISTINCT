@@ -67,7 +67,7 @@ class SequenceDiagram:
         )
         self.stm(note)
 
-    def arrow(self, participant_source: str, participant_target: str, event_name: str):
+    def arrow(self, participant_source, participant_target, event_name):
         """ Add arrow from source to target in sequence diagram """
         self.stm(
             f'participant "{participant_source}"\n'
