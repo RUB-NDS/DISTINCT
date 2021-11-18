@@ -1,4 +1,5 @@
 import json
+from os import stat
 
 from urllib.parse import urlparse
 from urllib.parse import unquote
@@ -18,13 +19,22 @@ class PostMessageReceivedProcessor(EventProcessor):
             "Receiver Origin Check": self.val["targetorigincheck"],
             "Data Type": self.val["datatype"],
             "Data": json.dumps(self.val["data"]),
-            "Ports": json.dumps(self.val["ports"])
+            "Ports": json.dumps(self.val["ports"]),
+            "Info": ""
         }
         color = None
 
+        # Check if SSO-related params (like client_id, id_token, ...) are in postMessage data
+        if self.search_loginreqresp(self.val["data"]):
+            keyval["Info"] += (
+                "Detected SSO-related parameter names in the postMessage data. Check if this "
+                "postMessage is related to SSO. It may contain the Login Request or Login Response. "
+            )
+            color = "orange"
+
         # Check for wildcard receiver origin
         if self.val["targetorigincheck"] == "*":
-            keyval["Info"] = (
+            keyval["Info"] += (
                 "Detected potential postMessage vulnerability. Check if this postMessage contains "
                 "confidential data and is sent across windows. This postMessage does not "
                 "guarantee message confidentiality, because the wildcard receiver origin check is used."
@@ -37,7 +47,7 @@ class PostMessageReceivedProcessor(EventProcessor):
             related_events = self.search_userinput(ctx.processors, self.val["targetorigincheck"])
             
             if related_events:
-                keyval["Info"] = (
+                keyval["Info"] += (
                     "Detected that the postMessage receiver origin check potentially depends on "
                     "user input. Check if the user input in the related events influences the "
                     "postMessage receiver origin check by actively modifying it."
@@ -46,7 +56,7 @@ class PostMessageReceivedProcessor(EventProcessor):
                 color = "orange"
             
             else:
-                color = "green"
+                if not color: color = "green"
 
         ctx.sequencediagram.arrow(
             self.val["sender"],
@@ -62,6 +72,25 @@ class PostMessageReceivedProcessor(EventProcessor):
             keyval,
             color = color
         )
+
+    @staticmethod
+    def search_loginreqresp(data):
+        """ Search for login request and login response in data.
+            Returns true, if login request is potentially found.
+            Returns false, if login request is potentially not found.
+        """
+        datastring = json.dumps(data)
+
+        if (
+            "client_id" in datastring
+            or "redirect_uri" in datastring
+            or "code" in datastring
+            or "access_token" in datastring
+            or "id_token" in datastring
+        ):
+            return True
+        else:
+            return False
 
     @staticmethod
     def search_userinput(processors, url):
