@@ -23,5 +23,5 @@ class DocumentInteractiveProcessor(EventProcessor):
                 "URL": self.val["href"],
                 "HTML": self.val["html"]
             },
-            linebreaks=500
+            linebreaks=300
         )

@@ -47,7 +47,7 @@ class SequenceDiagram:
             return "\n".join(newlined) # do not escape line breaks
 
     def note(self, participant, event_id, event_timestamp, event_name,
-        event_keyval, linebreaks = 200, color = None
+        event_keyval, linebreaks = 100, color = None
     ):
         """ Add note to sequence diagram """
         note = (

@@ -19,5 +19,6 @@ class WindowPropNewProcessor(EventProcessor):
                 "Key": self.val["key"],
                 "Value Type": self.val["valtype"],
                 "Value": json.dumps(self.val["val"])
-            }
+            },
+            linebreaks=300
         )
