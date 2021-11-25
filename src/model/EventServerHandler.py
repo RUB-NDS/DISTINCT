@@ -43,13 +43,22 @@ class EventServerHandler(SimpleHTTPRequestHandler):
         self.respond(True)
 
     def respond(self, success):
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        if success:
-            self.wfile.write(json.dumps({"success": True}).encode("utf8"))
-        else:
-            self.wfile.write(json.dumps({"success": False}).encode("utf8"))
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            if success:
+                self.wfile.write(json.dumps({"success": True}).encode("utf8"))
+            else:
+                self.wfile.write(json.dumps({"success": False}).encode("utf8"))
+        except BrokenPipeError as e:
+            # If the extension issues a fetch request and then immediately closes the frame,
+            # it closes the pipe before we can send a response to it.
+            # This is however not a problem, since we received the event, but cannot signal it
+            # to the chrome extension that we received it. However, the frame nevertheless does not
+            # care if we received it, since the frame is closed.
+            logger.warning("Cannot send response because pipe is already closed")
+            logger.exception(e)
 
     def end_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")

@@ -38,6 +38,13 @@ def make_location_document(status_code: int, location: str) -> str:
 def response(flow: HTTPFlow) -> None:
     status_code = flow.response.status_code
     
+    if (
+        "Sec-Fetch-Mode" in flow.request.headers
+        and flow.request.headers["Sec-Fetch-Mode"] != "navigate"
+    ):
+        # We are only interested in top-level navigations
+        return
+
     # Transform HTTP redirects using the "Location" header to HTTP/200 documents
     if "Location" in flow.response.headers:
         location = flow.response.headers["Location"]

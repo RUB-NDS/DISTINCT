@@ -6,7 +6,10 @@
 chrome.webRequest.onHeadersReceived.addListener((details) => {
     let headers = details.responseHeaders;
     for (let header of headers) {
-        if (header.name.toLowerCase() == "content-security-policy") {
+        if (
+            header.name.toLowerCase() == "content-security-policy"
+            || header.name.toLowerCase() == "content-security-policy-report-only"
+        ) {
             header.value = "";
         }
     }

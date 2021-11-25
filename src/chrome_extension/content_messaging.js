@@ -37,7 +37,8 @@ let content_messaging = () => {
         "transitioncancel", "transitionend", "transitionrun", "transitionstart",
         "unhandledrejection", "unload", "vrdisplayactivate", "vrdisplayblur", "vrdisplayconnect",
         "vrdisplaydeactivate", "vrdisplaydisconnect", "vrdisplayfocus",
-        "vrdisplaypointerrestricted", "vrdisplaypointerunrestricted", "vrdisplaypresentchange"
+        "vrdisplaypointerrestricted", "vrdisplaypointerunrestricted", "vrdisplaypresentchange",
+        "scroll", "touchmove", "keydown"
     ]
 
     // If executed in frame X, this function sets the window._sso._source_frame property
