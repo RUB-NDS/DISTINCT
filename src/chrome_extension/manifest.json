@@ -28,6 +28,7 @@
     "background": {
         "scripts": [
             "background_csp.js",
+            "background_cors.js",
             "background_pm.js"
         ],
         "persistent": true
