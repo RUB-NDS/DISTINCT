@@ -1,3 +1,5 @@
+import json
+
 from model.EventProcessor import EventProcessor
 
 class AddEventListenerProcessor(EventProcessor):
@@ -16,6 +18,6 @@ class AddEventListenerProcessor(EventProcessor):
             {
                 "Type": self.val["type"],
                 "Method": self.val["method"],
-                "Callback": self.val["callback"]
+                "Callback": json.dumps(self.val["callback"])
             }
         )
