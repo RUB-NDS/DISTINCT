@@ -7,8 +7,6 @@
 
 chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
     let headers = details.requestHeaders;
-    console.log(headers);
-    console.log(details.initiator);
     if (
         details.initiator // origin where the request was initiated
     ) {

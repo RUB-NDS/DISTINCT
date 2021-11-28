@@ -27,7 +27,7 @@ class SequenceDiagram:
     @staticmethod
     def linebreaks(input, every = 200, escape = False):
         """ Returns input string with linebreaks after x characters """
-        lines = input.splitlines()
+        lines = str(input).splitlines()
         newlined = []
         
         for line in lines:

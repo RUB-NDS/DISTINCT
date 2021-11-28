@@ -52,7 +52,10 @@ let content_flow = () => {
     /* Docs: https://developers.google.com/identity/protocols/oauth2/web-server */
     if (
         location.host === "accounts.google.com"
-        && location.pathname === "/o/oauth2/v2/auth"
+        && (
+            location.pathname === "/o/oauth2/v2/auth"
+            || location.pathname === "/o/oauth2/auth"
+        )
         && "client_id" in _sso._qparams
         && "redirect_uri" in _sso._qparams
         && "response_type" in _sso._qparams

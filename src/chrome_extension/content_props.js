@@ -51,7 +51,7 @@ let content_props = () => {
         });
     }
 
-    setInterval(check_props, 500);
+    setInterval(check_props, 1000);
 
     console.info("content_props.js initialized");
 }
