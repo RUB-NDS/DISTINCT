@@ -1,0 +1,4 @@
+beautifulsoup4==4.10.0
+selenium==3.141.0
+selenium_stealth==1.0.6
+mitmproxy==7.0.4
