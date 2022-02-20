@@ -1,0 +1,63 @@
+@endpoint = http://localhost:20200/api
+
+### Start report handler
+# @name start_report_handler
+POST {{endpoint}}/handlers HTTP/1.1
+
+@uuid = {{ start_report_handler.response.body.data.uuid }}
+
+### Get report handlers
+GET {{endpoint}}/handlers HTTP/1.1
+
+### Dispatch "DocumentInit" report to handler
+POST {{endpoint}}/handlers/{{uuid}}/dispatch HTTP/1.1
+Content-Type: application/json
+
+{
+  "report": {
+    "key": "documentinit",
+    "val": {
+      "hierarchy": "top",
+      "href": "https://example.com/index.html?q=1#r=2",
+      "hrefparts": {
+        "protocol": "https",
+        "hostname": "example.com",
+        "port": "443",
+        "pathname": "/index.html",
+        "query": "q=1",
+        "hash": "r=2",
+        "origin": "https://example.com"
+      }
+    }
+  }
+}
+
+### Dispatch "DocumentInteractive" report to handler
+POST {{endpoint}}/handlers/{{uuid}}/dispatch HTTP/1.1
+Content-Type: application/json
+
+{
+  "report": {
+    "key": "documentinteractive",
+    "val": {
+      "hierarchy": "top",
+      "href": "https://example.com/index.html?q=1#r=2",
+      "hrefparts": {
+        "protocol": "https",
+        "hostname": "example.com",
+        "port": "443",
+        "pathname": "/index.html",
+        "query": "q=1",
+        "hash": "r=2",
+        "origin": "https://example.com"
+      },
+      "html": "<html><body>Hello World</body></html>"
+    }
+  }
+}
+
+### Get reports from report handler
+GET {{endpoint}}/handlers/{{uuid}}/reports HTTP/1.1
+
+### Get SVG from report handler
+GET {{endpoint}}/handlers/{{uuid}}/svg HTTP/1.1
