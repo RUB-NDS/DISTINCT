@@ -11,6 +11,9 @@
         <span v-if="this.reporthandler.running">Status: <span style="color: green;">Running</span></span>
         <span v-else>Status: <span style="color: red;">Stopped</span></span>
       </li>
+      <li class="list-group-item">Start Time: {{ timestampToDate(this.reporthandler.starttime) }}</li>
+      <li class="list-group-item">Reports: {{ this.reporthandler.reportsCount }}</li>
+      <li class="list-group-item">Queued: {{ this.reporthandler.queueSize }}</li>
     </ul>
     <div class="card-body">
       <div class="btn-group" role="group">
@@ -25,11 +28,13 @@
 
 <script>
 import { stopHandler } from '../api/connector.js'
+import { timestampToDate } from '../helpers.js'
 
 export default {
   name: 'ReportHandlerCard',
   props: ['reporthandler'],
   methods: {
+    'timestampToDate': timestampToDate,
     'stopHandler': function(handler_uuid) {
       stopHandler(handler_uuid).then((r) => {
         if (r.success) {

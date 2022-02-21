@@ -18,7 +18,7 @@ class ReportHandler(Thread):
         self.report_dispatcher = report_dispatcher
 
         self.uuid = str(uuid4())
-        self.starttime = str(time.time())
+        self.starttime = str(int(time.time()))
 
         self.queue = Queue()
         self.counter = 0

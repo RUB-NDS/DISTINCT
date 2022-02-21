@@ -8,6 +8,11 @@
       <div class="btn-group me-2">
         <button class="btn btn-primary" v-on:click="newHandler()">New Handler</button>
       </div>
+      <div class="input-group">
+        <div class="input-group-text">Update Interval</div>
+        <input type="number" class="form-control" min="0" max="60" v-on:input="startIntervalUpdater(this.$refs.updateInterval.value)" ref="updateInterval">
+        <div class="input-group-text">s</div>
+      </div>
     </div>
     <p></p>
 
@@ -34,7 +39,8 @@ export default {
   },
   data: () => {
     return {
-      'reporthandlers': []
+      'reporthandlers': [],
+      'intervalUpdater': undefined
     }
   },
   methods: {
@@ -42,7 +48,9 @@ export default {
       getHandlers().then((r) => {
         if (r.success) {
           this.reporthandlers = r.data.map((r) => {
-            return new ReportHandler(r.uuid, r.running)
+            return new ReportHandler(
+              r.uuid, r.running, r.starttime, r.reportsCount, r.queueSize
+            )
           })
         } else {
            alert(`Error: ${r['error']}`)
@@ -61,6 +69,17 @@ export default {
       }).catch((e) => {
         alert(`Error: ${e['error']}`)
       })
+    },
+    'startIntervalUpdater': function(seconds) {
+      console.info(`Updating report handlers every ${seconds} seconds`)
+      if (this.intervalUpdater) {
+        clearInterval(this.intervalUpdater)
+      }
+      if (seconds > 0) {
+        this.intervalUpdater = setInterval(() => {
+          this.getHandlers()
+        }, seconds * 1000)
+      }
     }
   }
 }

@@ -102,7 +102,13 @@ class ReportDispatcher(Thread):
         if request.method == "GET":
             body = {"success":True, "error": None, "data": []}
             for uuid, handler in self.report_handlers.items():
-                body["data"].append({"uuid": uuid, "running": handler.is_alive()})
+                body["data"].append({
+                    "uuid": uuid,
+                    "running": handler.is_alive(),
+                    "starttime": handler.starttime,
+                    "reportsCount": handler.counter,
+                    "queueSize": handler.queue.qsize()
+                })
             return body
         elif request.method == "POST":
             report_handler = self.new_report_handler()
@@ -111,7 +117,10 @@ class ReportDispatcher(Thread):
                 "error": None,
                 "data": {
                     "uuid": report_handler.uuid,
-                    "running": report_handler.is_alive()
+                    "running": report_handler.is_alive(),
+                    "starttime": report_handler.starttime,
+                    "reportsCount": report_handler.counter,
+                    "queueSize": report_handler.queue.qsize()
                 }
             }
             return body
