@@ -12,19 +12,19 @@ class SequenceDiagram:
 
     def svg(self):
         """ Compile sequence diagram to SVG """
-        temp_sequence_file_txt = "/tmp/distinct-seq-diagram.txt"
-        temp_sequence_file_svg = "/tmp/distinct-seq-diagram.svg"
+        tmp_sequence_file_txt = "/app/data/tmp/sequence-diagram.txt"
+        tmp_sequence_file_svg = "/app/data/tmp/sequence-diagram.svg"
 
         # Write sequence diagram to file
-        with open(temp_sequence_file_txt, "w") as f:
+        with open(tmp_sequence_file_txt, "w") as f:
             f.write("\n".join(self.stms + ["\n@enduml"]))
 
         # Compile sequence diagram to SVG
-        os.system(f"java -jar ./plantuml/plantuml.jar -svg {temp_sequence_file_txt}")
+        os.system(f"java -jar ./plantuml/plantuml.jar -svg {tmp_sequence_file_txt}")
 
         # Read SVG from file
         svg = None
-        with open(temp_sequence_file_svg, "r") as f:
+        with open(tmp_sequence_file_svg, "r") as f:
             svg = f.read()
         return svg
 
