@@ -1,4 +1,3 @@
-from cgitb import handler
 import logging
 from threading import Thread
 from functools import wraps
@@ -24,8 +23,8 @@ class ReportDispatcher(Thread):
     def run(self):
         logger.info("Starting report dispatcher thread")
 
-        listen_host = "localhost"
-        listen_port = 20200
+        listen_host = "0.0.0.0"
+        listen_port = 80
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)

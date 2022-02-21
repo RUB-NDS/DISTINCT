@@ -45,7 +45,7 @@ def setup_argparser():
     )
     parser.add_argument("--port-proxy",
         type=int,
-        default=20201,
+        default=8080,
         help="set port of proxy"
     )
     return parser
@@ -89,7 +89,7 @@ def setup_logger(outputdir, verbosity):
         "ERROR": logging.ERROR,
         "CRITICAL": logging.CRITICAL
     }
-    
+
     logformatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s")
 
     rootlogger = logging.getLogger()
@@ -158,7 +158,7 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
     options.add_argument("start-maximized") # bypass selenium detection
     options.add_experimental_option("excludeSwitches", ["enable-automation"])  # bypass selenium detection
     options.add_experimental_option("useAutomationExtension", False)  # bypass selenium detection
-    
+
     if chromium_binary:
         options.binary_location = chromium_binary
 
@@ -168,7 +168,7 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
     proxy.ssl_proxy = f"127.0.0.1:{proxyport}"
     capabilities = webdriver.DesiredCapabilities.CHROME
     proxy.add_to_capabilities(capabilities)
-    
+
     if webdriver_path:
         driver = webdriver.Chrome(
             executable_path=webdriver_path,
@@ -190,7 +190,7 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
         renderer="Intel Iris OpenGL Engine",
         fix_hairline=True
     )
-    
+
     return driver
 
 """ Proxy """
@@ -198,7 +198,7 @@ def setup_chromedriver(chromeprofile, proxyport, chromium_binary=None, webdriver
 def setup_proxy(outputdir, proxyport):
     stdout = f"{outputdir}/proxy_stdout.log"
     stderr = f"{outputdir}/proxy_stderr.log"
-    
+
     with open(stdout, "wb") as out, open(stderr, "wb") as err:
         proxy = subprocess.Popen([
             "mitmdump",
@@ -210,9 +210,9 @@ def setup_proxy(outputdir, proxyport):
             "--scripts", "./mitmproxy/redirects.py", # Transform HTTP/3** redirects to HTTP/200 docs
             "--set", f"hardump={outputdir}/proxy.har"
         ], stdout=out, stderr=err)
-    
+
         logger.info(f"Started proxy on port {proxyport}")
-        
+
         return proxy
 
 def terminate_proxy(proxy):
