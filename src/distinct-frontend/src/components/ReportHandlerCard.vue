@@ -23,26 +23,16 @@
         <button type="button" class="btn btn-outline-primary">Proxy</button>
       </div>
     </div>
-    <SVGModal />
   </div>
 </template>
 
 <script>
 import { stopHandler, getSVG } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
-import SVGModal from './SVGModal.vue'
 
 export default {
   name: 'ReportHandlerCard',
   props: ['reporthandler'],
-  components: {
-    SVGModal
-  },
-  data: () => {
-    return {
-      'svg': '<svg></svg>'
-    }
-  },
   methods: {
     'timestampToDate': timestampToDate,
     'stopHandler': function(handler_uuid) {

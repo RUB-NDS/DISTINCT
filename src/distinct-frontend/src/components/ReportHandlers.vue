@@ -24,6 +24,8 @@
         />
       </div>
     </div>
+
+    <SVGModal />
   </div>
 </template>
 
@@ -31,11 +33,12 @@
 import { getHandlers, newHandler } from '../api/connector.js'
 import ReportHandler from '../model/ReportHandler.js'
 import ReportHandlerCard from './ReportHandlerCard.vue'
+import SVGModal from './SVGModal.vue'
 
 export default {
   name: 'ReportHandlers',
   components: {
-    ReportHandlerCard
+    ReportHandlerCard, SVGModal
   },
   data: () => {
     return {
