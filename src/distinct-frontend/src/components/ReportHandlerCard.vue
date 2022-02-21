@@ -19,20 +19,30 @@
       <div class="btn-group" role="group">
         <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop</button>
         <button type="button" class="btn btn-outline-primary">Reports</button>
-        <button type="button" class="btn btn-outline-primary">SVG</button>
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
         <button type="button" class="btn btn-outline-primary">Proxy</button>
       </div>
     </div>
+    <SVGModal />
   </div>
 </template>
 
 <script>
-import { stopHandler } from '../api/connector.js'
+import { stopHandler, getSVG } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
+import SVGModal from './SVGModal.vue'
 
 export default {
   name: 'ReportHandlerCard',
   props: ['reporthandler'],
+  components: {
+    SVGModal
+  },
+  data: () => {
+    return {
+      'svg': '<svg></svg>'
+    }
+  },
   methods: {
     'timestampToDate': timestampToDate,
     'stopHandler': function(handler_uuid) {
@@ -48,6 +58,22 @@ export default {
         alert(`Error: ${e['error']}`)
       })
     },
+    'showSVG': function(handler_uuid) {
+      const modal = document.getElementById('svgModal')
+      const modalTitle = modal.querySelector('.modal-title')
+      const modalBody = modal.querySelector('.modal-body')
+      modalTitle.textContent = handler_uuid
+
+      getSVG(handler_uuid).then((r) => {
+        if (r.success) {
+          modalBody.innerHTML = r.data['svg']
+        } else {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    }
   }
 }
 </script>
