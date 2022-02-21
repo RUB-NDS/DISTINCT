@@ -2,7 +2,7 @@ from cgitb import handler
 import logging
 from threading import Thread
 from functools import wraps
-from flask import Flask, request
+from flask import Flask, request, redirect
 from flask_cors import CORS
 from model.ReportHandler import ReportHandler
 
@@ -16,8 +16,9 @@ class ReportDispatcher(Thread):
         self.daemon = True
 
         self.report_handlers = {}
-        self.app = Flask(__name__)
-        CORS(self.app, resources={r"/api/*": {"origins": "*"}})
+        self.app = Flask(__name__, static_folder="../../distinct-frontend/dist", static_url_path="/static")
+        self.app.url_map.strict_slashes = False # allow trailing slashes
+        CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
         self.register_routes()
 
     def run(self):
@@ -32,6 +33,8 @@ class ReportDispatcher(Thread):
     def register_routes(self):
         logger.info("Registering routes for the report dispatcher's webserver")
         self.app.add_url_rule("/", view_func=self.index, methods=["GET"])
+        self.app.add_url_rule("/app", view_func=self.frontend, methods=["GET"], defaults={"path": ""})
+        self.app.add_url_rule("/app/<path:path>", view_func=self.frontend, methods=["GET"])
         self.app.add_url_rule("/api/handlers", view_func=self.handlers, methods=["GET", "POST"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/dispatch", view_func=self.dispatch_on_handler, methods=["POST"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/reports", view_func=self.reports_on_handler, methods=["GET"])
@@ -79,11 +82,19 @@ class ReportDispatcher(Thread):
                 return body
         return wrapper
 
-    """ Webserver Routes """
+    """ Webserver Frontend Routes """
 
     # GET /
     def index(self):
-        return "<h1>it works</h1>"
+        return redirect("/app", 302)
+
+    # GET /app
+    # GET /app/<path:path>
+    def frontend(self, path):
+        print(path)
+        return self.app.send_static_file("index.html")
+
+    """ Webserver API Routes """
 
     # GET|POST /handlers
     def handlers(self):
