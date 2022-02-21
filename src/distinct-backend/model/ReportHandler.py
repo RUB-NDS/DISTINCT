@@ -13,6 +13,7 @@ class ReportHandler(Thread):
         logger.info("Initializing report handler thread")
         super(ReportHandler, self).__init__()
         self.daemon = True
+        self.should_stop = False
 
         self.report_dispatcher = report_dispatcher
 
@@ -26,13 +27,19 @@ class ReportHandler(Thread):
 
     def run(self):
         logger.info("Starting report handler thread")
-        while True:
+        while True and not self.should_stop:
             # {"id": int, "timestamp": str, "key": str, "val": any}
-            report = self.queue.get()
-            logger.debug(f"Report handler {self.uuid} processes report: {report}")
+            try:
+                report = self.queue.get(timeout=10)
 
-            # Process report
-            self.ctx.process_report(report)
+                # Process report
+                logger.debug(f"Report handler {self.uuid} processes report: {report}")
+                self.ctx.process_report(report)
+            except:
+                continue
+
+    def stop(self):
+        self.should_stop = True
 
     def queue_report(self, report):
         report_copy = report["report"].copy()

@@ -31,30 +31,32 @@ class ReportDispatcher(Thread):
 
     def register_routes(self):
         logger.info("Registering routes for the report dispatcher's webserver")
+
+        # Frontend
         self.app.add_url_rule("/", view_func=self.index, methods=["GET"])
         self.app.add_url_rule("/app", view_func=self.frontend, methods=["GET"], defaults={"path": ""})
         self.app.add_url_rule("/app/<path:path>", view_func=self.frontend, methods=["GET"])
+
+        # Report handlers
         self.app.add_url_rule("/api/handlers", view_func=self.handlers, methods=["GET", "POST"])
+        self.app.add_url_rule("/api/handlers/<handler_uuid>/stop", view_func=self.stop_handler, methods=["POST"])
+
+        # Reports
         self.app.add_url_rule("/api/handlers/<handler_uuid>/dispatch", view_func=self.dispatch_on_handler, methods=["POST"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/reports", view_func=self.reports_on_handler, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/svg", view_func=self.svg_on_handler, methods=["GET"])
 
     """ Report Handler Routines """
 
-    def start_report_handler(self):
+    def new_report_handler(self):
         report_handler = ReportHandler(self)
         report_handler.start()
         self.report_handlers[report_handler.uuid] = report_handler
         return report_handler
 
     def stop_report_handler(self, handler_uuid):
-        if handler_uuid in self.report_handlers:
+        if self.report_handlers[handler_uuid].is_alive():
             self.report_handlers[handler_uuid].stop()
-            return True
-        else:
-            logger.error(f"Failed to stop report handler with uuid {handler_uuid}"
-            f" because the report handler does not exist")
-            return False
 
     def pass_report_to_handler(self, report, handler_uuid):
         # report = {"report": {"key": str, "val": any}}
@@ -103,7 +105,7 @@ class ReportDispatcher(Thread):
                 body["data"].append({"uuid": uuid, "running": handler.is_alive()})
             return body
         elif request.method == "POST":
-            report_handler = self.start_report_handler()
+            report_handler = self.new_report_handler()
             body = {
                 "success":True,
                 "error": None,
@@ -113,6 +115,13 @@ class ReportDispatcher(Thread):
                 }
             }
             return body
+
+    # POST /handlers/<handler_uuid>/stop
+    @check_handler_existence
+    def stop_handler(self, handler_uuid):
+        self.stop_report_handler(handler_uuid)
+        body = {"success": True, "error": None, "data": None}
+        return body
 
     # POST /handlers/<handler_uuid>/dispatch
     @check_handler_existence
