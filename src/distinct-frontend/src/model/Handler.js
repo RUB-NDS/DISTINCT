@@ -1,4 +1,4 @@
-class ReportHandler {
+class Handler {
   constructor(uuid, running, starttime, reportsCount, queueSize, reports=[], svg=null) {
     this.uuid = uuid
     this.running = running
@@ -11,4 +11,4 @@ class ReportHandler {
   }
 }
 
-export default ReportHandler
+export default Handler

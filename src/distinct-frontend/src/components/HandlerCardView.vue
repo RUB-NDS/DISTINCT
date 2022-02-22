@@ -31,7 +31,7 @@ import { stopHandler, getSVG } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
 
 export default {
-  name: 'ReportHandlerCard',
+  name: 'HandlerCardView',
   props: ['reporthandler'],
   methods: {
     'timestampToDate': timestampToDate,

@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  name: 'SVGModal',
+  name: 'SVGModalView',
   methods: {
     'clearModal': function() {
       const modal = document.getElementById('svgModal')
