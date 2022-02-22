@@ -18,7 +18,7 @@
     <div class="card-body">
       <div class="btn-group" role="group">
         <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop</button>
-        <button type="button" class="btn btn-outline-primary">Reports</button>
+        <button type="button" class="btn btn-outline-primary" v-on:click="showReports(reporthandler.uuid)">Reports</button>
         <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
         <button type="button" class="btn btn-outline-primary">Proxy</button>
       </div>
@@ -63,6 +63,9 @@ export default {
       }).catch((e) => {
         alert(`Error: ${e['error']}`)
       })
+    },
+    'showReports': function(handler_uuid) {
+      this.$router.push(`/reports/${handler_uuid}`)
     }
   }
 }

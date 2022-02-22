@@ -13,21 +13,13 @@
       </thead>
       <tbody>
 
-        <tr>
-          <th scope="row">0</th>
-          <td>1645520560.0830138</td>
-          <td>top</td>
-          <td>https://example.com/index.html?q=1#r=2</td>
-          <td>documentinteractive</td>
-          <td>foobar</td>
-        </tr>
-        <tr>
-          <th scope="row">0</th>
-          <td>1645520560.0830138</td>
-          <td>top</td>
-          <td>https://example.com/index.html?q=1#r=2</td>
-          <td>documentinteractive</td>
-          <td>foo</td>
+        <tr v-for="report in reports" v-bind:key="report.id">
+          <th scope="row">{{report.id}}</th>
+          <td>{{report.timestamp}}</td>
+          <td>{{report.val.hierarchy}}</td>
+          <td>{{report.val.href}}</td>
+          <td>{{report.key}}</td>
+          <td>{{report.val}}</td>
         </tr>
       </tbody>
       <tfoot>

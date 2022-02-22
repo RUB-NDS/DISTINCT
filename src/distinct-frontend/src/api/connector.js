@@ -41,9 +41,20 @@ const getSVG = (handler_uuid) => {
   })
 }
 
+const getReports = (handler_uuid) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${endpoint}/handlers/${handler_uuid}/reports`).then((r) => r.json()).then((r) => {
+      resolve(r)
+    }).catch((e) => {
+      reject({'success': false, 'error': e, 'data': null})
+    })
+  })
+}
+
 export {
   getHandlers,
   newHandler,
   stopHandler,
-  getSVG
+  getSVG,
+  getReports
 }

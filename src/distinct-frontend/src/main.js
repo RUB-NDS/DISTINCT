@@ -10,7 +10,8 @@ import ReportsView from './components/ReportsView.vue'
 const routes = [
   { path: '/', component: HandlersView },
   { path: '/handlers', component: HandlersView },
-  { path: '/reports', component: ReportsView }
+  { path: '/reports', component: ReportsView },
+  { path: '/reports/:handler_uuid', component: ReportsView }
 ]
 
 const router = createRouter({
