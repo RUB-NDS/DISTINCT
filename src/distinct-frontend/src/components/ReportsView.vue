@@ -1,7 +1,6 @@
 <template>
-  <div class="container-fluid">
+  <div class="container">
     <h1>Reports</h1>
-    <h5>Handler: {{ this.$route.params.handler_uuid }}</h5>
 
     <ReportsTableView :reports="reports" />
   </div>

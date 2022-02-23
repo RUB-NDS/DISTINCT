@@ -17,6 +17,7 @@ Content-Type: application/json
   "report": {
     "key": "documentinit",
     "val": {
+      "timestamp": 1645563945801,
       "hierarchy": "top",
       "href": "https://example.com/index.html?q=1#r=2",
       "hrefparts": {
@@ -40,6 +41,7 @@ Content-Type: application/json
   "report": {
     "key": "documentinteractive",
     "val": {
+      "timestamp": 1645563945801,
       "hierarchy": "top",
       "href": "https://example.com/index.html?q=1#r=2",
       "hrefparts": {

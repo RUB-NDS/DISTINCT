@@ -6,12 +6,13 @@ import 'bootstrap'
 import App from './App.vue'
 import HandlersView from './components/HandlersView.vue'
 import ReportsView from './components/ReportsView.vue'
+import LogsView from './components/LogsView.vue'
 
 const routes = [
   { path: '/', component: HandlersView },
   { path: '/handlers', component: HandlersView },
-  { path: '/reports', component: ReportsView },
-  { path: '/reports/:handler_uuid', component: ReportsView }
+  { path: '/reports/:handler_uuid', component: ReportsView },
+  { path: '/logs', component: LogsView }
 ]
 
 const router = createRouter({

@@ -12,7 +12,7 @@
               <router-link class="nav-link" to="/handlers">Handlers</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/reports">Reports</router-link>
+              <router-link class="nav-link" to="/logs">Logs</router-link>
             </li>
           </ul>
         </div>

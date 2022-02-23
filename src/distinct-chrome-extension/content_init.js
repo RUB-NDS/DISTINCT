@@ -163,6 +163,7 @@ let content_init = () => {
     /* Send in-browser events to python backend */
     function event(key, val) {
         // Where did this event trigger?
+        val["timestamp"] = Date.now();
         val["hierarchy"] = _sso._hierarchy(self);
         val["href"] = location.href;
         val["hrefparts"] = {
