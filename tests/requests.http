@@ -53,7 +53,7 @@ Content-Type: application/json
         "hash": "r=2",
         "origin": "https://example.com"
       },
-      "html": "<html><body>Hello World</body></html>"
+      "html": "<html>\n<head></head>\n<body>\n<p>hi</p>\n<script>\nvar foo = 'faa';\n</script>\n</body>\n</html>"
     }
   }
 }
