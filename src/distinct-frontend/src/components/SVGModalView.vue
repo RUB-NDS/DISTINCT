@@ -1,6 +1,6 @@
 <template>
   <div class="modal fade" tabindex="-1" id="svgModal">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl modal-fullscreen-xxl-down">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title"></h5>

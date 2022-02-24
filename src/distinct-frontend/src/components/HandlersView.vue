@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container mb-4">
     <h1>Handlers</h1>
     <div class="btn-toolbar">
       <div class="btn-group me-2">
