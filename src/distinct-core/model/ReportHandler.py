@@ -37,8 +37,10 @@ class ReportHandler(Thread):
                 self.ctx.process_report(report)
             except:
                 continue
+        logger.info("Stopping report handler thread")
 
     def stop(self):
+        logger.info("Received signal to stop report handler thread")
         self.should_stop = True
 
     def queue_report(self, report):

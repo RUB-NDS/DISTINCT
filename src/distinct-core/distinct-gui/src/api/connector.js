@@ -1,5 +1,5 @@
 
-const endpoint = 'http://localhost:20200/api'
+const endpoint = `${location.origin}/api`
 
 const getHandlers = () => {
   return new Promise((resolve, reject) => {

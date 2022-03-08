@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  distinct-core:
+    build: ./distinct-core
+    container_name: distinct-core
+    restart: always
+    ports:
+      - "9080:80"
+    networks:
+      - distinct-net
+  distinct-browser:
+    build: ./distinct-browser
+    container_name: distinct-browser
+    restart: always
+    depends_on:
+      - distinct-core
+    ports:
+      - "9090:80"
+    networks:
+      - distinct-net
+
+networks:
+  distinct-net:
+    driver: bridge
+    enable_ipv6: false
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.17.90.0/24
+          ip_range: 172.17.90.0/24
+          gateway: 172.17.90.1

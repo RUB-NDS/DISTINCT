@@ -29,16 +29,15 @@ RUN mkdir -p /app/data/handlers
 WORKDIR /app
 
 # Copy the app
-COPY ./src/distinct-backend ./distinct-backend
-COPY ./src/distinct-frontend ./distinct-frontend
+COPY ./ ./distinct-core
 
-# Compile the frontend
-WORKDIR /app/distinct-frontend
+# Compile the GUI
+WORKDIR /app/distinct-core/distinct-gui
 RUN npm install
 RUN npm run build
 
 # Start the backend
-WORKDIR /app/distinct-backend
+WORKDIR /app/distinct-core
 RUN pip3 install -r requirements.txt
 
-CMD ["python3", "distinct-backend.py"]
+CMD ["python3", "distinct-core.py"]

@@ -15,7 +15,7 @@ class ReportDispatcher(Thread):
         self.daemon = True
 
         self.report_handlers = {}
-        self.app = Flask(__name__, static_folder="../../distinct-frontend/dist", static_url_path="/static")
+        self.app = Flask(__name__, static_folder="../distinct-gui/dist", static_url_path="/static")
         self.app.url_map.strict_slashes = False # allow trailing slashes
         CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
         self.register_routes()
@@ -92,7 +92,6 @@ class ReportDispatcher(Thread):
     # GET /app
     # GET /app/<path:path>
     def frontend(self, path):
-        print(path)
         return self.app.send_static_file("index.html")
 
     """ Webserver API Routes """

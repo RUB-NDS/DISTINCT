@@ -5,7 +5,7 @@
  * Also, it saves the "original" APIs that are overwritten in other content scripts.
  */
 
-let content_init = () => {
+let content_init = async (configURL) => {
 
     /* Parse and return URL query parameters */
     function query_params() {
@@ -161,7 +161,7 @@ let content_init = () => {
 	}
 
     /* Send in-browser events to python backend */
-    function event(key, val) {
+    async function event(key, val) {
         // Where did this event trigger?
         val["timestamp"] = Date.now();
         val["hierarchy"] = _sso._hierarchy(self);
@@ -176,6 +176,12 @@ let content_init = () => {
             "origin": location.origin
         }
 
+        // Load config if not loaded previously
+        if (!_sso._config) {
+            let config = await fetch(window._sso._configURL);
+            window._sso._config = await config.json();
+        }
+
         // We are working with a promise
         // This allows us to either send event and don't care of whether it was
         // received by the event server or we can send the event and wait for it
@@ -188,7 +194,7 @@ let content_init = () => {
                 });
             } catch {
                 console.info(
-                    `%c[sso-context-switching]%c\nkey=${key}\nval=${val}`,
+                    `%c[distinct]%c\nkey=${key}\nval=${val}`,
                     "color:red;", ""
                 );
                 reject("Failed to stringify event into json");
@@ -197,7 +203,7 @@ let content_init = () => {
 
             // Send request to event server and check response
             // Event format: {"event": {"key": "...", "val": {...}}}
-            fetch("http://localhost:20200", {
+            fetch(`${window._sso._config.backendEndpoint}/api/handlers/${window._sso._config.handlerUUID}/dispatch`, {
                 method: "POST",
                 mode: "cors",
                 headers: {
@@ -210,13 +216,13 @@ let content_init = () => {
                 // and reject if event server failed to receive event
                 if (r.success) {
                     console.info(
-                        `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
+                        `%c[distinct]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                         "color:green;", ""
                     );
                     resolve();
                 } else {
                     console.info(
-                        `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
+                        `%c[distinct]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                         "color:red;", ""
                     );
                     reject("Event server failed to receive event");
@@ -224,7 +230,7 @@ let content_init = () => {
 
             }).catch(e => {
                 console.info(
-                    `%c[sso-context-switching]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
+                    `%c[distinct]%c\nkey=${key}\nval=${JSON.stringify(val)}`,
                     "color:red;", ""
                 );
                 reject(e);
@@ -248,6 +254,8 @@ let content_init = () => {
     window._sso._postMessageAll = postMessageAll;
     window._sso._event = event;
 
+    window._sso._configURL = configURL;
+
     /* Function Wrappers */
 
     window._sso._postMessage = window.postMessage.bind(window);
@@ -268,7 +276,8 @@ let content_init = () => {
     console.info("content_init.js initialized");
 }
 
+let configURL = chrome.runtime.getURL("config/config.json");
 let content_init_script = document.createElement("script");
 content_init_script.classList.add("chromeextension");
-content_init_script.textContent = "(" + content_init.toString() + ")()";
+content_init_script.textContent = `(` + content_init.toString() + `)(${JSON.stringify(configURL)})`;
 document.documentElement.prepend(content_init_script);

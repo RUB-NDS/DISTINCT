@@ -1,0 +1,39 @@
+{
+    "manifest_version": 2,
+    "name": "distinct-chrome-extension",
+    "version": "1",
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "all_frames": true,
+            "run_at": "document_start",
+            "js": [
+                "src/content_init.js",
+                "src/content_frame.js",
+                "src/content_props.js",
+                "src/content_messaging.js",
+                "src/content_storage.js",
+                "src/content_location.js",
+                "src/content_sdk.js",
+                "src/content_flow.js",
+                "src/content_redirects.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "http://*/*", "https://*/*",
+        "tabs", "debugger", "webRequest",
+        "webRequestBlocking"
+    ],
+    "background": {
+        "scripts": [
+            "src/background_csp.js",
+            "src/background_cors.js",
+            "src/background_pm.js"
+        ],
+        "persistent": true
+    },
+    "web_accessible_resources": [
+        "config/*.json"
+    ]
+}
