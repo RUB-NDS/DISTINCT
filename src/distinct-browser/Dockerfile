@@ -32,8 +32,10 @@ ENV VNCPORT 5900
 ENV VNCPWD changeme
 ENV VNCDISPLAY 1920x1080
 ENV VNCDEPTH 16
-ENV NOVNCPORT 80
+ENV NOVNCPORT 8080
+
 EXPOSE 5900
+EXPOSE 8080
 EXPOSE 80
 
 # Setup VNC
@@ -70,11 +72,16 @@ RUN mkdir /app
 WORKDIR /app
 COPY ./distinct-chrome-extension ./distinct-chrome-extension
 COPY ./ace-chrome-extension ./ace-chrome-extension
+COPY ./distinct-browser-api ./distinct-browser-api
+WORKDIR /app/distinct-browser-api
+RUN pip3 install -r requirements.txt
 
+WORKDIR /app
 ENTRYPOINT [ "/bin/bash", "-c", " \
   echo 'Certificate Fingerprint:'; \
   openssl x509 -in /etc/ssl/certs/novnc_cert.pem -noout -fingerprint -sha256; \
   vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH; \
   /usr/share/novnc/utils/launch.sh --listen $NOVNCPORT --vnc localhost:$VNCPORT \
-    --cert /etc/ssl/private/novnc_combined.pem; #--ssl-only \
+    --cert /etc/ssl/private/novnc_combined.pem & \
+  python3 distinct-browser-api/distinct-browser-api.py \
 " ]
