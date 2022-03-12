@@ -22,12 +22,16 @@
         <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
         <button type="button" class="btn btn-outline-primary">Proxy</button>
       </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">Start</button>
+        <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">Stop</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { stopHandler, getSVG } from '../api/connector.js'
+import { stopHandler, getSVG, startBrowser, stopBrowser } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
 
 export default {
@@ -57,6 +61,28 @@ export default {
       getSVG(handler_uuid).then((r) => {
         if (r.success) {
           modalBody.innerHTML = r.data['svg']
+        } else {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'startBrowser': function(handler_uuid) {
+      startBrowser(handler_uuid).then((r) => {
+        if (r.success) {
+          alert(`Browser started`)
+        } else {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'stopBrowser': function(handler_uuid) {
+      stopBrowser(handler_uuid).then((r) => {
+        if (r.success) {
+          alert(`Browser stopped`)
         } else {
           alert(`Error: ${r['error']}`)
         }

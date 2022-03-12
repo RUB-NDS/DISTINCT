@@ -3,3 +3,4 @@ Flask==2.0.1
 Flask_Cors==3.0.10
 selenium==3.141.0
 selenium_stealth==1.0.6
+requests==2.27.1

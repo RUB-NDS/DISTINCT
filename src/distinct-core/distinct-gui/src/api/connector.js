@@ -51,10 +51,32 @@ const getReports = (handler_uuid) => {
   })
 }
 
+const startBrowser = (handler_uuid) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${endpoint}/browsers/${handler_uuid}/start`, {method: 'POST'}).then((r) => r.json()).then((r) => {
+      resolve(r)
+    }).catch((e) => {
+      reject({'success': false, 'error': e, 'data': null})
+    })
+  })
+}
+
+const stopBrowser = (handler_uuid) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${endpoint}/browsers/${handler_uuid}/stop`, {method: 'POST'}).then((r) => r.json()).then((r) => {
+      resolve(r)
+    }).catch((e) => {
+      reject({'success': false, 'error': e, 'data': null})
+    })
+  })
+}
+
 export {
   getHandlers,
   newHandler,
   stopHandler,
   getSVG,
-  getReports
+  getReports,
+  startBrowser,
+  stopBrowser
 }
