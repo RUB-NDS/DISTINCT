@@ -16,7 +16,7 @@ services:
     depends_on:
       - distinct-core
     ports:
-      - "9090:80"
+      - "9090:8080"
     networks:
       - distinct-net
 

@@ -4,6 +4,8 @@ import logging
 import sys
 import subprocess
 import os
+import shutil
+import json
 from threading import Thread
 from functools import wraps
 from flask import Flask
@@ -23,7 +25,7 @@ class BrowserAPI(Thread):
         CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
         self.register_routes()
 
-        self.browsers = {} # {handler_uuid: Pprocess}
+        self.browsers_by_handler = {} # {handler_uuid: [Pprocess, ...]}
 
     def run(self):
         logger.info("Starting browser api thread")
@@ -41,22 +43,39 @@ class BrowserAPI(Thread):
             "/api/browsers", view_func=self.api_browsers, methods=["GET"]
         )
         self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>", view_func=self.api_info_browsers, methods=["GET"]
+            "/api/browsers/<handler_uuid>", view_func=self.api_browsers_handler, methods=["GET"]
         )
         self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>/start", view_func=self.api_start_browsers, methods=["POST"]
+            "/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_handler_start, methods=["POST"]
         )
         self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>/stop", view_func=self.api_stop_browsers, methods=["POST"]
+            "/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_handler_stop, methods=["POST"]
         )
 
     """ Routines """
 
     def start_browser(self, handler_uuid):
-        logger.info(f"Starting browser with uuid {handler_uuid}")
+        """ Start new browser process for handler uuid """
+        logger.info(f"Starting browser with handler uuid {handler_uuid}")
 
-        # TODO: Setup distinct chrome extension with handler uuid
+        # Setup chrome extensions for handler
+        distinct_ext_for_handler = f"/app/chrome-extensions/distinct-chrome-extension-{handler_uuid}"
+        ace_ext_for_handler = f"/app/chrome-extensions/ace-chrome-extension-{handler_uuid}"
+        if os.path.exists(distinct_ext_for_handler):
+            shutil.rmtree(distinct_ext_for_handler)
+        shutil.copytree("/app/distinct-chrome-extension", distinct_ext_for_handler)
+        if os.path.exists(ace_ext_for_handler):
+            shutil.rmtree(ace_ext_for_handler)
+        shutil.copytree("/app/ace-chrome-extension", ace_ext_for_handler)
 
+        # Configure chrome extension
+        with open(f"{distinct_ext_for_handler}/config/config.json", "w") as f:
+            f.write(json.dumps({
+                "core_endpoint": "http://distinct-core",
+                "handler_uuid": handler_uuid
+            }))
+
+        # Start browser process
         gui_env = os.environ.copy()
         gui_env["DISPLAY"] = ":0.0"
         p = subprocess.Popen([
@@ -68,26 +87,84 @@ class BrowserAPI(Thread):
             "--ignore-certificate-errors",
             "--allow-running-insecure-content",
             "--disable-site-isolation-trials",
-            "--load-extension=/app/distinct-chrome-extension,ace-chrome-extension",
-            "--user-data-dir=/tmp/foo1"
+            f"--load-extension={distinct_ext_for_handler},{ace_ext_for_handler}",
+            f"--user-data-dir=/app/chrome-profiles/chrome-profile-{handler_uuid}",
         ], env=gui_env)
-        self.browsers[handler_uuid] = p
+
+        # Save browser process in list of browsers
+        if handler_uuid not in self.browsers_by_handler:
+            self.browsers_by_handler[handler_uuid] = [p]
+        else:
+            self.browsers_by_handler[handler_uuid].append(p)
 
     def stop_browser(self, handler_uuid):
-        logger.info(f"Stopping browser with uuid {handler_uuid}")
-        self.browsers[handler_uuid].terminate()
+        """ Stop browser process for handler uuid """
+        logger.info(f"Stopping browser with handler uuid {handler_uuid}")
+        self.browsers_by_handler[handler_uuid][-1].terminate()
+
+        # Cleanup chrome extensions for handler
+        distinct_ext_for_handler = f"/app/chrome-extensions/distinct-chrome-extension-{handler_uuid}"
+        ace_ext_for_handler = f"/app/chrome-extensions/ace-chrome-extension-{handler_uuid}"
+        if os.path.exists(distinct_ext_for_handler):
+            shutil.rmtree(distinct_ext_for_handler)
+        if os.path.exists(ace_ext_for_handler):
+            shutil.rmtree(ace_ext_for_handler)
 
     """ Wrappers """
+
     def check_browser_existence(func):
+        """ Error when there is not a single browser for handler uuid """
         @wraps(func)
         def wrapper(*args, **kwargs):
             browserapi = args[0]
             handler_uuid = kwargs["handler_uuid"]
-            if handler_uuid in browserapi.browsers:
+            if handler_uuid in browserapi.browsers_by_handler:
                 return func(*args, **kwargs)
             else:
-                logger.error(f"Browser with uuid {handler_uuid} does not exist")
-                body = {"success": False, "error": "Browser does not exist", "data": None}
+                logger.error(f"Browser with handler uuid {handler_uuid} does not exist")
+                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} does not exist", "data": None}
+                return body
+        return wrapper
+
+    def check_browser_running(func):
+        """ Error when there is no browser running for handler uuid """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            browserapi = args[0]
+            handler_uuid = kwargs["handler_uuid"]
+            if (
+                handler_uuid in browserapi.browsers_by_handler
+                and browserapi.browsers_by_handler[handler_uuid][-1]
+                and browserapi.browsers_by_handler[handler_uuid][-1].poll() is None
+            ):
+                return func(*args, **kwargs)
+            else:
+                logger.error(f"Browser with handler uuid {handler_uuid} is not running")
+                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} is not running", "data": None}
+                return body
+        return wrapper
+
+    def check_browser_not_running(func):
+        """ Error when there is a browser running for handler uuid """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            browserapi = args[0]
+            handler_uuid = kwargs["handler_uuid"]
+            if (
+                (
+                    # There is no browser for handler uuid
+                    handler_uuid not in browserapi.browsers_by_handler
+                ) or (
+                    # There is a browser for handler uuid but it is not running
+                    handler_uuid in browserapi.browsers_by_handler
+                    and browserapi.browsers_by_handler[handler_uuid][-1]
+                    and browserapi.browsers_by_handler[handler_uuid][-1].poll() is not None
+                )
+            ):
+                return func(*args, **kwargs)
+            else:
+                logger.error(f"Browser with handler uuid {handler_uuid} is already running")
+                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} is already running", "data": None}
                 return body
         return wrapper
 
@@ -96,33 +173,39 @@ class BrowserAPI(Thread):
     # GET /api/browsers/
     def api_browsers(self):
         body = {"success": True, "error": None, "data": []}
-        for uuid, process in self.browsers.items():
-            body["data"].append({"uuid": uuid, "pid": process.pid, "returncode": process.poll()})
+        for uuid, processes in self.browsers_by_handler.items():
+            data = {"uuid": uuid, "browsers": []}
+            for process in processes:
+                data["browsers"].append({"pid": process.pid, "returncode": process.poll()})
+            body["data"].append(data)
         return body
 
     # GET /api/browsers/<handler_uuid>/
-    @check_browser_existence
-    def api_info_browsers(self, handler_uuid):
+    def api_browsers_handler(self, handler_uuid):
         body = {
             "success": True,
             "error": None,
             "data": {
                 "uuid": handler_uuid,
-                "pid": self.browsers[handler_uuid].pid,
-                "returncode": self.browsers[handler_uuid].poll()
+                "browsers": []
             }
         }
+        if handler_uuid in self.browsers_by_handler:
+            for process in self.browsers_by_handler[handler_uuid]:
+                body["data"]["browsers"].append({"pid": process.pid, "returncode": process.poll()})
         return body
 
     # POST /api/browsers/<handler_uuid>/start
-    def api_start_browsers(self, handler_uuid):
+    @check_browser_not_running
+    def api_browsers_handler_start(self, handler_uuid):
         self.start_browser(handler_uuid)
         body = {"success": True, "error": None, "data": None}
         return body
 
     # POST /api/browsers/<handler_uuid>/stop
     @check_browser_existence
-    def api_stop_browsers(self, handler_uuid):
+    @check_browser_running
+    def api_browsers_handler_stop(self, handler_uuid):
         self.stop_browser(handler_uuid)
         body = {"success": True, "error": None, "data": None}
         return body

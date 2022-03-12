@@ -69,9 +69,15 @@ RUN /chromium/update.sh
 
 # Create app
 RUN mkdir /app
+RUN mkdir /app/chrome-profiles
+RUN mkdir /app/chrome-extensions
 WORKDIR /app
+
+# Copy chrome extensions
 COPY ./distinct-chrome-extension ./distinct-chrome-extension
 COPY ./ace-chrome-extension ./ace-chrome-extension
+
+# Install browser api
 COPY ./distinct-browser-api ./distinct-browser-api
 WORKDIR /app/distinct-browser-api
 RUN pip3 install -r requirements.txt

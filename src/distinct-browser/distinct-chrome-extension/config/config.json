@@ -1,4 +1,4 @@
 {
-  "backendEndpoint": "http://distinct-backend",
-  "handlerUUID": ""
+    "core_endpoint": "http://distinct-core",
+    "handler_uuid": "1234"
 }

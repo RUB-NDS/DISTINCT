@@ -203,7 +203,7 @@ let content_init = async (configURL) => {
 
             // Send request to event server and check response
             // Event format: {"event": {"key": "...", "val": {...}}}
-            fetch(`${window._sso._config.backendEndpoint}/api/handlers/${window._sso._config.handlerUUID}/dispatch`, {
+            fetch(`${_sso._config["core_endpoint"]}/api/handlers/${_sso._config["handler_uuid"]}/dispatch`, {
                 method: "POST",
                 mode: "cors",
                 headers: {
