@@ -18,9 +18,9 @@
           <td>{{report.val.timestamp}}</td>
           <td>{{report.key}}</td>
           <td>{{report.val.hierarchy}}</td>
-          <td>{{report.val.href}}</td>
-          <td>
-            <div v-for="(val, key) in this.filterVals(report.val)" v-bind:key="key">
+          <td class="href">{{report.val.href}}</td>
+          <td class="td-content">
+            <div v-for="(val, key) in this.filterVals(report.val)" v-bind:key="key" class="val">
               <span v-if="key == 'html'">
                 <b>{{key}}</b>:
                 <pre class="language-html"><code>{{this.beautifyHTML(val)}}</code></pre>
@@ -98,7 +98,18 @@ export default {
 <style>
   pre {
     overflow: auto;
-    max-height: 90vh;
-    max-width: 90vw;
+    max-height: 50vh;
+    max-width: 80vw;
+  }
+
+  .val {
+    overflow: auto;
+    max-height: 50vh;
+    max-width: 80vw;
+  }
+
+  .href {
+    overflow: auto;
+    max-width: 30vw;
   }
 </style>

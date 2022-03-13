@@ -132,6 +132,7 @@ const content = (config) => {
 const initContent = (content, config) => {
   const contentText = `(` + content.toString() + `)(${JSON.stringify(config)})`;
   const contentScript = document.createElement("script");
+  contentScript.classList.add("chromeextension");
   contentScript.appendChild(document.createTextNode(contentText));
   document.documentElement.appendChild(contentScript);
 }
