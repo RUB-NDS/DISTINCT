@@ -1,5 +1,5 @@
 
-const endpoint = `${location.origin}/api`
+const endpoint = `http://localhost:9080/api`
 
 const getHandlers = () => {
   return new Promise((resolve, reject) => {
@@ -71,6 +71,27 @@ const stopBrowser = (handler_uuid) => {
   })
 }
 
+const exportProfile = (handler_uuid) => {
+  return new Promise((resolve) => {
+    window.open(`${endpoint}/browsers/${handler_uuid}/profile`, "_blank")
+    resolve({'success': true, 'error': null, 'data': null})
+  })
+}
+
+const exportStream = (handler_uuid) => {
+  return new Promise((resolve) => {
+    window.open(`${endpoint}/proxies/${handler_uuid}/stream`, "_blank")
+    resolve({'success': true, 'error': null, 'data': null})
+  })
+}
+
+const exportHAR = (handler_uuid) => {
+  return new Promise((resolve) => {
+    window.open(`${endpoint}/proxies/${handler_uuid}/har`, "_blank")
+    resolve({'success': true, 'error': null, 'data': null})
+  })
+}
+
 export {
   getHandlers,
   newHandler,
@@ -78,5 +99,8 @@ export {
   getSVG,
   getReports,
   startBrowser,
-  stopBrowser
+  stopBrowser,
+  exportProfile,
+  exportStream,
+  exportHAR
 }

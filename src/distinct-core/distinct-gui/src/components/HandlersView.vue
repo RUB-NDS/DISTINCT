@@ -55,7 +55,8 @@ export default {
         if (r.success) {
           this.reporthandlers = r.data.map((r) => {
             return new Handler(
-              r.uuid, r.running, r.starttime, r.reportsCount, r.queueSize
+              r.uuid, r.running, r.starttime, r.reportsCount, r.queueSize,
+              r.browser, r.proxy
             )
           })
         } else {

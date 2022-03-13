@@ -11,31 +11,51 @@
         <span v-if="this.reporthandler.running">Status: <span style="color: green;">Running</span></span>
         <span v-else>Status: <span style="color: red;">Stopped</span></span>
       </li>
+      <li class="list-group-item">
+        <span v-if="this.reporthandler.browser == null">Browser: <span style="color: orange;">Not started yet</span></span>
+        <span v-else-if="this.reporthandler.browser.returncode == null">Browser: <span style="color: green;">Running</span></span>
+        <span v-else>Browser: <span style="color: red;">Stopped</span></span>
+      </li>
+      <li class="list-group-item">
+        <span v-if="this.reporthandler.proxy == null">Proxy: <span style="color: orange;">Not started yet</span></span>
+        <span v-else-if="this.reporthandler.proxy.returncode == null">Proxy: <span style="color: green;">Running</span></span>
+        <span v-else>Proxy: <span style="color: red;">Stopped</span></span>
+      </li>
       <li class="list-group-item">Start Time: {{ timestampToDate(this.reporthandler.starttime) }}</li>
       <li class="list-group-item">Reports: {{ this.reporthandler.reportsCount }}</li>
       <li class="list-group-item">Queued: {{ this.reporthandler.queueSize }}</li>
+      <li class="list-group-item">
+        <div>Show:</div>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportsModal" :data-bs-handleruuid="reporthandler.uuid">Reports</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div>Export:</div>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportProfile(reporthandler.uuid)">Profile</button>
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportStream(reporthandler.uuid)">Stream</button>
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportHAR(reporthandler.uuid)">HAR</button>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div>Actions:</div>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">Start Browser</button>
+          <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">Stop Browser</button>
+          <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop Handler</button>
+        </div>
+      </li>
     </ul>
-    <div class="card-body">
-      <p>Results:</p>
-      <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportsModal" :data-bs-handleruuid="reporthandler.uuid">Reports</button>
-        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
-        <button type="button" class="btn btn-outline-primary">Proxy</button>
-      </div>
-    </div>
-    <div class="card-body">
-      <p>Actions:</p>
-      <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">Start Browser</button>
-        <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">Stop Browser</button>
-        <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop Handler</button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import { stopHandler, getSVG, startBrowser, stopBrowser } from '../api/connector.js'
+import {
+  stopHandler, getSVG, startBrowser, stopBrowser,
+  exportProfile, exportStream, exportHAR
+} from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
 
 export default {
@@ -75,7 +95,7 @@ export default {
     'startBrowser': function(handler_uuid) {
       startBrowser(handler_uuid).then((r) => {
         if (r.success) {
-          alert(`Browser started`)
+          window._browserWindow = window.open("http://localhost:9090/vnc_auto.html?password=changeme", 'browserWindow');
         } else {
           alert(`Error: ${r['error']}`)
         }
@@ -85,9 +105,34 @@ export default {
     },
     'stopBrowser': function(handler_uuid) {
       stopBrowser(handler_uuid).then((r) => {
-        if (r.success) {
-          alert(`Browser stopped`)
-        } else {
+        if (!r.success) {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'exportProfile': function(handler_uuid) {
+      exportProfile(handler_uuid).then((r) => {
+        if (!r.success) {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'exportStream': function(handler_uuid) {
+      exportStream(handler_uuid).then((r) => {
+        if (!r.success) {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'exportHAR': function(handler_uuid) {
+      exportHAR(handler_uuid).then((r) => {
+        if (!r.success) {
           alert(`Error: ${r['error']}`)
         }
       }).catch((e) => {
