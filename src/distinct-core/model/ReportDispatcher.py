@@ -109,12 +109,14 @@ class ReportDispatcher(Thread):
             r_browsers = self.get_browsers()
 
             for uuid, handler in self.handlers.items():
-                # Get browser list for uuid
-                browsers_for_uuid = [] # [{"pid": ..., "returncode": ...}, ...]
+                # Get browser and proxy for uuid
+                browser_for_uuid = None # {"pid": ..., "returncode": ..., "args": ...}
+                proxy_for_uuid = None # {"pid": ..., "returncode": ..., "args": ...}
                 if r_browsers["success"] == True:
                     for entry in r_browsers["data"]:
                         if entry["uuid"] == uuid:
-                            browsers_for_uuid = entry["browsers"]
+                            browser_for_uuid = entry["browser"]
+                            proxy_for_uuid = entry["proxy"]
 
                 body["data"].append({
                     "uuid": uuid,
@@ -122,7 +124,8 @@ class ReportDispatcher(Thread):
                     "starttime": handler.starttime,
                     "reportsCount": handler.counter,
                     "queueSize": handler.queue.qsize(),
-                    "browsers": browsers_for_uuid
+                    "browser": browser_for_uuid,
+                    "proxy": proxy_for_uuid
                 })
             return body
 
@@ -132,9 +135,11 @@ class ReportDispatcher(Thread):
             r_browsers = self.get_browsers_by_handler(report_handler.uuid)
 
             # Get browser list for uuid
-            browsers_for_uuid = [] # [{"pid": ..., "returncode": ...}, ...]
+            browser_for_uuid = None # {"pid": ..., "returncode": ..., "args": ...}
+            proxy_for_uuid = None # {"pid": ..., "returncode": ..., "args": ...}
             if r_browsers["success"] == True:
-                browsers_for_uuid = r_browsers["data"]["browsers"]
+                browser_for_uuid = r_browsers["data"]["browser"]
+                proxy_for_uuid = r_browsers["data"]["proxy"]
 
             body = {
                 "success":True,
@@ -145,7 +150,8 @@ class ReportDispatcher(Thread):
                     "starttime": report_handler.starttime,
                     "reportsCount": report_handler.counter,
                     "queueSize": report_handler.queue.qsize(),
-                    "browsers": browsers_for_uuid
+                    "browser": browser_for_uuid,
+                    "proxy": proxy_for_uuid
                 }
             }
             return body
@@ -205,7 +211,7 @@ class ReportDispatcher(Thread):
         r = self.start_browser(handler_uuid)
         return r
 
-     # POST /api/browsers/<handler_uuid>/stop
+    # POST /api/browsers/<handler_uuid>/stop
     def api_browsers_stop(self, handler_uuid):
         r = self.stop_browser(handler_uuid)
         return r

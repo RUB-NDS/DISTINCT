@@ -27,7 +27,7 @@ class BrowserAPI(Thread):
         CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
         self.register_routes()
 
-        self.browsers_by_handler = {} # {handler_uuid: [Pprocess, ...]}
+        self.browsers_by_handler = {} # {handler_uuid: Pprocess, ...}
         self.proxies_by_handler = {} # {handler_uuid: Pprocess, ...}
 
     def run(self):
@@ -123,7 +123,6 @@ class BrowserAPI(Thread):
     def stop_proxy(self, handler_uuid):
         logger.info(f"Stopping proxy with handler uuid {handler_uuid}")
         self.proxies_by_handler[handler_uuid].terminate()
-        del self.proxies_by_handler[handler_uuid]
 
     def start_browser(self, handler_uuid, start_url=None):
         """ Start new browser process for handler uuid """
@@ -154,33 +153,18 @@ class BrowserAPI(Thread):
             f"--user-data-dir=/app/data/chrome-profiles/chrome-profile_{handler_uuid}",
             start_url if start_url else "about:blank"
         ], env=gui_env)
-
-        # Save browser process in list of browsers
-        if handler_uuid not in self.browsers_by_handler:
-            self.browsers_by_handler[handler_uuid] = [p]
-        else:
-            self.browsers_by_handler[handler_uuid].append(p)
+        self.browsers_by_handler[handler_uuid] = p
 
     def stop_browser(self, handler_uuid):
-        """ Stop browser process for handler uuid """
+        """ Stop browser process and proxy for handler uuid """
         logger.info(f"Stopping browser with handler uuid {handler_uuid}")
-        self.browsers_by_handler[handler_uuid][-1].terminate()
-
-        # Cleanup chrome extensions for handler
-        distinct_ext_for_handler = f"/app/chrome-extensions/distinct-chrome-extension-{handler_uuid}"
-        ace_ext_for_handler = f"/app/chrome-extensions/ace-chrome-extension-{handler_uuid}"
-        if os.path.exists(distinct_ext_for_handler):
-            shutil.rmtree(distinct_ext_for_handler)
-        if os.path.exists(ace_ext_for_handler):
-            shutil.rmtree(ace_ext_for_handler)
-
-        # Stop proxy
+        self.browsers_by_handler[handler_uuid].terminate()
         self.stop_proxy(handler_uuid)
 
     """ Wrappers """
 
     def check_browser_existence(func):
-        """ Error when there is not a single browser for handler uuid """
+        """ Error when there is no browser for handler uuid """
         @wraps(func)
         def wrapper(*args, **kwargs):
             browserapi = args[0]
@@ -193,6 +177,20 @@ class BrowserAPI(Thread):
                 return body
         return wrapper
 
+    def check_browser_absense(func):
+        """ Error when there is a browser for handler uuid """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            browserapi = args[0]
+            handler_uuid = kwargs["handler_uuid"]
+            if handler_uuid not in browserapi.browsers_by_handler:
+                return func(*args, **kwargs)
+            else:
+                logger.error(f"Browser with handler uuid {handler_uuid} already exist")
+                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} already exists", "data": None}
+                return body
+        return wrapper
+
     def check_browser_running(func):
         """ Error when there is no browser running for handler uuid """
         @wraps(func)
@@ -201,8 +199,7 @@ class BrowserAPI(Thread):
             handler_uuid = kwargs["handler_uuid"]
             if (
                 handler_uuid in browserapi.browsers_by_handler
-                and browserapi.browsers_by_handler[handler_uuid][-1]
-                and browserapi.browsers_by_handler[handler_uuid][-1].poll() is None
+                and browserapi.browsers_by_handler[handler_uuid].poll() is None
             ):
                 return func(*args, **kwargs)
             else:
@@ -224,8 +221,7 @@ class BrowserAPI(Thread):
                 ) or (
                     # There is a browser for handler uuid but it is not running
                     handler_uuid in browserapi.browsers_by_handler
-                    and browserapi.browsers_by_handler[handler_uuid][-1]
-                    and browserapi.browsers_by_handler[handler_uuid][-1].poll() is not None
+                    and browserapi.browsers_by_handler[handler_uuid].poll() is not None
                 )
             ):
                 return func(*args, **kwargs)
@@ -240,14 +236,23 @@ class BrowserAPI(Thread):
     # GET /api/browsers/
     def api_browsers(self):
         body = {"success": True, "error": None, "data": []}
-        for uuid, processes in self.browsers_by_handler.items():
-            data = {"uuid": uuid, "browsers": []}
-            for process in processes:
-                data["browsers"].append({
+        for uuid, process in self.browsers_by_handler.items():
+            data = {
+                "uuid": uuid,
+                "browser": {
                     "pid": process.pid,
                     "returncode": process.poll(),
                     "args": process.args
-                })
+                }
+            }
+            if uuid in self.proxies_by_handler:
+                data["proxy"] = {
+                    "pid": self.proxies_by_handler[uuid].pid,
+                    "returncode": self.proxies_by_handler[uuid].poll(),
+                    "args": self.proxies_by_handler[uuid].args
+                }
+            else:
+                data["proxy"] = None
             body["data"].append(data)
         return body
 
@@ -258,20 +263,26 @@ class BrowserAPI(Thread):
             "error": None,
             "data": {
                 "uuid": handler_uuid,
-                "browsers": []
+                "browser": None,
+                "proxy": None
             }
         }
         if handler_uuid in self.browsers_by_handler:
-            for process in self.browsers_by_handler[handler_uuid]:
-                body["data"]["browsers"].append({
-                    "pid": process.pid,
-                    "returncode": process.poll(),
-                    "args": process.args
-                })
+            body["data"]["browser"] = {
+                "pid": self.browsers_by_handler[handler_uuid].pid,
+                "returncode": self.browsers_by_handler[handler_uuid].poll(),
+                "args": self.browsers_by_handler[handler_uuid].args
+            }
+        if handler_uuid in self.proxies_by_handler:
+            body["data"]["proxy"] = {
+                "pid": self.proxies_by_handler[handler_uuid].pid,
+                "returncode": self.proxies_by_handler[handler_uuid].poll(),
+                "args": self.proxies_by_handler[handler_uuid].args
+            }
         return body
 
     # POST /api/browsers/<handler_uuid>/start
-    @check_browser_not_running
+    @check_browser_absense
     def api_browsers_start(self, handler_uuid):
         self.start_browser(handler_uuid)
         body = {"success": True, "error": None, "data": None}
@@ -287,6 +298,7 @@ class BrowserAPI(Thread):
 
     # GET /api/browsers/<handler_uuid>/profile
     @check_browser_existence
+    @check_browser_not_running
     def api_browsers_profile(self, handler_uuid):
         profile_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}"
         profile_zip_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}.zip"
