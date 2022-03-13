@@ -16,15 +16,19 @@
       <li class="list-group-item">Queued: {{ this.reporthandler.queueSize }}</li>
     </ul>
     <div class="card-body">
+      <p>Results:</p>
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop</button>
         <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportsModal" :data-bs-handleruuid="reporthandler.uuid">Reports</button>
         <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
         <button type="button" class="btn btn-outline-primary">Proxy</button>
       </div>
+    </div>
+    <div class="card-body">
+      <p>Actions:</p>
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">Start</button>
-        <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">Stop</button>
+        <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">Start Browser</button>
+        <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">Stop Browser</button>
+        <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop Handler</button>
       </div>
     </div>
   </div>
