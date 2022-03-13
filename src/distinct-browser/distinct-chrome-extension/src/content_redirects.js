@@ -1,23 +1,23 @@
 /**
  * This content script checks if the current HTTP/200 document is a redirect using "Location"
  * transformed by the mitmproxy. If it is a redirect, mitmproxy returns a document like this:
- * 
+ *
  * <html
  *      _sso._type="location"
  *      _sso._status_code="3**"
  *      _sso._location="https://target.com/redirected">
  * </html>
- * 
+ *
  * If these attributes are set, the content script redirects to the location by setting the
  * window.location with JavaScript. Also, the "httpredirect" event is logged.
- * 
+ *
  * This script also checks whether the current document contains any redirects using
  * "Refresh" either as HTTP header or as <meta> tag.
  */
 
 let content_redirects = () => {
 
-    window.onload = () => {
+    window.addEventListener("load", () => {
 
         /**
          * Check for Refresh Redirects in Meta
@@ -25,8 +25,8 @@ let content_redirects = () => {
          */
 
         let meta_redirect = document.querySelector('meta[http-equiv="refresh"]');
-    
-        if (meta_redirect) {            
+
+        if (meta_redirect) {
             let [secs, target] = meta_redirect.content.split(";");
 
             if (target) {
@@ -57,7 +57,7 @@ let content_redirects = () => {
         ) {
             let status_code = html.attributes["_sso._status_code"].value;
             let target = html.attributes["_sso._location"].value;
-            
+
             window._sso._event("httpredirect", {
                 status_code: status_code,
                 location: target
@@ -97,7 +97,7 @@ let content_redirects = () => {
             }
         }
 
-    }
+    });
 
     console.info("content_redirects.js initialized");
 }

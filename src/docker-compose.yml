@@ -9,6 +9,8 @@ services:
       - "9080:80"
     networks:
       - distinct-net
+    volumes:
+      - distinct-core-data:/app/data
   distinct-browser:
     build: ./distinct-browser
     container_name: distinct-browser
@@ -19,6 +21,8 @@ services:
       - "9090:8080"
     networks:
       - distinct-net
+    volumes:
+      - distinct-browser-data:/app/data
 
 networks:
   distinct-net:
@@ -30,3 +34,7 @@ networks:
         - subnet: 172.17.90.0/24
           ip_range: 172.17.90.0/24
           gateway: 172.17.90.1
+
+volumes:
+  distinct-browser-data:
+  distinct-core-data:

@@ -21,7 +21,8 @@ RUN apt install -y \
   firefox \
   git \
   python3 \
-  python3-pip
+  python3-pip \
+  mitmproxy
 
 # Fixes
 RUN update-alternatives --set x-terminal-emulator /usr/bin/xfce4-terminal.wrapper
@@ -69,21 +70,25 @@ RUN /chromium/update.sh
 
 # Create app
 RUN mkdir /app
-RUN mkdir /app/chrome-profiles
-RUN mkdir /app/chrome-extensions
 WORKDIR /app
 
 # Copy chrome extensions
 COPY ./distinct-chrome-extension ./distinct-chrome-extension
 COPY ./ace-chrome-extension ./ace-chrome-extension
 
+# Install mitmproxy
+COPY ./mitmproxy ./mitmproxy
+RUN pip3 install -r ./mitmproxy/requirements.txt
+
 # Install browser api
 COPY ./distinct-browser-api ./distinct-browser-api
-WORKDIR /app/distinct-browser-api
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r ./distinct-browser-api/requirements.txt
 
 WORKDIR /app
 ENTRYPOINT [ "/bin/bash", "-c", " \
+  mkdir -p /app/data/chrome-profiles; \
+  mkdir -p /app/data/chrome-extensions; \
+  mkdir -p /app/data/chrome-proxy; \
   echo 'Certificate Fingerprint:'; \
   openssl x509 -in /etc/ssl/certs/novnc_cert.pem -noout -fingerprint -sha256; \
   vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH; \
