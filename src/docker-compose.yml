@@ -19,6 +19,7 @@ services:
       - distinct-core
     ports:
       - "9090:8080"
+      - "9091:80"
     networks:
       - distinct-net
     volumes:

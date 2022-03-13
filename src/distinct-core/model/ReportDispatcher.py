@@ -1,8 +1,10 @@
 import logging
 import requests
+import base64
+import io
 from threading import Thread
 from functools import wraps
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, send_file
 from flask_cors import CORS
 from model.ReportHandler import ReportHandler
 
@@ -50,6 +52,11 @@ class ReportDispatcher(Thread):
         # Browsers
         self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
         self.app.add_url_rule("/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"])
+        self.app.add_url_rule("/api/browsers/<handler_uuid>/profile", view_func=self.api_browsers_profile, methods=["GET"])
+
+        # Proxies
+        self.app.add_url_rule("/api/proxies/<handler_uuid>/stream", view_func=self.api_proxies_stream, methods=["GET"])
+        self.app.add_url_rule("/api/proxies/<handler_uuid>/har", view_func=self.api_proxies_har, methods=["GET"])
 
     """ Routines """
 
@@ -216,6 +223,48 @@ class ReportDispatcher(Thread):
         r = self.stop_browser(handler_uuid)
         return r
 
+    # GET /api/browsers/<handler_uuid>/profile
+    def api_browsers_profile(self, handler_uuid):
+        r = self.get_profile_by_handler(handler_uuid)
+        if r["success"] == True:
+            profile_zip = base64.b64decode(r["data"])
+            return send_file(
+                io.BytesIO(profile_zip),
+                attachment_filename=f"chrome-profile_{handler_uuid}.zip",
+                as_attachment=True,
+                mimetype="application/zip"
+            )
+        else:
+            return r
+
+    # GET /api/proxies/<handler_uuid>/stream
+    def api_proxies_stream(self, handler_uuid):
+        r = self.get_stream_by_handler(handler_uuid)
+        if r["success"] == True:
+            stream = base64.b64decode(r["data"])
+            return send_file(
+                io.BytesIO(stream),
+                attachment_filename=f"proxy-stream_{handler_uuid}.dump",
+                as_attachment=True,
+                mimetype="application/octet-stream"
+            )
+        else:
+            return r
+
+    # GET /api/proxies/<handler_uuid>/har
+    def api_proxies_har(self, handler_uuid):
+        r = self.get_har_by_handler(handler_uuid)
+        if r["success"] == True:
+            har = base64.b64decode(r["data"])
+            return send_file(
+                io.BytesIO(har),
+                attachment_filename=f"proxy-hardump_{handler_uuid}.har",
+                as_attachment=True,
+                mimetype="application/octet-stream"
+            )
+        else:
+            return r
+
     """ Connectors to browser API """
 
     browserEndpoint = "http://distinct-browser"
@@ -234,4 +283,16 @@ class ReportDispatcher(Thread):
 
     def stop_browser(self, handler_uuid):
         r = requests.post(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/stop")
+        return r.json()
+
+    def get_profile_by_handler(self, handler_uuid):
+        r = requests.get(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/profile")
+        return r.json()
+
+    def get_stream_by_handler(self, handler_uuid):
+        r = requests.get(f"{self.browserEndpoint}/api/proxies/{handler_uuid}/stream")
+        return r.json()
+
+    def get_har_by_handler(self, handler_uuid):
+        r = requests.get(f"{self.browserEndpoint}/api/proxies/{handler_uuid}/har")
         return r.json()

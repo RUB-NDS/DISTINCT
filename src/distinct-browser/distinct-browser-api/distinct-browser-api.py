@@ -57,6 +57,12 @@ class BrowserAPI(Thread):
         self.app.add_url_rule(
             "/api/browsers/<handler_uuid>/profile", view_func=self.api_browsers_profile, methods=["GET"]
         )
+        self.app.add_url_rule(
+            "/api/proxies/<handler_uuid>/stream", view_func=self.api_proxies_stream, methods=["GET"]
+        )
+        self.app.add_url_rule(
+            "/api/proxies/<handler_uuid>/har", view_func=self.api_proxies_har, methods=["GET"]
+        )
 
     """ Routines """
 
@@ -177,6 +183,20 @@ class BrowserAPI(Thread):
                 return body
         return wrapper
 
+    def check_proxy_existence(func):
+        """ Error when there is no proxy for handler uuid """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            browserapi = args[0]
+            handler_uuid = kwargs["handler_uuid"]
+            if handler_uuid in browserapi.proxies_by_handler:
+                return func(*args, **kwargs)
+            else:
+                logger.error(f"Proxy with handler uuid {handler_uuid} does not exist")
+                body = {"success": False, "error": f"Proxy with handler uuid {handler_uuid} does not exist", "data": None}
+                return body
+        return wrapper
+
     def check_browser_absense(func):
         """ Error when there is a browser for handler uuid """
         @wraps(func)
@@ -226,8 +246,31 @@ class BrowserAPI(Thread):
             ):
                 return func(*args, **kwargs)
             else:
-                logger.error(f"Browser with handler uuid {handler_uuid} is already running")
-                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} is already running", "data": None}
+                logger.error(f"Browser with handler uuid {handler_uuid} is still running")
+                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} is still running", "data": None}
+                return body
+        return wrapper
+
+    def check_proxy_not_running(func):
+        """ Error when there is a proxy running for handler uuid """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            browserapi = args[0]
+            handler_uuid = kwargs["handler_uuid"]
+            if (
+                (
+                    # There is no proxy for handler uuid
+                    handler_uuid not in browserapi.proxies_by_handler
+                ) or (
+                    # There is a proxy for handler uuid but it is not running
+                    handler_uuid in browserapi.proxies_by_handler
+                    and browserapi.proxies_by_handler[handler_uuid].poll() is not None
+                )
+            ):
+                return func(*args, **kwargs)
+            else:
+                logger.error(f"Proxy with handler uuid {handler_uuid} is still running")
+                body = {"success": False, "error": f"Proxy with handler uuid {handler_uuid} is still running", "data": None}
                 return body
         return wrapper
 
@@ -315,6 +358,36 @@ class BrowserAPI(Thread):
                 return body
         else:
             body = {"success": False, "error": f"Profile for handler uuid {handler_uuid} does not exist", "data": None}
+            return body
+
+    # GET /api/proxies/<handler_uuid>/stream
+    @check_proxy_existence
+    @check_proxy_not_running
+    def api_proxies_stream(self, handler_uuid):
+        stream_path = f"/app/data/chrome-proxy/proxy-stream_{handler_uuid}.dump"
+        if os.path.exists(stream_path):
+            with open(stream_path, "rb") as f:
+                stream_bytes = f.read()
+                stream_b64 = base64.b64encode(stream_bytes).decode("utf8")
+                body = {"success": True, "error": None, "data": stream_b64}
+                return body
+        else:
+            body = {"success": False, "error": f"Proxy stream for handler uuid {handler_uuid} does not exist", "data": None}
+            return body
+
+    # GET /api/proxies/<handler_uuid>/har
+    @check_proxy_existence
+    @check_proxy_not_running
+    def api_proxies_har(self, handler_uuid):
+        har_path = f"/app/data/chrome-proxy/proxy-hardump_{handler_uuid}.har"
+        if os.path.exists(har_path):
+            with open(har_path, "rb") as f:
+                har_bytes = f.read()
+                har_b64 = base64.b64encode(har_bytes).decode("utf8")
+                body = {"success": True, "error": None, "data": har_b64}
+                return body
+        else:
+            body = {"success": False, "error": f"Proxy har for handler uuid {handler_uuid} does not exist", "data": None}
             return body
 
 def main():
