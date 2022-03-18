@@ -30,14 +30,17 @@ RUN update-alternatives --set x-terminal-emulator /usr/bin/xfce4-terminal.wrappe
 # VNC and NoVNC config
 ENV USER root
 ENV VNCPORT 5900
+ENV NOVNCPORT 9090
 ENV VNCPWD changeme
 ENV VNCDISPLAY 1920x1080
 ENV VNCDEPTH 16
-ENV NOVNCPORT 8080
 
+# VNC
 EXPOSE 5900
+# NoVNC
+EXPOSE 9090
+# API
 EXPOSE 8080
-EXPOSE 80
 
 # Setup VNC
 RUN mkdir -p /root/.vnc/
@@ -89,9 +92,9 @@ ENTRYPOINT [ "/bin/bash", "-c", " \
   mkdir -p /app/data/chrome-profiles; \
   mkdir -p /app/data/chrome-extensions; \
   mkdir -p /app/data/chrome-proxy; \
-  echo 'Certificate Fingerprint:'; \
+  echo 'NoVNC Certificate Fingerprint:'; \
   openssl x509 -in /etc/ssl/certs/novnc_cert.pem -noout -fingerprint -sha256; \
-  vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH; \
+  vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH -localhost; \
   /usr/share/novnc/utils/launch.sh --listen $NOVNCPORT --vnc localhost:$VNCPORT \
     --cert /etc/ssl/private/novnc_combined.pem & \
   python3 distinct-browser-api/distinct-browser-api.py \

@@ -34,7 +34,7 @@ class BrowserAPI(Thread):
         logger.info("Starting browser api thread")
 
         listen_host = "0.0.0.0"
-        listen_port = 80
+        listen_port = 8080
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
@@ -86,7 +86,7 @@ class BrowserAPI(Thread):
         # Configure distinct chrome extension
         with open(f"{distinct_ext_for_handler}/config/config.json", "w") as f:
             f.write(json.dumps({
-                "core_endpoint": "http://distinct-core",
+                "core_endpoint": "http://distinct-core:8080",
                 "handler_uuid": handler_uuid
             }))
 

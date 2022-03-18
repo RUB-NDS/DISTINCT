@@ -6,7 +6,7 @@ services:
     container_name: distinct-core
     restart: always
     ports:
-      - "9080:80"
+      - "8080:8080" # API
     networks:
       - distinct-net
     volumes:
@@ -18,8 +18,7 @@ services:
     depends_on:
       - distinct-core
     ports:
-      - "9090:8080"
-      - "9091:80"
+      - "9090:9090" # NoVNC
     networks:
       - distinct-net
     volumes:
@@ -28,13 +27,6 @@ services:
 networks:
   distinct-net:
     driver: bridge
-    enable_ipv6: false
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.17.90.0/24
-          ip_range: 172.17.90.0/24
-          gateway: 172.17.90.1
 
 volumes:
   distinct-browser-data:

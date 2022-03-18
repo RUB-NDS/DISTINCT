@@ -1,20 +1,37 @@
 <template>
   <div class="container mb-4">
     <h1>Handlers</h1>
-    <div class="btn-toolbar">
+    <div class="btn-toolbar mb-2">
       <div class="btn-group me-2">
-        <button class="btn btn-primary" v-on:click="getHandlers()">Update All</button>
-      </div>
-      <div class="btn-group me-2">
-        <button class="btn btn-primary" v-on:click="newHandler()">New Handler</button>
+        <button class="btn btn-primary" v-on:click="getHandlers()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Update All
+        </button>
       </div>
       <div class="input-group">
-        <div class="input-group-text">Update Interval</div>
+        <div class="input-group-text">
+          <i class="bi bi-clock-history me-2"></i>
+          Interval
+        </div>
         <input type="number" class="form-control" min="0" max="60" v-on:input="startIntervalUpdater(this.$refs.updateInterval.value)" ref="updateInterval">
         <div class="input-group-text">s</div>
       </div>
     </div>
-    <p></p>
+    <div class="btn-toolbar mb-4">
+      <div class="btn-group me-2">
+        <button class="btn btn-primary" v-on:click="newHandler()">
+          <i class="bi bi-plus-circle"></i>
+          New Handler
+        </button>
+      </div>
+      <div class="input-group">
+        <div class="input-group-text">
+          <i class="bi bi-cursor me-2"></i>
+          URL Preload
+        </div>
+        <input type="text" class="form-control" ref="preloadURL">
+      </div>
+    </div>
 
     <div class="row row-cols-1 row-cols-xl-2 row-cols-xxl-4 g-4">
       <div class="col" v-for="reporthandler in this.reporthandlers" v-bind:key="reporthandler">

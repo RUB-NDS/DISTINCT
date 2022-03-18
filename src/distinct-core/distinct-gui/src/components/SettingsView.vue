@@ -1,12 +1,12 @@
 <template>
   <div class="container">
-    <h1>Logs</h1>
+    <h1>Settings</h1>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'LogsView'
+  name: 'SettingsView'
 }
 </script>
 

@@ -27,16 +27,31 @@
       <li class="list-group-item">
         <div>Show:</div>
         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportsModal" :data-bs-handleruuid="reporthandler.uuid">Reports</button>
-          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">SVG</button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportsModal" :data-bs-handleruuid="reporthandler.uuid">
+            <i class="bi bi-table"></i>
+            Reports
+          </button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#svgModal" v-on:click="showSVG(reporthandler.uuid)">
+            <i class="bi bi-diagram-2"></i>
+            SVG
+          </button>
         </div>
       </li>
       <li class="list-group-item">
         <div>Export:</div>
         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-outline-primary" v-on:click="exportProfile(reporthandler.uuid)">Profile</button>
-          <button type="button" class="btn btn-outline-primary" v-on:click="exportStream(reporthandler.uuid)">Stream</button>
-          <button type="button" class="btn btn-outline-primary" v-on:click="exportHAR(reporthandler.uuid)">HAR</button>
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportProfile(reporthandler.uuid)">
+            <i class="bi bi-file-zip"></i>
+            Profile
+          </button>
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportStream(reporthandler.uuid)">
+            <i class="bi bi-record-circle"></i>
+            Stream
+          </button>
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportHAR(reporthandler.uuid)">
+            <i class="bi bi-archive"></i>
+            HAR
+          </button>
         </div>
       </li>
       <li class="list-group-item">
@@ -95,7 +110,7 @@ export default {
     'startBrowser': function(handler_uuid) {
       startBrowser(handler_uuid).then((r) => {
         if (r.success) {
-          window._browserWindow = window.open("http://localhost:9090/vnc_auto.html?password=changeme", 'browserWindow');
+          this.$router.push('/browser')
         } else {
           alert(`Error: ${r['error']}`)
         }

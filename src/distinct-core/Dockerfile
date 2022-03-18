@@ -1,8 +1,6 @@
 FROM ubuntu:20.04
 
-# Distinct's backend
-EXPOSE 80
-# Distinct's mitmproxy
+# API
 EXPOSE 8080
 
 # Prevent interactive prompts

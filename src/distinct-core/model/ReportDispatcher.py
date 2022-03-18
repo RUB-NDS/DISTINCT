@@ -27,7 +27,7 @@ class ReportDispatcher(Thread):
         logger.info("Starting report dispatcher thread")
 
         listen_host = "0.0.0.0"
-        listen_port = 80
+        listen_port = 8080
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
@@ -267,7 +267,7 @@ class ReportDispatcher(Thread):
 
     """ Connectors to browser API """
 
-    browserEndpoint = "http://distinct-browser"
+    browserEndpoint = "http://distinct-browser:8080"
 
     def get_browsers(self):
         r = requests.get(f"{self.browserEndpoint}/api/browsers")
