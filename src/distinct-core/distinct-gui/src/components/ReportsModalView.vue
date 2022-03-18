@@ -7,7 +7,13 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <ReportsTableView :reports="reports" />
+          <form class="mb-4">
+            <div class="form-group mb-2">
+              <input type="text" class="form-control" id="sq" placeholder="Enter search query" ref="sq">
+            </div>
+            <button type="submit" class="btn btn-primary" @click.prevent="applyFilter(this.$refs.sq.value)">Apply Filter</button>
+          </form>
+          <ReportsTableView :reports="filteredReports" />
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -30,7 +36,8 @@ export default {
   data: () => {
     return {
       handler_uuid: "",
-      reports: []
+      reports: [],
+      filteredReports: []
     }
   },
   mounted() {
@@ -44,6 +51,7 @@ export default {
         if (r.success) {
           // this.reports = r.data.reports
           this.reports = r.data.reports
+          this.filteredReports = this.reports
         } else {
           alert(`Error: ${r['error']}`)
         }
@@ -55,6 +63,20 @@ export default {
       this.handler_uuid = ""
       this.reports = []
     })
+  },
+  methods: {
+    'applyFilter': function(sq) {
+      // No filter
+      if (sq == '') {
+        this.filteredReports = this.reports
+        return
+      }
+
+      // Filter for reports based on key
+      this.filteredReports = this.reports.filter((r) => {
+        return r.key == sq
+      })
+    }
   }
 }
 </script>
