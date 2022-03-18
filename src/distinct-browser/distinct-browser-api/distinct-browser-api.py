@@ -10,7 +10,7 @@ import base64
 from threading import Thread
 from functools import wraps
 from socket import socket
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 
 logger = logging.getLogger(__name__)
@@ -130,9 +130,11 @@ class BrowserAPI(Thread):
         logger.info(f"Stopping proxy with handler uuid {handler_uuid}")
         self.proxies_by_handler[handler_uuid].terminate()
 
-    def start_browser(self, handler_uuid, start_url=None):
+    def start_browser(self, handler_uuid, config):
         """ Start new browser process for handler uuid """
         logger.info(f"Starting browser with handler uuid {handler_uuid}")
+        if "initurl" in config:
+            logger.info(f"Init URL: {config['initurl']}")
 
         # Setup chrome extensions
         exts = self.setup_chrome_extensions(handler_uuid)
@@ -157,7 +159,7 @@ class BrowserAPI(Thread):
             f"--proxy-bypass-list=distinct-core",
             f"--load-extension={','.join(exts)}",
             f"--user-data-dir=/app/data/chrome-profiles/chrome-profile_{handler_uuid}",
-            start_url if start_url else "about:blank"
+            config["initurl"] if "initurl" in config else ""
         ], env=gui_env)
         self.browsers_by_handler[handler_uuid] = p
 
@@ -327,7 +329,8 @@ class BrowserAPI(Thread):
     # POST /api/browsers/<handler_uuid>/start
     @check_browser_absense
     def api_browsers_start(self, handler_uuid):
-        self.start_browser(handler_uuid)
+        config = request.get_json() if request.is_json else {}
+        self.start_browser(handler_uuid, config)
         body = {"success": True, "error": None, "data": None}
         return body
 

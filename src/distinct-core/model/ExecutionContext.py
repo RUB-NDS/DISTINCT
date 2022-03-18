@@ -1,7 +1,9 @@
 import re
 import logging
+
 from model.Frame import Frame
 from model.SequenceDiagram import SequenceDiagram
+
 from processors.AddEventListenerProcessor import AddEventListenerProcessor
 from processors.BroadcastChannelNewProcessor import BroadcastChannelNewProcessor
 from processors.BroadcastMessageReceivedProcessor import BroadcastMessageReceivedProcessor
@@ -44,9 +46,13 @@ class ExecutionContext():
 
         self.topframe = None # Top frame in hierarchy, i.e., root of the frame hierarchy
         self.statements = {} # Statements received from chrome extension, i.e., flows, SDKs, ...
-        self.reports = [] # Reports received from chrome extension, i.e., window open, ...
-        self.processors = [] # Report processors used to process all received reports
+        self.reports = [] # Reports received from chrome extension, i.e., documentinit, ...
         self.sequencediagram = SequenceDiagram() # Sequence diagram shows reports as visual representation
+
+        # Initialize global statements for report handler
+        self.statements["uuid"] = report_handler.uuid
+        self.statements["starttime"] = report_handler.starttime
+        self.statements["initurl"] = report_handler.config.get("initurl")
 
     def hierarchy(self):
         """ String representation of execution context is a tree hierarchy """
@@ -73,116 +79,85 @@ class ExecutionContext():
 
         key = report["key"]
 
+        # Statements
         if key == "report": # todo: change to statement
-            processor = StatementProcessor(self, report)
-            self.processors.append(processor)
+            StatementProcessor(self, report)
 
         # Document Events
         elif key == "documentinit":
-            processor = DocumentInitProcessor(self, report)
-            self.processors.append(processor)
+            DocumentInitProcessor(self, report)
         elif key == "documentloading":
-            processor = DocumentLoadingProcessor(self, report)
-            self.processors.append(processor)
+            DocumentLoadingProcessor(self, report)
         elif key == "documentinteractive":
-            processor = DocumentInteractiveProcessor(self, report)
-            self.processors.append(processor)
+            DocumentInteractiveProcessor(self, report)
         elif key == "documentcomplete":
-            processor = DocumentCompleteProcessor(self, report)
-            self.processors.append(processor)
+            DocumentCompleteProcessor(self, report)
         elif key == "documentbeforeunload":
-            processor = DocumentBeforeUnloadProcessor(self, report)
-            self.processors.append(processor)
+            DocumentBeforeUnloadProcessor(self, report)
         elif key == "windowopen":
-            processor = WindowOpenProcessor(self, report)
-            self.processors.append(processor)
+            WindowOpenProcessor(self, report)
         elif key == "windowclose":
-            processor = WindowCloseProcessor(self, report)
-            self.processors.append(processor)
+            WindowCloseProcessor(self, report)
 
         # URL Redirect Events
         elif key == "httpredirect":
-            processor = HTTPRedirectProcessor(self, report)
-            self.processors.append(processor)
+            HTTPRedirectProcessor(self, report)
         elif key == "formsubmit":
-            processor = FormSubmitProcessor(self, report)
-            self.processors.append(processor)
+            FormSubmitProcessor(self, report)
         elif key == "metaredirect":
-            processor = MetaRedirectProcessor(self, report)
-            self.processors.append(processor)
+            MetaRedirectProcessor(self, report)
         elif key == "metareload":
-            processor = MetaReloadProcessor(self, report)
-            self.processors.append(processor)
+            MetaReloadProcessor(self, report)
         elif key == "refreshredirect":
-            processor = RefreshRedirectProcessor(self, report)
-            self.processors.append(processor)
+            RefreshRedirectProcessor(self, report)
         elif key == "refreshreload":
-            processor = RefreshReloadProcessor(self, report)
-            self.processors.append(processor)
+            RefreshReloadProcessor(self, report)
 
         # JS Properties
         elif key == "closedaccessed":
-            processor = ClosedAccessedProcessor(self, report)
-            self.processors.append(processor)
+            ClosedAccessedProcessor(self, report)
 
         # Cross-Origin & Same-Origin Web Messaging
         elif key == "postmessagereceived":
-            processor = PostMessageReceivedProcessor(self, report)
-            self.processors.append(processor)
+            PostMessageReceivedProcessor(self, report)
         elif key == "addeventlistener":
-            processor = AddEventListenerProcessor(self, report)
-            self.processors.append(processor)
+            AddEventListenerProcessor(self, report)
         elif key == "removeeventlistener":
-            processor = RemoveEventListenerProcessor(self, report)
-            self.processors.append(processor)
+            RemoveEventListenerProcessor(self, report)
         elif key == "customeventnew":
-            processor = CustomEventNewProcessor(self, report)
-            self.processors.append(processor)
+            CustomEventNewProcessor(self, report)
         elif key == "customeventreceived":
-            processor = CustomEventReceivedProcessor(self, report)
-            self.processors.append(processor)
+            CustomEventReceivedProcessor(self, report)
         elif key == "messagechannelnew":
-            processor = MessageChannelNewProcessor(self, report)
-            self.processors.append(processor)
+            MessageChannelNewProcessor(self, report)
         elif key == "channelmessagereceived":
-            processor = MessageChannelReceivedProcessor(self, report)
-            self.processors.append(processor)
+            MessageChannelReceivedProcessor(self, report)
         elif key == "broadcastchannelnew":
-            processor = BroadcastChannelNewProcessor(self, report)
-            self.processors.append(processor)
+            BroadcastChannelNewProcessor(self, report)
         elif key == "broadcastmessagereceived":
-            processor = BroadcastMessageReceivedProcessor(self, report)
-            self.processors.append(processor)
+            BroadcastMessageReceivedProcessor(self, report)
         elif key == "broadcastmessagesent":
-            processor = BroadcastMessageSentProcessor(self, report)
-            self.processors.append(processor)
+            BroadcastMessageSentProcessor(self, report)
 
         # JS Storage
         elif key == "localstorageset":
-            processor = LocalStorageSetProcessor(self, report)
-            self.processors.append(processor)
+            LocalStorageSetProcessor(self, report)
         elif key == "sessionstorageset":
-            processor = SessionStorageSetProcessor(self, report)
-            self.processors.append(processor)
+            SessionStorageSetProcessor(self, report)
         elif key == "cookieset":
-            processor = CookieSetProcessor(self, report)
-            self.processors.append(processor)
+            CookieSetProcessor(self, report)
         elif key == "idbadd" or key == "idbput":
-            processor = IndexedDBSetProcessor(self, report)
-            self.processors.append(processor)
+            IndexedDBSetProcessor(self, report)
 
         # JS Direct Access
         elif key == "windowpropnew":
-            processor = WindowPropNewProcessor(self, report)
-            self.processors.append(processor)
+            WindowPropNewProcessor(self, report)
         elif key == "windowpropchanged":
-            processor = WindowPropChangedProcessor(self, report)
-            self.processors.append(processor)
+            WindowPropChangedProcessor(self, report)
 
         # JS Navigate & JS Reload
         elif key == "locationset":
-            processor = LocationSetProcessor(self, report)
-            self.processors.append(processor)
+            LocationSetProcessor(self, report)
 
     """ Frame Navigation """
 

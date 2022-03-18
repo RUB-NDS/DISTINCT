@@ -48,6 +48,7 @@ class ReportDispatcher(Thread):
         self.app.add_url_rule("/api/handlers/<handler_uuid>/dispatch", view_func=self.api_handlers_dispatch, methods=["POST"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/reports", view_func=self.api_handlers_reports, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/svg", view_func=self.api_handlers_svg, methods=["GET"])
+        self.app.add_url_rule("/api/handlers/<handler_uuid>/statements", view_func=self.api_handlers_statements, methods=["GET"])
 
         # Browsers
         self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
@@ -60,8 +61,8 @@ class ReportDispatcher(Thread):
 
     """ Routines """
 
-    def new_report_handler(self):
-        report_handler = ReportHandler(self)
+    def new_report_handler(self, config):
+        report_handler = ReportHandler(self, config)
         report_handler.start()
         self.handlers[report_handler.uuid] = report_handler
         return report_handler
@@ -136,9 +137,10 @@ class ReportDispatcher(Thread):
                 })
             return body
 
-        # POST /api/handlers
+        # POST /api/handlers [preloadurl=<url>]
         elif request.method == "POST":
-            report_handler = self.new_report_handler()
+            config = request.get_json() if request.is_json else {}
+            report_handler = self.new_report_handler(config)
             r_browsers = self.get_browsers_by_handler(report_handler.uuid)
 
             # Get browser list for uuid
@@ -213,17 +215,34 @@ class ReportDispatcher(Thread):
         }
         return body
 
+    # GET /api/handlers/<handler_uuid>/statements
+    @check_handler_existence
+    def api_handlers_statements(self, handler_uuid):
+        body = {
+            "success":True,
+            "error": None,
+            "data": {
+                "uuid": handler_uuid,
+                "statements": self.handlers[handler_uuid].ctx.statements
+            }
+        }
+        return body
+
     # POST /api/browsers/<handler_uuid>/start
+    @check_handler_existence
     def api_browsers_start(self, handler_uuid):
-        r = self.start_browser(handler_uuid)
+        config = self.handlers[handler_uuid].config
+        r = self.start_browser(handler_uuid, config)
         return r
 
     # POST /api/browsers/<handler_uuid>/stop
+    @check_handler_existence
     def api_browsers_stop(self, handler_uuid):
         r = self.stop_browser(handler_uuid)
         return r
 
     # GET /api/browsers/<handler_uuid>/profile
+    @check_handler_existence
     def api_browsers_profile(self, handler_uuid):
         r = self.get_profile_by_handler(handler_uuid)
         if r["success"] == True:
@@ -238,6 +257,7 @@ class ReportDispatcher(Thread):
             return r
 
     # GET /api/proxies/<handler_uuid>/stream
+    @check_handler_existence
     def api_proxies_stream(self, handler_uuid):
         r = self.get_stream_by_handler(handler_uuid)
         if r["success"] == True:
@@ -252,6 +272,7 @@ class ReportDispatcher(Thread):
             return r
 
     # GET /api/proxies/<handler_uuid>/har
+    @check_handler_existence
     def api_proxies_har(self, handler_uuid):
         r = self.get_har_by_handler(handler_uuid)
         if r["success"] == True:
@@ -277,8 +298,8 @@ class ReportDispatcher(Thread):
         r = requests.get(f"{self.browserEndpoint}/api/browsers/{handler_uuid}")
         return r.json()
 
-    def start_browser(self, handler_uuid):
-        r = requests.post(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/start")
+    def start_browser(self, handler_uuid, config):
+        r = requests.post(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/start", json=config)
         return r.json()
 
     def stop_browser(self, handler_uuid):

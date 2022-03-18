@@ -11,9 +11,19 @@ const getHandlers = () => {
   })
 }
 
-const newHandler = () => {
+const newHandler = (initURL) => {
   return new Promise((resolve, reject) => {
-    fetch(`${endpoint}/handlers`, {method: 'POST'}).then((r) => r.json()).then((r) => {
+    let config = {};
+    if (initURL) {
+      config['initurl'] = initURL
+    }
+    fetch(`${endpoint}/handlers`, {
+      method: 'POST',
+      body: JSON.stringify(config),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((r) => r.json()).then((r) => {
       resolve(r)
     }).catch((e) => {
       reject({'success': false, 'error': e, 'data': null})

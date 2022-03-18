@@ -9,13 +9,14 @@ logger = logging.getLogger(__name__)
 
 class ReportHandler(Thread):
 
-    def __init__(self, report_dispatcher):
+    def __init__(self, report_dispatcher, config):
         logger.info("Initializing report handler thread")
         super(ReportHandler, self).__init__()
         self.daemon = True
         self.should_stop = False
 
         self.report_dispatcher = report_dispatcher
+        self.config = config
 
         self.uuid = str(uuid4())
         self.starttime = str(int(time.time()))

@@ -19,7 +19,7 @@
     </div>
     <div class="btn-toolbar mb-4">
       <div class="btn-group me-2">
-        <button class="btn btn-primary" v-on:click="newHandler()">
+        <button class="btn btn-primary" v-on:click="newHandler(this.$refs.initURL.value)">
           <i class="bi bi-plus-circle"></i>
           New Handler
         </button>
@@ -27,9 +27,9 @@
       <div class="input-group">
         <div class="input-group-text">
           <i class="bi bi-cursor me-2"></i>
-          URL Preload
+          Init URL
         </div>
-        <input type="text" class="form-control" ref="preloadURL">
+        <input type="text" class="form-control" ref="initURL">
       </div>
     </div>
 
@@ -83,8 +83,8 @@ export default {
         alert(`Error: ${e['error']}`)
       })
     },
-    'newHandler': function() {
-      newHandler().then((r) => {
+    'newHandler': function(initURL) {
+      newHandler(initURL).then((r) => {
         if (r.success) {
           this.getHandlers()
         } else {
