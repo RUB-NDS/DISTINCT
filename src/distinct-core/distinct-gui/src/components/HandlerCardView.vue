@@ -35,6 +35,10 @@
             <i class="bi bi-diagram-2"></i>
             SVG
           </button>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statementsModal" v-on:click="showStatements(reporthandler.uuid)">
+            <i class="bi bi-clipboard"></i>
+            Stms
+          </button>
         </div>
       </li>
       <li class="list-group-item">
@@ -57,9 +61,18 @@
       <li class="list-group-item">
         <div>Actions:</div>
         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">Start Browser</button>
-          <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">Stop Browser</button>
-          <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">Stop Handler</button>
+          <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">
+            <i class="bi bi-play-circle"></i>
+            Browser
+          </button>
+          <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">
+            <i class="bi bi-stop-circle"></i>
+            Browser
+          </button>
+          <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">
+            <i class="bi bi-stop-circle"></i>
+            Handler
+          </button>
         </div>
       </li>
     </ul>
@@ -69,7 +82,7 @@
 <script>
 import {
   stopHandler, getSVG, startBrowser, stopBrowser,
-  exportProfile, exportStream, exportHAR
+  exportProfile, exportStream, exportHAR, getStatements
 } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
 
@@ -100,6 +113,31 @@ export default {
       getSVG(handler_uuid).then((r) => {
         if (r.success) {
           modalBody.innerHTML = r.data['svg']
+        } else {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'showStatements': function(handler_uuid) {
+      const modal = document.getElementById('statementsModal')
+      const modalTitle = modal.querySelector('.modal-title')
+      const tbody = modal.querySelector('tbody')
+      modalTitle.textContent = handler_uuid
+
+      getStatements(handler_uuid).then((r) => {
+        if (r.success) {
+          for (let [key, val] of Object.entries(r.data['statements'])) {
+            let stmRow = document.createElement('tr')
+            let stmKey = document.createElement('td')
+            let stmVal = document.createElement('td')
+            stmKey.textContent = key
+            stmVal.textContent = typeof(val) === 'string' ? val : JSON.stringify(val)
+            stmRow.appendChild(stmKey)
+            stmRow.appendChild(stmVal)
+            tbody.appendChild(stmRow)
+          }
         } else {
           alert(`Error: ${r['error']}`)
         }

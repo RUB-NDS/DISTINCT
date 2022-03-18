@@ -1,5 +1,5 @@
 
-const endpoint = `${location.origin}/api`
+const endpoint = `http://localhost:8080/api`
 
 const getHandlers = () => {
   return new Promise((resolve, reject) => {
@@ -61,6 +61,16 @@ const getReports = (handler_uuid) => {
   })
 }
 
+const getStatements = (handler_uuid) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${endpoint}/handlers/${handler_uuid}/statements`).then((r) => r.json()).then((r) => {
+      resolve(r)
+    }).catch((e) => {
+      reject({'success': false, 'error': e, 'data': null})
+    })
+  })
+}
+
 const startBrowser = (handler_uuid) => {
   return new Promise((resolve, reject) => {
     fetch(`${endpoint}/browsers/${handler_uuid}/start`, {method: 'POST'}).then((r) => r.json()).then((r) => {
@@ -108,6 +118,7 @@ export {
   stopHandler,
   getSVG,
   getReports,
+  getStatements,
   startBrowser,
   stopBrowser,
   exportProfile,

@@ -44,6 +44,7 @@
 
     <SVGModalView />
     <ReportsModalView />
+    <StatementsModalView />
   </div>
 </template>
 
@@ -54,11 +55,12 @@ import Handler from '../model/Handler.js'
 import HandlerCardView from './HandlerCardView.vue'
 import SVGModalView from './SVGModalView.vue'
 import ReportsModalView from './ReportsModalView.vue'
+import StatementsModalView from './StatementsModalView.vue'
 
 export default {
   name: 'HandlersView',
   components: {
-    HandlerCardView, SVGModalView, ReportsModalView
+    HandlerCardView, SVGModalView, ReportsModalView, StatementsModalView
   },
   data: () => {
     return {
