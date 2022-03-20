@@ -5,7 +5,7 @@
         <tr>
           <th scope="col">ID</th>
           <th scope="col">Timestamp</th>
-          <th scope="col">Report</th>
+          <th scope="col">Type</th>
           <th scope="col">Hierarchy</th>
           <th scope="col">URL</th>
           <th scope="col">Content</th>

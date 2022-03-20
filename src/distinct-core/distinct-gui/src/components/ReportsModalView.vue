@@ -10,6 +10,17 @@
           <form class="mb-4">
             <div class="form-group mb-2">
               <input type="text" class="form-control" id="sq" placeholder="Enter search query" ref="sq">
+              <small class="form-text text-muted">
+                Operators: <code>=</code>, <code>!=</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>CONTAINS</code>, <code>STARTS WITH</code>, <code>ENDS WITH</code>, <code>DOES NOT CONTAIN</code>
+              </small>
+              <br />
+              <small class="form-text text-muted">
+                Logical: <code>AND</code>, <code>OR</code>
+              </small>
+              <br />
+              <small class="form-text text-muted">
+                Fields: <code>id</code>, <code>timestamp</code>, <code>type</code>, <code>hierarchy</code>, <code>url</code>, <code>content.&lt;key&gt;</code>
+              </small>
             </div>
             <button type="submit" class="btn btn-primary" @click.prevent="applyFilter(this.$refs.sq.value)">Apply Filter</button>
           </form>
@@ -25,6 +36,7 @@
 
 <script>
 import { getReports } from '../api/connector.js'
+import { filterReports } from '../helpers.js'
 
 import ReportsTableView from './ReportsTableView.vue'
 
@@ -66,18 +78,20 @@ export default {
   },
   methods: {
     'applyFilter': function(sq) {
-      // No filter
-      if (sq == '') {
-        this.filteredReports = this.reports
-        return
+      // console.log(this.reports)
+      try {
+        this.filteredReports = filterReports(this.reports, sq)
+      } catch (e) {
+        alert(`Error: ${e['message']}`)
+        console.error(e)
       }
-
-      // Filter for reports based on key
-      this.filteredReports = this.reports.filter((r) => {
-        return r.key == sq
-      })
     }
   }
+
+  // Filter for reports based on key
+  // this.filteredReports = this.reports.filter((r) => {
+  //   return r.key == sq
+  // })
 }
 </script>
 
