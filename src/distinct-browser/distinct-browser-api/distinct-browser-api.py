@@ -94,7 +94,8 @@ class BrowserAPI(Thread):
 
         return (
             distinct_ext_for_handler,
-            ace_ext_for_handler
+            ace_ext_for_handler,
+            "/app/ublock-chrome-extension"
         )
 
     def start_proxy(self, handler_uuid):

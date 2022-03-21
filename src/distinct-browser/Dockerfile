@@ -78,6 +78,7 @@ WORKDIR /app
 # Copy chrome extensions
 COPY ./distinct-chrome-extension ./distinct-chrome-extension
 COPY ./ace-chrome-extension ./ace-chrome-extension
+COPY ./ublock-chrome-extension ./ublock-chrome-extension
 
 # Install mitmproxy
 COPY ./mitmproxy ./mitmproxy
