@@ -7,6 +7,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
+          <!-- Modal Body Start -->
+
+          <!-- Filter Reports View -->
           <form class="mb-4">
             <div class="form-group mb-2">
               <input type="text" class="form-control" id="sq" placeholder="Enter search query" ref="sq">
@@ -24,7 +27,35 @@
             </div>
             <button type="submit" class="btn btn-primary" @click.prevent="applyFilter(this.$refs.sq.value)">Apply Filter</button>
           </form>
-          <ReportsTableView :reports="filteredReports" />
+
+          <!-- Pretty Print HTML -->
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="prettyPrintHTMLCheckbox" @change="prettyPrintClicked($event)">
+            <label class="form-check-label" for="prettyPrintHTMLCheckbox">
+              Pretty Print HTML
+            </label>
+          </div>
+
+          <!-- Reports Table View -->
+          <ReportsTableView :reports="filteredReportsForCurrentPage" :prettyPrintHTML="prettyPrintHTML" />
+
+          <!-- Table Pagination View -->
+          <nav>
+            <ul class="pagination">
+              <li class="page-item">
+                <a class="page-link" @click.prevent="changePage(this.currentPage-1)" href="#">&laquo;</a>
+              </li>
+              <li :class="(pageIndex == this.currentPage) ? 'page-item active' : 'page-item'" v-for="pageIndex in numberPages" v-bind:key="pageIndex">
+                <a class="page-link" @click.prevent="changePage(pageIndex)" href="#">{{pageIndex}}</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" @click.prevent="changePage(this.currentPage+1)" href="#">&raquo;</a>
+              </li>
+            </ul>
+            Total: {{this.filteredReports.length}}
+          </nav>
+
+        <!-- Modal Body End -->
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -49,7 +80,16 @@ export default {
     return {
       handler_uuid: "",
       reports: [],
-      filteredReports: []
+      filteredReports: [],
+      filteredReportsForCurrentPage: [],
+      reportsPerPage: 50,
+      currentPage: 1,
+      prettyPrintHTML: false
+    }
+  },
+  computed: {
+    numberPages: function() {
+      return Math.ceil(this.filteredReports.length / this.reportsPerPage)
     }
   },
   mounted() {
@@ -61,9 +101,10 @@ export default {
 
       getReports(handler_uuid).then((r) => {
         if (r.success) {
-          // this.reports = r.data.reports
+          this.currentPage = 1
           this.reports = r.data.reports
           this.filteredReports = this.reports
+          this.filteredReportsForCurrentPage = this.filteredReports.slice(0, this.reportsPerPage)
         } else {
           alert(`Error: ${r['error']}`)
         }
@@ -74,17 +115,37 @@ export default {
     modal.addEventListener('hidden.bs.modal', () => {
       this.handler_uuid = ""
       this.reports = []
+      this.filteredReports = []
+      this.filteredReportsForCurrentPage = []
     })
   },
   methods: {
     'applyFilter': function(sq) {
       // console.log(this.reports)
       try {
+        this.currentPage = 1
         this.filteredReports = filterReports(this.reports, sq)
+        this.filteredReportsForCurrentPage = this.filteredReports.slice(
+          (this.currentPage - 1) * this.reportsPerPage,
+          this.currentPage * this.reportsPerPage
+        )
       } catch (e) {
         alert(`Error: ${e['message']}`)
         console.error(e)
       }
+    },
+    'changePage': function(page) {
+      if (page < 1 || page > this.numberPages) {
+        return
+      }
+      this.currentPage = page
+      this.filteredReportsForCurrentPage = this.filteredReports.slice(
+        (this.currentPage - 1) * this.reportsPerPage,
+        this.currentPage * this.reportsPerPage
+      )
+    },
+    'prettyPrintClicked': function(event) {
+      this.prettyPrintHTML = event.target.checked
     }
   }
 

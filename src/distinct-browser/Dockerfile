@@ -75,6 +75,10 @@ RUN /chromium/update.sh
 RUN mkdir /app
 WORKDIR /app
 
+# Setup Customized Chromium
+COPY ./distinct-chromium.zip /app/distinct-chromium.zip
+RUN unzip /app/distinct-chromium.zip -d /app
+
 # Copy chrome extensions
 COPY ./distinct-chrome-extension ./distinct-chrome-extension
 COPY ./ace-chrome-extension ./ace-chrome-extension

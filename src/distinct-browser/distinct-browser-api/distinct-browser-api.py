@@ -147,7 +147,7 @@ class BrowserAPI(Thread):
         gui_env = os.environ.copy()
         gui_env["DISPLAY"] = ":0.0"
         p = subprocess.Popen([
-            "/chromium/latest/chrome",
+            "/app/distinct-chromium/chrome",
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-dev-shm-usage",
