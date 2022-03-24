@@ -8,12 +8,17 @@ DISTINCT is an analysis framework for modern communication techniques that was d
 
 Setup was tested on `Ubuntu 20.04.3 LTS`
 
-- Install dependencies: `sudo apt update && sudo apt install -y chromium-browser chromium-chromedriver python3 python3-pip default-jre mitmproxy git`
+- Download and install [Docker](https://docs.docker.com/get-docker/)
 - Clone this repository and go into its `src` directory: `cd ./src`
-- Install requirements: `pip3 install -r requirements.txt`
-- Check that the ports 20200 and 20201 are not allocated on your system
+- Run: `docker-compose build`
+- Run: `docker-compose up`
+  - Check that ports `8080` and `9090` are not allocated on your system
+- Open `http://localhost:8080` in your webbrowser
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
 ## Workflow
+
+> TODO: Outdated, change to v2
 
 - [OPTIONAL] Generate cookies that should be preloaded into the browser, i.e., for Google and Facebook sessions
   - Go into the repository's `tools` directory
@@ -47,6 +52,8 @@ Setup was tested on `Ubuntu 20.04.3 LTS`
     - You can find the `plantuml.jar` in the `tools` directory
 
 ## Layout
+
+> TODO: Outdated, change to v2
 
 - `./chrome_extension` - contains the chrome extension that monitors the in-browser events and sends them in reports back to the python backend
 - `./mitmproxy` - contains the configurations for the proxy
