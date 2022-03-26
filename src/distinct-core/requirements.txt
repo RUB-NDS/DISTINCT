@@ -4,3 +4,5 @@ Flask_Cors==3.0.10
 selenium==3.141.0
 selenium_stealth==1.0.6
 requests==2.27.1
+jsbeautifier==1.14.0
+html5print==0.1.2
