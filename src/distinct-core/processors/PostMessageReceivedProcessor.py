@@ -8,7 +8,7 @@ from model.ReportProcessor import ReportProcessor
 
 class PostMessageReceivedProcessor(ReportProcessor):
     """ POSTMESSAGE RECEIVED
-        -> hierarchy, href, hrefparts, receiver, sender, data, datatype,
+        -> hierarchy, href, hrefparts, receiver, sender, data, data_type,
         ports = [{channel_id, port_id}], targetorigincheck, sourceoriginaccessed = "yes"/"no"
     """
 
@@ -17,7 +17,7 @@ class PostMessageReceivedProcessor(ReportProcessor):
 
         keyval = {
             "Receiver Origin Check": self.val["targetorigincheck"],
-            "Data Type": self.val["datatype"],
+            "Data Type": self.val["data_type"],
             "Data": json.dumps(self.val["data"]),
             "Ports": json.dumps(self.val["ports"]),
             "Info": ""

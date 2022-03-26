@@ -3,13 +3,13 @@
  *      - PostMessage API
  *      - Channel Messaging API
  *      - Broadcast Channel API
- *      - Custom Events 
- * 
+ *      - Custom Events
+ *
  * The postMessage API is emulated.
  * We use it to intercept the registration of message event listeners and for the analysis of
  * postMessages. We get automatic access to the postMessage receiver origin check.
  * That is, we can extract the content of the postMessage function's second parameter.
- * 
+ *
  * Syntax: window.postMessage(data, receiver_origin, ...)
  */
 
@@ -18,7 +18,7 @@ let content_messaging = () => {
     // Blacklisted origins from/to which we want to ignore postMessages
     // Reason: Ads and analytics are agressively sending a huge amount of postMessages
     // which we are not interested in.
-    
+
     window._sso._pmblacklist = [
         "safeframe.googlesyndication.com"
     ]
@@ -46,7 +46,7 @@ let content_messaging = () => {
     // This property holds a reference to frame X.
     // If a sender sends a postMessage to a receiver, the sender executes this function to indicate
     // that the postMessage was sent by itself.
-    
+
     window._sso._advertise = function() {
         function go_down(current) {
             for (let i = 0; i < current.frames.length; i++) {
@@ -102,19 +102,19 @@ let content_messaging = () => {
     window._sso._onmessage = null;
 
     // Wrappers of window.onmessage and window.addEventListener
-    
+
     Object.defineProperties(window, {
         onmessage: {
             set: (cb) => {
                 let cbstring = cb ? cb.toString() : JSON.stringify(cb);
-                
+
                 console.info(`window.onmessage = ${cbstring}`);
                 _sso._event("addeventlistener", {
                     type: "message",
                     method: "onmessage",
                     callback: cbstring
                 });
-                
+
                 window._sso._onmessage = cb;
             },
             get: () => window._sso._onmessage
@@ -123,7 +123,7 @@ let content_messaging = () => {
             value: (...args) => {
                 let [type, callback, options] = args;
                 let cbstring = callback ? callback.toString() : JSON.stringify(callback);
-                
+
                 if (type == "message") {
                     console.info(`window.addEventListener("message", ${cbstring}, ${options})`);
                     _sso._event("addeventlistener", {
@@ -131,7 +131,7 @@ let content_messaging = () => {
                         method: "window.addEventListener",
                         callback: cbstring
                     });
-                    
+
                     window._sso._callbacks.push(callback);
                 } else {
                     if (!_sso._default_window_events.includes(type)) {
@@ -151,8 +151,8 @@ let content_messaging = () => {
             value: (...args) => {
                 let [type, callback, options] = args;
                 let cbstring = callback ? callback.toString() : JSON.stringify(callback);
-                
-                if (type == "message") {    
+
+                if (type == "message") {
                     console.info(`window.removeEventListener("message", ${cbstring}, ${options})`);
                     _sso._event("removeeventlistener", {
                         type: type,
@@ -187,7 +187,7 @@ let content_messaging = () => {
         // Halt execution to get access to source information
         debugger;
         // Now we can access _sso._source_frame, _sso._source_hierarchy, and _sso._source_origin vars
-        
+
         let [message, targetOrigin, transfer] = args;
 
         // Serialize Message
@@ -249,7 +249,7 @@ let content_messaging = () => {
                 "ports": ports
             }
         };
-        
+
         // Proxy postMessage
 
         let proxyhandler = {
@@ -276,9 +276,9 @@ let content_messaging = () => {
         } else {
             pm.log.source_origin_accessed = "no";
         }
-        
+
         // Filter out postMessage from/to blacklisted origins
-        
+
         for (let blacklisted of window._sso._pmblacklist) {
             if (new URL(pm.log.source_origin).host.includes(blacklisted))
                 return;
@@ -299,12 +299,12 @@ let content_messaging = () => {
             "receiver":pm.log.target_frame,
             "sender": pm.log.source_frame,
             "data": pm.log.message_payload,
-            "datatype": pm.log.message_type,
+            "data_type": pm.log.message_type,
             "ports": pm.log.ports,
             "targetorigincheck": pm.log.target_origin_check,
             "sourceoriginaccessed": pm.log.source_origin_accessed
         });
-        
+
     }
 
     // Wrapper of CustomEvent constructor
@@ -338,7 +338,7 @@ let content_messaging = () => {
         let type = event.type;
         let data = event.detail || undefined;
         let data_type = typeof data;
-        
+
         if (!_sso._default_window_events.includes(type)) {
             // This is a custom event
             _sso._event("customeventreceived", {
@@ -359,7 +359,7 @@ let content_messaging = () => {
 
         let channel = new window._sso._MessageChannel(...args);
         let channel_id = Math.floor(Math.random() * 1000);
-        
+
         // Ports are identified by a pair of (Channel ID, Port ID)
         channel.port1._channel_id = channel_id;
         channel.port2._channel_id = channel_id;
