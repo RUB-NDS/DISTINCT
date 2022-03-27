@@ -272,9 +272,9 @@ let content_messaging = () => {
             window._sso._onmessage(proxy);
 
         if (proxy._origin_accessed) {
-            pm.log.source_origin_accessed = "yes";
+            pm.log.source_origin_accessed = true;
         } else {
-            pm.log.source_origin_accessed = "no";
+            pm.log.source_origin_accessed = false;
         }
 
         // Filter out postMessage from/to blacklisted origins
@@ -286,23 +286,16 @@ let content_messaging = () => {
                 return;
         }
 
-        // Logging
-
-        if (pm.log["target_origin_check"] == "*")
-            console.warn(`PostMessage sent: ${JSON.stringify(pm.log)}`);
-        else
-            console.info(`PostMessage sent: ${JSON.stringify(pm.log)}`);
-
         // Report
 
         _sso._event("postmessagereceived", {
-            "receiver":pm.log.target_frame,
-            "sender": pm.log.source_frame,
+            "target_frame":pm.log.target_frame,
+            "source_frame": pm.log.source_frame,
             "data": pm.log.message_payload,
             "data_type": pm.log.message_type,
             "ports": pm.log.ports,
-            "targetorigincheck": pm.log.target_origin_check,
-            "sourceoriginaccessed": pm.log.source_origin_accessed
+            "target_origin_check": pm.log.target_origin_check,
+            "source_origin_accessed": pm.log.source_origin_accessed
         });
 
     }
