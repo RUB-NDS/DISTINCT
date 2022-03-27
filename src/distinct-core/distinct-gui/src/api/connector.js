@@ -71,6 +71,16 @@ const getStatements = (handler_uuid) => {
   })
 }
 
+const getPoC = (handler_uuid) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${endpoint}/handlers/${handler_uuid}/poc`).then((r) => r.json()).then((r) => {
+      resolve(r)
+    }).catch((e) => {
+      reject({'success': false, 'error': e, 'data': null})
+    })
+  })
+}
+
 const startBrowser = (handler_uuid) => {
   return new Promise((resolve, reject) => {
     fetch(`${endpoint}/browsers/${handler_uuid}/start`, {method: 'POST'}).then((r) => r.json()).then((r) => {
@@ -119,6 +129,7 @@ export {
   getSVG,
   getReports,
   getStatements,
+  getPoC,
   startBrowser,
   stopBrowser,
   exportProfile,

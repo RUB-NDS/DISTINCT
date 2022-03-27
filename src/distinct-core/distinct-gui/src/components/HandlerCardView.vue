@@ -26,7 +26,7 @@
       <li class="list-group-item">Queued: {{ this.reporthandler.queueSize }}</li>
       <li class="list-group-item">
         <div>Show:</div>
-        <div class="btn-group" role="group">
+        <div class="btn-group mb-2" role="group">
           <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportsModal" :data-bs-handleruuid="reporthandler.uuid">
             <i class="bi bi-table"></i>
             Reports
@@ -38,6 +38,12 @@
           <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statementsModal" v-on:click="showStatements(reporthandler.uuid)">
             <i class="bi bi-clipboard"></i>
             Stms
+          </button>
+        </div>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pocModal" v-on:click="showPoC(reporthandler.uuid)">
+            <i class="bi bi-filetype-html"></i>
+            PoC
           </button>
         </div>
       </li>
@@ -82,9 +88,10 @@
 <script>
 import {
   stopHandler, getSVG, startBrowser, stopBrowser,
-  exportProfile, exportStream, exportHAR, getStatements
+  exportProfile, exportStream, exportHAR, getStatements, getPoC
 } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
+import Prism from 'prismjs'
 
 export default {
   name: 'HandlerCardView',
@@ -138,6 +145,24 @@ export default {
             stmRow.appendChild(stmVal)
             tbody.appendChild(stmRow)
           }
+        } else {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'showPoC': function(handler_uuid) {
+      const modal = document.getElementById('pocModal')
+      const modalTitle = modal.querySelector('.modal-title')
+      const modalBody = modal.querySelector('.modal-body')
+      const modalCode = modalBody.querySelector('code')
+      modalTitle.textContent = handler_uuid
+
+      getPoC(handler_uuid).then((r) => {
+        if (r.success) {
+          modalCode.textContent = r.data['poc']
+          Prism.highlightAll()
         } else {
           alert(`Error: ${r['error']}`)
         }

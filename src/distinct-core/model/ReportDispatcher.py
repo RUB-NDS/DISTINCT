@@ -49,6 +49,7 @@ class ReportDispatcher(Thread):
         self.app.add_url_rule("/api/handlers/<handler_uuid>/reports", view_func=self.api_handlers_reports, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/svg", view_func=self.api_handlers_svg, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/statements", view_func=self.api_handlers_statements, methods=["GET"])
+        self.app.add_url_rule("/api/handlers/<handler_uuid>/poc", view_func=self.api_handlers_poc, methods=["GET"])
 
         # Browsers
         self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
@@ -226,6 +227,27 @@ class ReportDispatcher(Thread):
                 "statements": self.handlers[handler_uuid].ctx.statements
             }
         }
+        return body
+
+    # GET /api/handlers/<handler_uuid>/poc
+    @check_handler_existence
+    def api_handlers_poc(self, handler_uuid):
+        success, val = self.handlers[handler_uuid].ctx.poc.generate_poc()
+        if success:
+            body = {
+                "success": True,
+                "error": None,
+                "data": {
+                    "uuid": handler_uuid,
+                    "poc": val
+                }
+            }
+        else:
+            body = {
+                "success": False,
+                "error": val,
+                "data": None
+            }
         return body
 
     # POST /api/browsers/<handler_uuid>/start

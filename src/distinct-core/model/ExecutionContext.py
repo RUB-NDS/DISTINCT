@@ -3,6 +3,7 @@ import logging
 
 from model.Frame import Frame
 from model.SequenceDiagram import SequenceDiagram
+from model.PoCGenerator import PoCGenerator
 
 from processors.AddEventListenerProcessor import AddEventListenerProcessor
 from processors.BroadcastChannelNewProcessor import BroadcastChannelNewProcessor
@@ -48,6 +49,7 @@ class ExecutionContext():
         self.statements = {} # Statements received from chrome extension, i.e., flows, SDKs, ...
         self.reports = [] # Reports received from chrome extension, i.e., documentinit, ...
         self.sequencediagram = SequenceDiagram() # Sequence diagram shows reports as visual representation
+        self.poc = PoCGenerator(self) # PoC generator
 
         # Initialize global statements for report handler
         self.statements["uuid"] = report_handler.uuid
