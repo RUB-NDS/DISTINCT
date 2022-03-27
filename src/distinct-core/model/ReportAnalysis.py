@@ -5,20 +5,7 @@ from urllib.parse import urlparse, unquote
 
 logger = logging.getLogger(__name__)
 
-class BottomUpAnalysis:
-    """ Perform buttom up analysis for given report.
-        - If report is 'postmessagereceived', check if SSO parameters are in postMessage data
-        - If report is 'postmessagereceived', check if receiver origin comes from user input
-    """
-
-    def __init__(self, reports, report):
-        self.reports = reports
-        self.report = report
-
-        if report["key"] == "postmessagereceived":
-            pass
-        elif report["key"] == "":
-            pass
+class ReportAnalysis:
 
     @staticmethod
     def url_in_query_or_fragment(base_url, search_url):
@@ -96,19 +83,49 @@ class BottomUpAnalysis:
             # This is a GET request -> search for url in query and fragment
             if report["key"] == "documentinit":
                 logger.debug(f"Found documentinit report: Check if '{url}' is in GET parameters")
-                if BottomUpAnalysis.url_in_query_or_fragment(report["val"]["href"], url):
+                if ReportAnalysis.url_in_query_or_fragment(report["val"]["href"], url):
                     logger.debug(f"Found related report: {report['id']}")
                     related_reports.append(report)
 
             # This is a POST request -> search for url in query, fragment, and body
             elif report["key"] == "formsubmit":
                 logger.debug(f"Found formsubmit report: Check if '{url}' is in GET or POST parameters")
-                if BottomUpAnalysis.url_in_query_or_fragment(report["val"]["action"], url):
+                if ReportAnalysis.url_in_query_or_fragment(report["val"]["action"], url):
                     logger.debug(f"Found related report: {report['id']}")
                     related_reports.append(report)
 
-                if BottomUpAnalysis.url_in_body(report["val"]["form"], url):
+                if ReportAnalysis.url_in_body(report["val"]["form"], url):
                     logger.debug(f"Found related report: {report['id']}")
                     related_reports.append(report)
 
         return related_reports
+
+    @staticmethod
+    def location_target_is_relative_redirect(property, target):
+        """ Check if the target of the location set event is a relative redirect.
+            Returns:
+                - True, if target is a relative redirect
+                - False, if target is not a relative redirect
+        """
+
+        # If location set via href, assign, or replace, and starts with "/", it is relative redirect
+        if (
+            (
+                property == "href"
+                or property == "assign"
+                or property == "replace"
+            )
+            and
+            (
+                target.startswith("/")
+                and not target.startswith("//") # ignore "//example.com" -> "https://example.com"
+            )
+        ):
+            return True
+
+        # If location is set via pathname, it is always a relative redirect
+        elif (property == "pathname"):
+            return True
+
+        else:
+            return False

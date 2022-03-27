@@ -2,7 +2,7 @@ import json
 import logging
 
 from model.ReportProcessor import ReportProcessor
-from model.BottomUpAnalysis import BottomUpAnalysis
+from model.ReportAnalysis import ReportAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class PostMessageReceivedProcessor(ReportProcessor):
 
         # Check if postMessage data contains SSO parameters
         logger.debug(f"Check if postMessage data in report #{self.id} contains SSO parameters")
-        if BottomUpAnalysis.sso_params_in_object(self.val["data"]):
+        if ReportAnalysis.sso_params_in_object(self.val["data"]):
             report["val"]["sso_params"] = True
             seq_diag_keyval["Info"] += (
                 "Detected SSO-related parameter names in the postMessage data. Check if this "
@@ -49,7 +49,7 @@ class PostMessageReceivedProcessor(ReportProcessor):
 
             # Check if postMessage receiver origin comes from user input
             logger.debug(f"Check if postMessage receiver origin in report #{self.id} comes from user input")
-            related_reports = BottomUpAnalysis.related_reports_with_url_in_user_input(ctx.reports, self.val["target_origin_check"])
+            related_reports = ReportAnalysis.related_reports_with_url_in_user_input(ctx.reports, self.val["target_origin_check"])
             if related_reports:
                 related = ", ".join(str(report["id"]) for report in related_reports)
                 report["val"]["related_reports"] = related
