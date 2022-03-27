@@ -1,22 +1,25 @@
 import json
-from os import stat
+import logging
 
 from urllib.parse import urlparse
 from urllib.parse import unquote
 
 from model.ReportProcessor import ReportProcessor
 
+logger = logging.getLogger(__name__)
+
 class PostMessageReceivedProcessor(ReportProcessor):
     """ POSTMESSAGE RECEIVED
-        -> hierarchy, href, hrefparts, receiver, sender, data, data_type,
-        ports = [{channel_id, port_id}], targetorigincheck, sourceoriginaccessed = "yes"/"no"
+        -> hierarchy, href, hrefparts, target_frame, source_frame, data, data_type,
+        ports = [{channel_id, port_id}], target_origin_check, source_origin_accessed = true|false
     """
 
     def __init__(self, ctx, report):
         super().__init__(ctx, report)
+        logger.debug(f"Initializing PostMessageReceivedProcessor for report #{self.id}")
 
         keyval = {
-            "Receiver Origin Check": self.val["targetorigincheck"],
+            "Receiver Origin Check": self.val["target_origin_check"],
             "Data Type": self.val["data_type"],
             "Data": json.dumps(self.val["data"]),
             "Ports": json.dumps(self.val["ports"]),
@@ -25,15 +28,20 @@ class PostMessageReceivedProcessor(ReportProcessor):
         color = None
 
         # Check if SSO-related params (like client_id, id_token, ...) are in postMessage data
+        logger.debug(f"Check if postMessage data in report #{self.id} contains SSO-related parameters")
         if self.search_loginreqresp(self.val["data"]):
+            report["val"]["sso_params"] = True
             keyval["Info"] += (
                 "Detected SSO-related parameter names in the postMessage data. Check if this "
                 "postMessage is related to SSO. It may contain the Login Request or Login Response. "
             )
             color = "orange"
+        else:
+            report["val"]["sso_params"] = False
 
         # Check for wildcard receiver origin
-        if self.val["targetorigincheck"] == "*":
+        logger.debug(f"Check if postMessage in report #{self.id} uses wildcard receiver origin")
+        if self.val["target_origin_check"] == "*":
             keyval["Info"] += (
                 "Detected potential postMessage vulnerability. Check if this postMessage contains "
                 "confidential data and is sent across windows. This postMessage does not "
@@ -43,29 +51,31 @@ class PostMessageReceivedProcessor(ReportProcessor):
 
         else:
 
-            # Check if receiver origin comes from user input
-            related_events = self.search_userinput(ctx.processors, self.val["targetorigincheck"])
+            # Bottom Up: Check if receiver origin comes from user input
+            logger.debug(f"Check if postMessage receiver origin in report #{self.id} comes from user input")
+            related_reports = self.search_userinput(ctx.reports, self.val["target_origin_check"])
 
-            if related_events:
+            if related_reports:
+                report["val"]["related_reports"] = ", ".join(str(report["id"]) for report in related_reports)
+                keyval["Related Reports"] = ", ".join(str(report["id"]) for report in related_reports)
                 keyval["Info"] += (
                     "Detected that the postMessage receiver origin check potentially depends on "
                     "user input. Check if the user input in the related events influences the "
                     "postMessage receiver origin check by actively modifying it."
                 )
-                keyval["Related Events"] = ", ".join(str(processor.id) for processor in related_events)
                 color = "orange"
-
             else:
+                report["val"]["related_reports"] = ""
                 if not color: color = "green"
 
         ctx.sequencediagram.arrow(
-            self.val["sender"],
-            self.val["receiver"],
+            self.val["source_frame"],
+            self.val["target_frame"],
             "PostMessage Received"
         )
 
         ctx.sequencediagram.note(
-            self.val["receiver"],
+            self.val["target_frame"],
             self.id,
             self.timestamp,
             "PostMessage Received",
@@ -93,35 +103,41 @@ class PostMessageReceivedProcessor(ReportProcessor):
             return False
 
     @staticmethod
-    def search_userinput(processors, url):
-        """ Search all events in reverse order that can contain user input for the url.
+    def search_userinput(reports, url):
+        """ Search all reports in reverse order that can contain user input for the url.
             Example: If "https://example.com" is used in postMessage or location set,
             then search all previous events that can contain user input as GET / POST
-            parameters for this url. If some event like "Document Init" contains this url
-            as GET parameter, we want to include this event as a related event to this event.
+            parameters for this url. If some report like "Document Init" contains this url
+            as GET parameter, we want to include this report as a related report to this report.
 
-            Returns a list of related events (event processors).
+            Returns a list of related reports.
         """
-        related_events = []
+        related_reports = []
 
-        for processor in reversed(processors):
+        for report in reversed(reports):
+            logger.debug(f"Checking if report #{report['id']} contains user input for {url}")
 
             # This is a GET request -> search for url in query & hash parameters
             # -> val["href"]
-            if processor.key == "documentinit":
-                if PostMessageReceivedProcessor.url_in_url(processor.val["href"], url):
-                    related_events.append(processor)
+            if report["key"] == "documentinit":
+                logger.debug(f"Found documentinit report: Check if '{url}' is in GET parameters")
+                if PostMessageReceivedProcessor.url_in_url(report["val"]["href"], url):
+                    logger.debug(f"Found related event: {report['id']}")
+                    related_reports.append(report)
 
             # This is a POST request -> search for url in query, hash, and body parameters
             # -> val["action"], val["form"]
-            elif processor.key == "formsubmit":
-                if PostMessageReceivedProcessor.url_in_url(processor.val["action"], url):
-                    related_events.append(processor)
+            elif report["key"] == "formsubmit":
+                logger.debug(f"Found formsubmit report: Check if '{url}' is in GET or POST parameters")
+                if PostMessageReceivedProcessor.url_in_url(report["val"]["action"], url):
+                    logger.debug(f"Found related event: {report['id']}")
+                    related_reports.append(report)
 
-                if PostMessageReceivedProcessor.url_in_body(processor.val["form"], url):
-                    related_events.append(processor)
+                if PostMessageReceivedProcessor.url_in_body(report["val"]["form"], url):
+                    logger.debug(f"Found related event: {report['id']}")
+                    related_reports.append(report)
 
-        return related_events
+        return related_reports
 
     @staticmethod
     def url_in_url(base_url, search_url):
