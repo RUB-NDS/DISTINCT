@@ -1,7 +1,6 @@
 # TODOs
 
 ## Next Up
-- [] Remove sourceoriginaccessed from postmessagereceived report as it can contain false positives
 - [] In postmessagereceived report, hightlight corresponding message event handler that *could* be responsible for handling this event
   - Search for keywords appearing in postmessage data in all message event handler callbacks recorded before postmessage is received
 - [] Check security of message event handler callback
