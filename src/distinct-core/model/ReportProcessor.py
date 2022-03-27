@@ -10,8 +10,10 @@ class ReportProcessor:
         # Store reference to execution context in which this report was received
         self.ctx = ctx
 
+        # Store reference to report
+        self.report = report
+
         # Extract the main parts of the report
-        # report = {"id": int, "timestamp": str, "key": str, "val": any}
         self.id = report["id"]
         self.timestamp = report["timestamp"]
         self.key = report["key"]
