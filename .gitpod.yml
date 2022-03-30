@@ -1,0 +1,13 @@
+tasks:
+  - init: docker-compose build -f ./src/docker-compose.yml
+  - command: docker-compose up -f ./src/docker-compose.yml
+
+ports:
+  - port: 8080
+    onOpen: open-browser
+  - port: 9090
+    onOpen: ignore
+
+vscode:
+  extensions:
+    - ms-azuretools.vscode-docker
