@@ -4,6 +4,10 @@ Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniqu
 
 DISTINCT is an analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using Cross-Window Communications in Modern Single Sign-On".
 
+## Quick Start with Gitpod
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/iphoneintosh/DISTINCT)
+
 ## Setup
 
 Setup was tested on `Ubuntu 20.04.3 LTS`
