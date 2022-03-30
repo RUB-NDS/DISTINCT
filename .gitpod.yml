@@ -1,6 +1,6 @@
 tasks:
-  - init: docker-compose build -f ./src/docker-compose.yml
-  - command: docker-compose up -f ./src/docker-compose.yml
+  - init: docker-compose -f ./src/docker-compose.yml build
+  - command: docker-compose -f ./src/docker-compose.yml up
 
 ports:
   - port: 8080
