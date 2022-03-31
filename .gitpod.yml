@@ -5,8 +5,20 @@ tasks:
 ports:
   - port: 8080
     onOpen: open-browser
+    visibility: public
   - port: 9090
     onOpen: ignore
+    visibility: public
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: prevent-merge-on-error
+    addComment: true
+    addBadge: true
 
 vscode:
   extensions:
