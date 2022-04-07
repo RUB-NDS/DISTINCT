@@ -72,7 +72,7 @@ class BrowserAPI(Thread):
             s.bind(("", 0))
             return s.getsockname()[1]
 
-    def setup_chrome_extensions(self, handler_uuid, ace_ext_config=None):
+    def setup_chrome_extensions(self, handler_uuid):
         """ Setup chrome extensions for handler """
         distinct_ext_for_handler = f"/app/data/chrome-extensions/distinct-chrome-extension_{handler_uuid}"
         ace_ext_for_handler = f"/app/data/chrome-extensions/ace-chrome-extension_{handler_uuid}"
@@ -90,7 +90,17 @@ class BrowserAPI(Thread):
                 "handler_uuid": handler_uuid
             }))
 
-        # TODO: Configure ace chrome extension
+        # Configure ace chrome extension
+        with open(f"{ace_ext_for_handler}/config/config.json", "w") as f:
+            f.write(json.dumps({
+                "googleUsername": os.environ["GOOGLE_USERNAME"],
+                "googlePassword": os.environ["GOOGLE_PASSWORD"],
+                "facebookUsername": os.environ["FACEBOOK_USERNAME"],
+                "facebookPassword": os.environ["FACEBOOK_PASSWORD"],
+                "appleUsername": os.environ["APPLE_USERNAME"],
+                "applePassword": os.environ["APPLE_PASSWORD"],
+                "apple2FA": os.environ["APPLE_2FA"]
+            }))
 
         return (
             distinct_ext_for_handler,

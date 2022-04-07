@@ -6,7 +6,7 @@ services:
     container_name: distinct-core
     restart: always
     ports:
-      - "8080:8080" # API
+      - "9080:8080"
     networks:
       - distinct-net
     volumes:
@@ -18,11 +18,19 @@ services:
     depends_on:
       - distinct-core
     ports:
-      - "9090:9090" # NoVNC
+      - "9090:9090"
     networks:
       - distinct-net
     volumes:
       - distinct-browser-data:/app/data
+    environment:
+      GOOGLE_USERNAME: ${GOOGLE_USERNAME}
+      GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
+      FACEBOOK_USERNAME: ${FACEBOOK_USERNAME}
+      FACEBOOK_PASSWORD: ${FACEBOOK_PASSWORD}
+      APPLE_USERNAME: ${APPLE_USERNAME}
+      APPLE_PASSWORD: ${APPLE_PASSWORD}
+      APPLE_2FA: ${APPLE_2FA}
 
 networks:
   distinct-net:

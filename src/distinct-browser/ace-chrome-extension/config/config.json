@@ -1,9 +1,9 @@
 {
-  "googleUsername": "petra.pentest@gmail.com",
-  "googlePassword": "qfj,RGdP?g394f9f,R[dpaEXipqbMEig",
-  "facebookUsername": "petra.pentest@gmail.com",
-  "facebookPassword": "qfj,RGdP?g394f9f,R[dpaEXipqbMEig",
-  "appleUsername": "petra.pentest@gmail.com",
-  "applePassword": "qfj,RGdP?g394f9f,R[dpaEXipqbMEig",
-  "apple2FA": "DES6d8af2749feca57e7ff332da1db2cf777=HSARMTKNSRVXWFlaPPsmDRiTnlT78RnpvO5EICKG9xpGXq91NelUcDcYTJ6fL1yRMbDuvjV4s+0HKYtp84fXVGeYzwM8w/Bhyp4c5nRTdl3NcVWbs/IRH85PqDjKMqfMTwfKlmldN9OvQbw+JRHZ9D03eqmdO2eBtvvtMeeb/yS+1x/JXd+L5K8sPGU=SRVX"
+  "googleUsername": "changeme",
+  "googlePassword": "changeme",
+  "facebookUsername": "changeme",
+  "facebookPassword": "changeme",
+  "appleUsername": "changeme",
+  "applePassword": "changeme",
+  "apple2FA": "changeme"
 }

@@ -4,20 +4,17 @@ Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniqu
 
 DISTINCT is an analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using Cross-Window Communications in Modern Single Sign-On".
 
-## Quick Start with Gitpod
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/iphoneintosh/DISTINCT)
-
 ## Setup
 
 Setup was tested on `Ubuntu 20.04.3 LTS`
 
 - Download and install [Docker](https://docs.docker.com/get-docker/)
-- Clone this repository and go into its `src` directory: `cd ./src`
+  - Check that ports `9080` and `9090` are not allocated on your system
+- Clone this repository: `git clone https://github.com/XXXX/DISTINCT.git`
+- Go into its `src` directory: `cd ./src`
 - Run: `docker-compose build`
 - Run: `docker-compose up`
-  - Check that ports `8080` and `9090` are not allocated on your system
-- Open `http://localhost:8080` in your webbrowser
+- Open `http://localhost:9080` in your webbrowser
 - Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
 ## Workflow

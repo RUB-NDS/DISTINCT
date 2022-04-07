@@ -11,7 +11,6 @@
   - In execution context, build automatic exploit generator
   - Considers information from reports and from statements, i.e., the frame in which the authreq is sent and the authreq itself
   - Exploit: `<html><script>/* 1) addEventListener 2) window.open | window.embed 3) window.postMessage? */</script></html>`
-- [] Let user configure google, apple, facebook account for auto consent extension
 - [] Update README.md
 
 ## Low Prio
