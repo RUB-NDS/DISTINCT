@@ -7,10 +7,6 @@
   - Search for keywords like origin, and if no origin appears, this is a bad sign, mark as red
   - If origin appears, add the line in which it appears to report and mark in orange
   - Check for patterns like `.origin.startsWith`, `.origin.match`, ...
-- [] Automatic exploit generation
-  - In execution context, build automatic exploit generator
-  - Considers information from reports and from statements, i.e., the frame in which the authreq is sent and the authreq itself
-  - Exploit: `<html><script>/* 1) addEventListener 2) window.open | window.embed 3) window.postMessage? */</script></html>`
 - [] Update README.md
 
 ## Low Prio
