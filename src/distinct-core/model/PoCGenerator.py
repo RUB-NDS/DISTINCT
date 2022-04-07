@@ -1,3 +1,5 @@
+import json
+
 class PoCGenerator:
 
     def __init__(self, ctx):
@@ -23,7 +25,9 @@ class PoCGenerator:
         if loginreqframe_first_url is None:
             return (False, "Could not determine the first URL of the frame containing the login request")
 
-        poc_html = self.poc_template(loginreqframe_first_url)
+        loginreqframe_postmessages = self.get_postmessages_data_sent_to_frame(self.ctx.statements["loginreqframe"])
+
+        poc_html = self.poc_template(self.ctx.statements, loginreqframe_first_url, loginreqframe_postmessages)
         return (True, poc_html)
 
     def get_first_url_of_frame(self, frame):
@@ -39,8 +43,36 @@ class PoCGenerator:
                     return report["val"]["href"]
         return None
 
+    def get_postmessages_data_sent_to_frame(self, frame):
+        """ Get the postmessages data sent to a frame.
+            Returns:
+                - List of postmessages with their corresponding data
+        """
+        postmessages = []
+        for report in self.ctx.reports:
+            if report["key"] == "postmessagereceived" and report["val"]["target_frame"] == frame:
+                postmessage_data = report["val"]["data"]
+                postmessage_data_type = report["val"]["data_type"]
+                if postmessage_data_type == "string":
+                    postmessages.append(f'"{postmessage_data}"')
+                else:
+                    postmessages.append(f"{postmessage_data}")
+        return postmessages
+
     @staticmethod
-    def poc_template(embed_url):
+    def poc_template(statements, embed_url, postmessages):
+
+        title = statements.get("initurl", "N/A")
+        statements_string = json.dumps(statements, indent=4)
+
+        postmessages_popup_string = ""
+        for postmessage in postmessages:
+            postmessages_popup_string += f"        popup.postMessage({postmessage}, '*')\n"
+
+        postmessages_iframe_string = ""
+        for postmessage in postmessages:
+            postmessages_iframe_string += f"        frame.postMessage({postmessage}, '*')\n"
+
         poc_template = f"""\
 <!DOCTYPE html>
 <html lang="en">
@@ -48,13 +80,17 @@ class PoCGenerator:
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PoC: N/A</title>
+  <title>PoC: {title}</title>
 </head>
 <body>
-  <h1>PoC: N/A</h1>
+  <h1>PoC: {title}</h1>
   <p><button onclick="openPopup()">Open Popup</button></p>
   <p><button onclick="embedIframe()">Embed IFrame</button></p>
-  <p>Received postMessages:</p>
+
+  <h3>Statements</h3>
+  <code><pre>{statements_string}</pre></code>
+
+  <h3>Received postMessages:</h3>
   <div id="pms"></div>
 
   <script>
@@ -67,16 +103,15 @@ class PoCGenerator:
     function openPopup() {{
       popup = window.open('{embed_url}', '_blank')
       setTimeout(() => {{
-        popup.postMessage('ping', '*')
+{postmessages_popup_string}
       }}, 3000) // wait for popup to load
     }}
 
     function embedIframe() {{
       frame = document.createElement('iframe')
       frame.src = '{embed_url}'
-      frame.style.opacity = 0
       frame.onload = () => {{
-        frame.postMessage('ping', '*')
+{postmessages_iframe_string}
       }}
       document.body.appendChild(frame)
     }}
