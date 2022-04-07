@@ -20,7 +20,7 @@
                 Browser
               </router-link>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <router-link class="nav-link" to="/logs">
                 <i class="bi bi-body-text"></i>
                 Logs
@@ -31,7 +31,7 @@
                 <i class="bi bi-gear"></i>
                 Settings
               </router-link>
-            </li>
+            </li> -->
             <li class="nav-item">
               <router-link class="nav-link" to="/about">
                 <i class="bi bi-info-circle"></i>
