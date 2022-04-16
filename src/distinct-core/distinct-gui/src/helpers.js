@@ -89,6 +89,8 @@ const checkRule = (report, rule) => {
 }
 
 const compare = (op, a, b) => {
+  if (a === null || b === null)
+    return 0
   switch (op) {
     case '=':
       return a == b ? 1 : 0
@@ -103,13 +105,13 @@ const compare = (op, a, b) => {
     case '<':
       return a < b ? 1 : 0
     case 'CONTAINS':
-      return a.includes(b) ? 1 : 0
+      return JSON.stringify(a).toLowerCase().includes(b.toLowerCase()) ? 1 : 0
     case 'STARTS WITH':
-      return a.startsWith(b) ? 1 : 0
+      return JSON.stringify(a).toLowerCase().startsWith(b.toLowerCase()) ? 1 : 0
     case 'ENDS WITH':
-      return a.endsWith(b) ? 1 : 0
+      return JSON.stringify(a).toLowerCase().endsWith(b.toLowerCase()) ? 1 : 0
     case 'DOES NOT CONTAIN':
-      return !a.includes(b) ? 1 : 0
+      return !JSON.stringify(a.toLowerCase()).includes(b.toLowerCase()) ? 1 : 0
     default:
       throw new Error(`Unknown operator: ${op}`)
   }
