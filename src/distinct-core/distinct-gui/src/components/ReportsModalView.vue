@@ -11,30 +11,72 @@
 
           <!-- Filter Reports View -->
           <form class="mb-4">
-            <div class="form-group mb-2">
-              <input type="text" class="form-control" id="sq" placeholder="Enter search query" ref="sq">
+            <div class="form-group">
+
+              <!-- Custom Search Query -->
+              <label for="sq">Submit a custom Search Query:</label>
+              <div class="input-group">
+                <input type="text" class="form-control me-2" id="sq" placeholder='type = "postmessagereceived" and content.data_type = "string" ...' ref="sq">
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-primary" @click.prevent="applyFilter(this.$refs.sq.value)">Apply Filter</button>
+                </div>
+              </div>
               <small class="form-text text-muted">
-                Operators: <code>=</code>, <code>!=</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>CONTAINS</code>, <code>STARTS WITH</code>, <code>ENDS WITH</code>, <code>DOES NOT CONTAIN</code>
+                Compare Operators: <code>=</code>, <code>!=</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>CONTAINS</code>, <code>STARTS WITH</code>, <code>ENDS WITH</code>, <code>DOES NOT CONTAIN</code>
               </small>
               <br />
               <small class="form-text text-muted">
-                Logical: <code>AND</code>, <code>OR</code>
+                Logical Operators: <code>AND</code>, <code>OR</code>
               </small>
               <br />
               <small class="form-text text-muted">
                 Fields: <code>id</code>, <code>timestamp</code>, <code>type</code>, <code>hierarchy</code>, <code>url</code>, <code>content.&lt;key&gt;</code>
               </small>
-            </div>
-            <button type="submit" class="btn btn-primary" @click.prevent="applyFilter(this.$refs.sq.value)">Apply Filter</button>
-          </form>
+              <br />
 
-          <!-- Pretty Print HTML -->
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="prettyPrintHTMLCheckbox" @change="prettyPrintClicked($event)">
-            <label class="form-check-label" for="prettyPrintHTMLCheckbox">
-              Pretty Print HTML
-            </label>
-          </div>
+              <!-- Suggested Search Query -->
+              <label class="mt-2" for="exampleQueries">Select a suggested Search Query:</label>
+              <select id="exampleQueries" class="form-select" size="6" @change="selectExampleQuery($event)">
+                <option value='' selected></option>
+
+                <option value='type = "documentinit" or type = "documentinteractive"'>Show all documents</option>
+                <option value='hierarchy = "top" and (type = "documentinit" or type = "documentinteractive")'>Show all documents in primary window</option>
+                <option value='hierarchy contains "popups" and (type = "documentinit" or type = "documentinteractive")'>Show all documents in popup</option>
+                <option value='type = "windowopen" or type = "windowclose"'>Show all popup openings and closings</option>
+
+                <option value='type = "httpredirect" or type = "formsubmit" or type = "metaredirect" or type = "metareload" or type = "refreshredirect" or type = "refreshreload"'>Show all URL Redirects</option>
+                <option value='type = "windowpropnew" or type = "windowpropchanged"'>Show all JS Direct Accesses</option>
+                <option value='type = "closedaccessed"'>Show all JS Properties</option>
+                <option value='type = "localstorageset" or type = "sessionstorageset" or type = "cookieset" or type = "idbadd" or type = "idbput"'>Show all JS Storage Accesses</option>
+
+                <option value='type = "customeventreceived"'>Show all Custom Events</option>
+                <option value='type = "customeventreceived" and content.source_frame contains "popups"'>Show all Custom Events sent from popup</option>
+                <option value='type = "channelmessagereceived"'>Show all Channel Messages</option>
+                <option value='type = "channelmessagereceived" and content.source_frame contains "popups"'>Show all Channel Messages sent from popup</option>
+                <option value='type = "broadcastmessagereceived"'>Show all Broadcast Messages</option>
+                <option value='type = "broadcastmessagereceived" and content.source_frame contains "popups"'>Show all Broadcast Messages sent from popup</option>
+
+                <option value='type = "postmessagereceived"'>Show all postMessages</option>
+                <option value='type = "postmessagereceived" and content.sso_params = true'>Show all postMessages with SSO parameters</option>
+                <option value='type = "postmessagereceived" and content.data contains "token"'>Show all postMessages with string "token" in data</option>
+                <option value='type = "postmessagereceived" and content.source_frame contains "popups"'>Show all postMessages sent from popup</option>
+                <option value='type = "postmessagereceived" and content.target_origin_check = "*"'>Show all postMessages with wildcard <code>*</code></option>
+                <option value='type = "postmessagereceived" and content.target_origin_check = "*" and content.source_frame contains "popups"'>Show all postMessages sent from popup with wildcard <code>*</code></option>
+                <option value='type = "postmessagereceived" and content.data contains "token" and content.target_origin_check = "*"'>Show all postMessages with string "token" in data and wildcard <code>*</code></option>
+                <option value='type = "addeventlistener" and content.type = "message"'>Show all postMessage Event Listeners</option>
+
+                <option value='type = "locationset"'>Show all JS Navigates</option>
+                <option value='type = "locationset" and content.relative_redirect = false'>Show all JS Navigates with absolute URLs</option>
+                <option value='type = "locationset" and content.relative_redirect = true'>Show all JS Navigates with relative URLs</option>
+              </select>
+
+              <!-- Pretty Print -->
+              <div class="mt-2">
+                <label class="form-check-label me-2" for="prettyPrintHTMLCheckbox">Pretty Print HTML:</label>
+                <input class="form-check-input" type="checkbox" id="prettyPrintHTMLCheckbox" @change="prettyPrintClicked($event)">
+              </div>
+            </div>
+          </form>
 
           <!-- Reports Table View -->
           <ReportsTableView :reports="filteredReportsForCurrentPage" :prettyPrintHTML="prettyPrintHTML" />
@@ -146,6 +188,11 @@ export default {
     },
     'prettyPrintClicked': function(event) {
       this.prettyPrintHTML = event.target.checked
+    },
+    'selectExampleQuery': function(event) {
+      let exampleQuery = event.target.value
+      this.$refs.sq.value = exampleQuery
+      this.applyFilter(this.$refs.sq.value)
     }
   }
 
