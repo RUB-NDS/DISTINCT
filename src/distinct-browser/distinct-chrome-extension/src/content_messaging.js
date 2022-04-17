@@ -193,13 +193,6 @@ let content_messaging = () => {
         // Serialize Message
 
         let message_type = typeof message;
-        let message_string = "";
-        switch(message_type) {
-            case "number": message_string = message.toString(); break;
-            case "boolean": message_string = message.toString(); break;
-            case "string": message_string = message; break;
-            default: message_string = JSON.stringify(message); break;
-        }
 
         // Transfer
 
@@ -238,7 +231,7 @@ let content_messaging = () => {
                 "target_origin": window.location.href,
                 "target_origin_check": (typeof targetOrigin == "string") ? targetOrigin : JSON.stringify(targetOrigin),
                 "message_type": message_type,
-                "message_payload": message_string,
+                "message_payload": message,
                 "ports": ports_log
             },
             "event": {
