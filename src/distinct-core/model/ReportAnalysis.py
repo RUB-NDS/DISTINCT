@@ -129,3 +129,27 @@ class ReportAnalysis:
 
         else:
             return False
+
+    @staticmethod
+    def parameter_accessed_in_function(parameter: str, function: str):
+        """ Check if parameter is accessed in function.
+            Returns:
+                - True, if parameter is accessed in function
+                - False, if parameter is not accessed in function
+        """
+        if parameter in function:
+            return True
+        else:
+            return False
+
+    @classmethod
+    def recursive_items(cls, dictionary):
+        """ Recursively iterate over dictionary.
+            Returns:
+                - List of all items in dictionary
+        """
+        for key, value in dictionary.items():
+            if type(value) is dict:
+                yield from cls.recursive_items(value)
+            else:
+                yield (key, value)

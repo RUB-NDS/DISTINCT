@@ -64,6 +64,12 @@ class PostMessageReceivedProcessor(ReportProcessor):
                 report["val"]["related_reports"] = ""
                 if not color: color = "green"
 
+        # Determine related event handlers of postMessage
+        related_handlers = self.determine_related_handler()
+        report["val"]["related_handlers"] = related_handlers
+        seq_diag_keyval["Related Handlers"] = related_handlers
+
+        # Write sequence diagram
         ctx.sequencediagram.arrow(
             self.val["source_frame"],
             self.val["target_frame"],
@@ -78,3 +84,40 @@ class PostMessageReceivedProcessor(ReportProcessor):
             seq_diag_keyval,
             color = color
         )
+
+    def determine_related_handler(self):
+        """ Try to determine the related handler of the postMessage.
+            This is done by looking at the parameters in the postMessage data
+            and we try to find them in the message event handler callbacks.
+        """
+        logger.debug(f"Check if postMessage parameters in report #{self.id} are accessed in any message event handler")
+
+        # This is only supported for postMessages that carry objects
+        if self.val["data_type"] != "object":
+            return ""
+
+        logger.debug(f"Determine all message event handlers ...")
+        message_event_handlers = []
+        for rpt in self.ctx.reports:
+            if rpt["key"] == "addeventlistener" and rpt["val"]["type"] == "message":
+                message_event_handlers.append(rpt)
+        logger.debug(f"Found {len(message_event_handlers)} message event handlers")
+
+        logger.debug(f"Determine parameters in postMessage data ...")
+        params_in_postmessage = []
+        logger.debug(f"Determine parameters for postMessage ({type(self.val['data'])}): {self.val['data']}")
+        for (key, val) in ReportAnalysis.recursive_items(self.val["data"]):
+            logger.debug(f"Found parameter in postMessage: {key}")
+            params_in_postmessage.append(key)
+        logger.debug(f"Found {len(params_in_postmessage)} parameters in postMessage data: {params_in_postmessage}")
+
+        logger.debug(f"Check if parameters are accessed in message event handlers ...")
+        related_handlers = []
+        for handler in message_event_handlers:
+            callback = handler["val"]["callback"]
+            for param in params_in_postmessage:
+                if ReportAnalysis.parameter_accessed_in_function(param, callback):
+                    related_handlers.append(handler["id"])
+        logger.debug(f"Found {len(related_handlers)} related message event handlers that access the parameters")
+
+        return ", ".join(str(related_handlers))
