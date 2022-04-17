@@ -92,9 +92,23 @@ class PostMessageReceivedProcessor(ReportProcessor):
         """
         logger.debug(f"Check if postMessage parameters in report #{self.id} are accessed in any message event handler")
 
-        # This is only supported for postMessages that carry objects
-        if self.val["data_type"] != "object":
-            return ""
+        data_type = self.val["data_type"]
+        data = self.val["data"]
+
+        # If the data type is not an object, maybe its an object but as json stringify
+        # We try to parse the string as json and check again if the data is an object
+        if data_type != "object":
+            try:
+                logger.debug(f"Trying to parse postMessage data as json ...")
+                data = json.loads(self.val["data"])
+                logger.debug(f"Checking if postMessage data is object now")
+                if type(data) != dict:
+                    logger.debug(f"PostMessage data is not an object")
+                    return ""
+                else:
+                    logger.debug(f"PostMessage data is an object now, continue ...")
+            except:
+                return ""
 
         logger.debug(f"Determine all message event handlers ...")
         message_event_handlers = []
@@ -105,19 +119,21 @@ class PostMessageReceivedProcessor(ReportProcessor):
 
         logger.debug(f"Determine parameters in postMessage data ...")
         params_in_postmessage = []
-        logger.debug(f"Determine parameters for postMessage ({type(self.val['data'])}): {self.val['data']}")
-        for (key, val) in ReportAnalysis.recursive_items(self.val["data"]):
+        logger.debug(f"Determine parameters for postMessage ({type(data)}): {data}")
+        for (key, val) in ReportAnalysis.recursive_items(data):
             logger.debug(f"Found parameter in postMessage: {key}")
             params_in_postmessage.append(key)
+            if type(val) == str and val:
+                params_in_postmessage.append(val)
         logger.debug(f"Found {len(params_in_postmessage)} parameters in postMessage data: {params_in_postmessage}")
 
         logger.debug(f"Check if parameters are accessed in message event handlers ...")
-        related_handlers = []
+        related_handlers = set()
         for handler in message_event_handlers:
             callback = handler["val"]["callback"]
             for param in params_in_postmessage:
                 if ReportAnalysis.parameter_accessed_in_function(param, callback):
-                    related_handlers.append(str(handler["id"]))
+                    related_handlers.add(str(handler["id"]))
         logger.debug(f"Found {len(related_handlers)} related message event handlers that access the parameters")
 
-        return ", ".join(related_handlers)
+        return ", ".join(list(related_handlers))
