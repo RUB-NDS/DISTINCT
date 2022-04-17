@@ -20,7 +20,6 @@ class BrowserAPI(Thread):
     def __init__(self):
         logger.info("Initializing browser api thread")
         super(BrowserAPI, self).__init__()
-        self.daemon = True
 
         self.app = Flask(__name__)
         self.app.url_map.strict_slashes = False # allow trailing slashes

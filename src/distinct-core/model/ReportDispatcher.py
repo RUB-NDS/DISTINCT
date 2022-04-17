@@ -15,7 +15,6 @@ class ReportDispatcher(Thread):
     def __init__(self):
         logger.info("Initializing report dispatcher thread")
         super(ReportDispatcher, self).__init__()
-        self.daemon = True
 
         self.handlers = {}
         self.app = Flask(__name__, static_folder="../distinct-gui/dist", static_url_path="/static")

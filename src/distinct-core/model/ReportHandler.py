@@ -2,7 +2,7 @@ import logging
 import time
 from uuid import uuid4
 from threading import Thread
-from queue import Queue
+from queue import Empty, Queue
 from model.ExecutionContext import ExecutionContext
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,6 @@ class ReportHandler(Thread):
     def __init__(self, report_dispatcher, config):
         logger.info("Initializing report handler thread")
         super(ReportHandler, self).__init__()
-        self.daemon = True
         self.should_stop = False
 
         self.report_dispatcher = report_dispatcher
@@ -36,7 +35,10 @@ class ReportHandler(Thread):
                 # Process report
                 logger.debug(f"Report handler {self.uuid} processes report: {report}")
                 self.ctx.process_report(report)
-            except:
+            except Empty:
+                continue
+            except Exception as e:
+                logger.exception(f"Uncaught exception in report handler {self.uuid}: {e}")
                 continue
         logger.info("Stopping report handler thread")
 
