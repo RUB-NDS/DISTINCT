@@ -117,7 +117,7 @@ class PostMessageReceivedProcessor(ReportProcessor):
             callback = handler["val"]["callback"]
             for param in params_in_postmessage:
                 if ReportAnalysis.parameter_accessed_in_function(param, callback):
-                    related_handlers.append(handler["id"])
+                    related_handlers.append(str(handler["id"]))
         logger.debug(f"Found {len(related_handlers)} related message event handlers that access the parameters")
 
-        return ", ".join(str(related_handlers))
+        return ", ".join(related_handlers)
