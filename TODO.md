@@ -1,8 +1,6 @@
 # TODOs
 
 ## Next Up
-- [] In postmessagereceived report, hightlight corresponding message event handler that *could* be responsible for handling this event
-  - Search for keywords appearing in postmessage data in all message event handler callbacks recorded before postmessage is received
 - [] Check security of message event handler callback
   - Search for keywords like origin, and if no origin appears, this is a bad sign, mark as red
   - If origin appears, add the line in which it appears to report and mark in orange
