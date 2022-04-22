@@ -11,6 +11,8 @@ services:
       - distinct-net
     volumes:
       - distinct-core-data:/app/data
+    environment:
+      VERBOSITY: ${VERBOSITY}
   distinct-browser:
     build: ./distinct-browser
     container_name: distinct-browser
@@ -24,6 +26,7 @@ services:
     volumes:
       - distinct-browser-data:/app/data
     environment:
+      VERBOSITY: ${VERBOSITY}
       GOOGLE_USERNAME: ${GOOGLE_USERNAME}
       GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
       FACEBOOK_USERNAME: ${FACEBOOK_USERNAME}

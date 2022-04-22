@@ -117,16 +117,20 @@ class BrowserAPI(Thread):
         listen_host = "127.0.0.1"
         listen_port = self.get_free_port()
 
-        p = subprocess.Popen([
-            "mitmdump",
-            "--listen-host", listen_host,
-            "--listen-port", str(listen_port),
-            "--save-stream-file", stream_path,
-            "--quiet",
-            "--scripts", "/app/mitmproxy/har.py",
-            "--scripts", "/app/mitmproxy/redirects.py",
-            "--set", f"hardump={hardump_path}"
-        ])
+        p = subprocess.Popen(
+            [
+                "mitmdump",
+                "--listen-host", listen_host,
+                "--listen-port", str(listen_port),
+                "--save-stream-file", stream_path,
+                "--quiet",
+                "--scripts", "/app/mitmproxy/har.py",
+                "--scripts", "/app/mitmproxy/redirects.py",
+                "--set", f"hardump={hardump_path}"
+            ],
+            stdout=subprocess.DEVNULL if logger.level > logging.DEBUG else None,
+            stderr=subprocess.DEVNULL if logger.level > logging.DEBUG else None
+        )
         self.proxies_by_handler[handler_uuid] = p
 
         logger.info(f"Started proxy on {listen_host}:{listen_port}")
@@ -155,22 +159,27 @@ class BrowserAPI(Thread):
         # Start browser process
         gui_env = os.environ.copy()
         gui_env["DISPLAY"] = ":0.0"
-        p = subprocess.Popen([
-            "/app/distinct-chromium/chrome",
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-web-security",
-            "--ignore-certificate-errors",
-            "--allow-running-insecure-content",
-            "--disable-site-isolation-trials",
-            "--disable-http2",
-            f"--proxy-server={proxy_host}:{proxy_port}",
-            f"--proxy-bypass-list=distinct-core",
-            f"--load-extension={','.join(exts)}",
-            f"--user-data-dir=/app/data/chrome-profiles/chrome-profile_{handler_uuid}",
-            config["initurl"] if "initurl" in config else ""
-        ], env=gui_env)
+        p = subprocess.Popen(
+            [
+                "/app/distinct-chromium/chrome",
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-web-security",
+                "--ignore-certificate-errors",
+                "--allow-running-insecure-content",
+                "--disable-site-isolation-trials",
+                "--disable-http2",
+                f"--proxy-server={proxy_host}:{proxy_port}",
+                f"--proxy-bypass-list=distinct-core",
+                f"--load-extension={','.join(exts)}",
+                f"--user-data-dir=/app/data/chrome-profiles/chrome-profile_{handler_uuid}",
+                config["initurl"] if "initurl" in config else ""
+            ],
+            env=gui_env,
+            stdout=subprocess.DEVNULL if logger.level > logging.DEBUG else None,
+            stderr=subprocess.DEVNULL if logger.level > logging.DEBUG else None
+        )
         self.browsers_by_handler[handler_uuid] = p
 
     def stop_browser(self, handler_uuid):
@@ -404,7 +413,13 @@ class BrowserAPI(Thread):
             return body
 
 def main():
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    verbosity = os.environ["VERBOSITY"]
+    level = logging.getLevelName(verbosity) if verbosity else logging.DEBUG
+    logging.basicConfig(stream=sys.stdout, level=level)
+    logging.getLogger(__name__).setLevel(level)
+    logging.getLogger('werkzeug').setLevel(level)
+    logger.info(f"Log level: {level}")
+
     browser_api = BrowserAPI()
     browser_api.start()
     browser_api.join()
