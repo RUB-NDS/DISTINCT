@@ -12,23 +12,38 @@ class PoCGenerator:
                 - (False, String), if exploit generation was not successfull
         """
 
-        if "flow" not in self.ctx.statements:
+        flow = self.get_stm("flow")
+        if not flow:
             return (False, "Could not determine flow type (redirect, popup, iframe)")
 
-        if "loginreqframe" not in self.ctx.statements:
+        loginreqframe = self.get_stm("loginreqframe")
+        if not loginreqframe:
             return (False, "Could not determine the frame containing the login request")
 
-        if "loginrequrl" not in self.ctx.statements:
+        loginrequrl = self.get_stm("loginrequrl")
+        if not loginrequrl:
             return (False, "Could not determine the login request")
 
-        loginreqframe_first_url = self.get_first_url_of_frame(self.ctx.statements["loginreqframe"])
-        if loginreqframe_first_url is None:
+        loginreqframe_first_url = self.get_first_url_of_frame(loginreqframe)
+        if not loginreqframe_first_url:
             return (False, "Could not determine the first URL of the frame containing the login request")
 
-        loginreqframe_postmessages = self.get_postmessages_data_sent_to_frame(self.ctx.statements["loginreqframe"])
+        loginreqframe_postmessages = self.get_postmessages_data_sent_to_frame(loginreqframe)
 
-        poc_html = self.poc_template(self.ctx.statements, loginreqframe_first_url, loginreqframe_postmessages)
+        poc_html = self.poc_template(loginreqframe_first_url, loginreqframe_postmessages)
         return (True, poc_html)
+
+    def get_stm(self, stm):
+        """ Get the *first* statement of a given key.
+            Returns:
+                - String, if the statement could be determined
+                - None, if the statement could not be determined
+        """
+        if stm in self.ctx.statements:
+            if type(self.ctx.statements[stm]) is list:
+                return self.ctx.statements[stm][0]
+            else:
+                return self.ctx.statements[stm]
 
     def get_first_url_of_frame(self, frame):
         """ Get the URL first loaded into a frame.
@@ -59,11 +74,10 @@ class PoCGenerator:
                     postmessages.append(f"{postmessage_data}")
         return postmessages
 
-    @staticmethod
-    def poc_template(statements, embed_url, postmessages):
+    def poc_template(self, embed_url, postmessages):
 
-        title = statements.get("initurl", "N/A")
-        statements_string = json.dumps(statements, indent=4)
+        title = self.get_stm("initurl") or "N/A"
+        statements_string = json.dumps(self.ctx.statements, indent=4)
 
         postmessages_popup_string = ""
         for postmessage in postmessages:
