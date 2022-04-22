@@ -1,7 +1,6 @@
 # TODOs
 
 ## Next Up
-- [ ] Update README.md
 
 ## Low Prio
 - [ ] Prettify values and data from windowpropnew, postmessagereceived, localstorageset, ...
