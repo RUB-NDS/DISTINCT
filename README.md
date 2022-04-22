@@ -2,7 +2,7 @@
 
 Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniques
 
-DISTINCT is an analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using Cross-Window Communications in Modern Single Sign-On".
+DISTINCT is an analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using In-Browser Communications in Modern Single Sign-On".
 
 ## Setup
 
