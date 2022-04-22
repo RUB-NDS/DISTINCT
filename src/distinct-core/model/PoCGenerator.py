@@ -69,7 +69,8 @@ class PoCGenerator:
                 postmessage_data = report["val"]["data"]
                 postmessage_data_type = report["val"]["data_type"]
                 if postmessage_data_type == "string":
-                    postmessages.append(f'"{postmessage_data}"')
+                    postmessage_data_escaped = postmessage_data.replace('"', '\\"')
+                    postmessages.append(f'"{postmessage_data_escaped}"')
                 else:
                     postmessages.append(f"{postmessage_data}")
         return postmessages
