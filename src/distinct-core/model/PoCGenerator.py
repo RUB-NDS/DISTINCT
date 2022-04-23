@@ -24,13 +24,24 @@ class PoCGenerator:
         if not loginrequrl:
             return (False, "Could not determine the login request")
 
+        # Initiator
         loginreqframe_first_url = self.get_first_url_of_frame(loginreqframe)
         if not loginreqframe_first_url:
             return (False, "Could not determine the first URL of the frame containing the login request")
-
         loginreqframe_postmessages = self.get_postmessages_data_sent_to_frame(loginreqframe)
 
-        poc_html = self.poc_template(loginreqframe_first_url, loginreqframe_postmessages)
+        # Receiver
+        receivers = [] # list of tuples with (listener, url, [postmessages])
+        message_listeners = []
+        for report in self.ctx.reports:
+            if report["key"] == "addeventlistener" and report["val"]["type"] == "message":
+                message_listeners.append(report)
+        for listener in message_listeners:
+            url = listener["val"]["href"]
+            postmessages = self.get_postmessages_data_sent_to_frame(listener["val"]["hierarchy"])
+            receivers.append((listener, url, postmessages))
+
+        poc_html = self.poc_template(loginreqframe_first_url, loginreqframe_postmessages, receivers)
         return (True, poc_html)
 
     def get_stm(self, stm):
@@ -69,24 +80,65 @@ class PoCGenerator:
                 postmessage_data = report["val"]["data"]
                 postmessage_data_type = report["val"]["data_type"]
                 if postmessage_data_type == "string":
-                    postmessage_data_escaped = postmessage_data.replace('"', '\\"')
+                    postmessage_data_escaped = postmessage_data.replace('\\', '\\\\') # TODO: escape all characters
+                    postmessage_data_escaped = postmessage_data_escaped.replace('"', '\\"')
                     postmessages.append(f'"{postmessage_data_escaped}"')
                 else:
                     postmessages.append(f"{postmessage_data}")
         return postmessages
 
-    def poc_template(self, embed_url, postmessages):
-
+    def poc_template(self, initiator_url, postmessages, receivers):
         title = self.get_stm("initurl") or "N/A"
         statements_string = json.dumps(self.ctx.statements, indent=4)
 
+        # Initiator Exploits
+
+        # Popup
         postmessages_popup_string = ""
         for postmessage in postmessages:
-            postmessages_popup_string += f"        popup.postMessage({postmessage}, '*')\n"
-
+            postmessages_popup_string += f"popup.postMessage({postmessage}, '*');\n"
+        # IFrame
         postmessages_iframe_string = ""
         for postmessage in postmessages:
-            postmessages_iframe_string += f"        frame.postMessage({postmessage}, '*')\n"
+            postmessages_iframe_string += f"frame.contentWindow.postMessage({postmessage}, '*');\n"
+
+        # Receiver Exploits
+
+        receiver_index = 0
+        receiver_js_exploit = ""
+        for receiver in receivers:
+            url = receiver[1]
+            postmessages = receiver[2]
+
+            receiver_js_exploit += f"    let button_popup_receiver_{receiver_index} = document.createElement('button');\n"
+            receiver_js_exploit += f"    button_popup_receiver_{receiver_index}.innerText = 'Open Receiver {receiver_index} in Popup';\n"
+            receiver_js_exploit += f"    button_popup_receiver_{receiver_index}.onclick = () => {{\n"
+            receiver_js_exploit += f"      popup_receiver_{receiver_index} = window.open('{url}', '_blank');\n"
+            receiver_js_exploit += "      setTimeout(() => {\n"
+            for postmessage in postmessages:
+                receiver_js_exploit += f"        popup_receiver_{receiver_index}.postMessage({postmessage}, '*');\n"
+            receiver_js_exploit += "      }, 3000);\n"
+            receiver_js_exploit += "    };\n"
+            receiver_js_exploit += f"    let p_popup_receiver_{receiver_index} = document.createElement('p');\n"
+            receiver_js_exploit += f"    p_popup_receiver_{receiver_index}.appendChild(button_popup_receiver_{receiver_index});\n"
+            receiver_js_exploit += f"    document.getElementById('receiverExploits').appendChild(p_popup_receiver_{receiver_index});\n"
+
+            receiver_js_exploit += f"    let button_iframe_receiver_{receiver_index} = document.createElement('button');\n"
+            receiver_js_exploit += f"    button_iframe_receiver_{receiver_index}.innerText = 'Embed Receiver {receiver_index} in IFrame';\n"
+            receiver_js_exploit += f"    button_iframe_receiver_{receiver_index}.onclick = () => {{\n"
+            receiver_js_exploit += f"      iframe_receiver_{receiver_index} = document.createElement('iframe');\n"
+            receiver_js_exploit += f"      iframe_receiver_{receiver_index}.src = '{url}';\n"
+            receiver_js_exploit += f"      iframe_receiver_{receiver_index}.onload = () => {{\n"
+            for postmessage in postmessages:
+                receiver_js_exploit += f"        iframe_receiver_{receiver_index}.contentWindow.postMessage({postmessage}, '*');\n"
+            receiver_js_exploit += "      };\n"
+            receiver_js_exploit += f"      document.body.appendChild(iframe_receiver_{receiver_index});\n"
+            receiver_js_exploit += "    };\n"
+            receiver_js_exploit += f"    let p_iframe_receiver_{receiver_index} = document.createElement('p');\n"
+            receiver_js_exploit += f"    p_iframe_receiver_{receiver_index}.appendChild(button_iframe_receiver_{receiver_index});\n"
+            receiver_js_exploit += f"    document.getElementById('receiverExploits').appendChild(p_iframe_receiver_{receiver_index});\n"
+
+            receiver_index += 1
 
         poc_template = f"""\
 <!DOCTYPE html>
@@ -99,8 +151,12 @@ class PoCGenerator:
 </head>
 <body>
   <h1>PoC: {title}</h1>
-  <p><button onclick="openPopup()">Open Popup</button></p>
-  <p><button onclick="embedIframe()">Embed IFrame</button></p>
+  <h3>Initiator Exploits</h3>
+  <p><button onclick="openPopupInitiator()">Open Initiator in Popup</button></p>
+  <p><button onclick="embedIframeInitiator()">Embed Initiator in IFrame</button></p>
+
+  <h3>Receiver Exploits</h3>
+  <div id="receiverExploits"></div>
 
   <h3>Statements</h3>
   <code><pre>{statements_string}</pre></code>
@@ -115,21 +171,27 @@ class PoCGenerator:
       document.querySelector('#pms').appendChild(p)
     }}
 
-    function openPopup() {{
-      popup = window.open('{embed_url}', '_blank')
+    /* Initiator Exploits */
+
+    function openPopupInitiator() {{
+      popup = window.open('{initiator_url}', '_blank')
       setTimeout(() => {{
 {postmessages_popup_string}
       }}, 3000) // wait for popup to load
     }}
 
-    function embedIframe() {{
+    function embedIframeInitiator() {{
       frame = document.createElement('iframe')
-      frame.src = '{embed_url}'
+      frame.src = '{initiator_url}'
       frame.onload = () => {{
 {postmessages_iframe_string}
       }}
       document.body.appendChild(frame)
     }}
+
+    /* Receiver Exploits */
+
+{receiver_js_exploit}
   </script>
 </body>
 </html>
