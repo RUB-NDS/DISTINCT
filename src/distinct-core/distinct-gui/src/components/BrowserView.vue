@@ -15,7 +15,13 @@ export default {
     browserURL.pathname = '/vnc_auto.html'
     browserURL.search = ''
     browserURL.hash = ''
-    // browserURL.searchParams.set('password', 'changeme')
+
+    if (!window.localStorage.getItem('vncpwd')) {
+      let pwd = prompt('Please enter the noVNC password')
+      window.localStorage.setItem('vncpwd', pwd)
+    }
+    let vncpwd = window.localStorage.getItem('vncpwd')
+    browserURL.searchParams.set('password', vncpwd)
 
     let browserFrame = document.getElementById('browserFrame')
     browserFrame.src = browserURL.href
