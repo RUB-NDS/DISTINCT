@@ -39,8 +39,6 @@
             <i class="bi bi-clipboard"></i>
             Stms
           </button>
-        </div>
-        <div class="btn-group" role="group">
           <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pocModal" v-on:click="showPoC(reporthandler.uuid)">
             <i class="bi bi-filetype-html"></i>
             PoC
@@ -79,8 +77,6 @@
             <i class="bi bi-stop-circle"></i>
             Handler
           </button>
-        </div>
-        <div class="btn-group" role="group">
           <button type="button" class="btn btn-outline-danger" v-on:click="removeHandler(reporthandler.uuid)">
             <i class="bi bi-trash"></i>
             Handler
