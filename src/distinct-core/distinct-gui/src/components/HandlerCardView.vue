@@ -66,7 +66,7 @@
       </li>
       <li class="list-group-item">
         <div>Actions:</div>
-        <div class="btn-group" role="group">
+        <div class="btn-group mb-2" role="group">
           <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">
             <i class="bi bi-play-circle"></i>
             Browser
