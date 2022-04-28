@@ -27,6 +27,7 @@ services:
       - distinct-browser-data:/app/data
     environment:
       VERBOSITY: ${VERBOSITY}
+      VNCPWD: ${VNCPWD}
       GOOGLE_USERNAME: ${GOOGLE_USERNAME}
       GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
       FACEBOOK_USERNAME: ${FACEBOOK_USERNAME}
