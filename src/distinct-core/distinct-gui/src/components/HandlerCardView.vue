@@ -47,7 +47,7 @@
       </li>
       <li class="list-group-item">
         <div>Export:</div>
-        <div class="btn-group" role="group">
+        <div class="btn-group mb-2" role="group">
           <button type="button" class="btn btn-outline-primary" v-on:click="exportProfile(reporthandler.uuid)">
             <i class="bi bi-file-zip"></i>
             Profile
@@ -63,7 +63,7 @@
         </div>
       </li>
       <li class="list-group-item">
-        <div>Actions:</div>
+        <div>Browser Actions:</div>
         <div class="btn-group mb-2" role="group">
           <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">
             <i class="bi bi-play-circle"></i>
@@ -73,6 +73,11 @@
             <i class="bi bi-stop-circle"></i>
             Browser
           </button>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div>Handler Actions:</div>
+        <div class="btn-group mb-2" role="group">
           <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">
             <i class="bi bi-stop-circle"></i>
             Handler
