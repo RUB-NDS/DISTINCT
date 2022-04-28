@@ -80,6 +80,12 @@
             Handler
           </button>
         </div>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-danger" v-on:click="removeHandler(reporthandler.uuid)">
+            <i class="bi bi-trash"></i>
+            Handler
+          </button>
+        </div>
       </li>
     </ul>
   </div>
@@ -87,7 +93,7 @@
 
 <script>
 import {
-  stopHandler, getSVG, startBrowser, stopBrowser,
+  stopHandler, removeHandler, getSVG, startBrowser, stopBrowser,
   exportProfile, exportStream, exportHAR, getStatements, getPoC
 } from '../api/connector.js'
 import { timestampToDate } from '../helpers.js'
@@ -100,6 +106,19 @@ export default {
     'timestampToDate': timestampToDate,
     'stopHandler': function(handler_uuid) {
       stopHandler(handler_uuid).then((r) => {
+        if (r.success) {
+          setTimeout(() => {
+            this.$emit('update-reporthandlers')
+          }, 10000)
+        } else {
+          alert(`Error: ${r['error']}`)
+        }
+      }).catch((e) => {
+        alert(`Error: ${e['error']}`)
+      })
+    },
+    'removeHandler': function(handler_uuid) {
+      removeHandler(handler_uuid).then((r) => {
         if (r.success) {
           setTimeout(() => {
             this.$emit('update-reporthandlers')

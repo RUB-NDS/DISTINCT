@@ -41,6 +41,16 @@ const stopHandler = (handler_uuid) => {
   })
 }
 
+const removeHandler = (handler_uuid) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${endpoint}/handlers/${handler_uuid}/remove`, {method: 'POST'}).then((r) => r.json()).then((r) => {
+      resolve(r)
+    }).catch((e) => {
+      reject({'success': false, 'error': e, 'data': null})
+    })
+  })
+}
+
 const getSVG = (handler_uuid) => {
   return new Promise((resolve, reject) => {
     fetch(`${endpoint}/handlers/${handler_uuid}/svg`).then((r) => r.json()).then((r) => {
@@ -126,6 +136,7 @@ export {
   getHandlers,
   newHandler,
   stopHandler,
+  removeHandler,
   getSVG,
   getReports,
   getStatements,

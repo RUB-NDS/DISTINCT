@@ -42,6 +42,7 @@ class ReportDispatcher(Thread):
         # Report handlers
         self.app.add_url_rule("/api/handlers", view_func=self.api_handlers, methods=["GET", "POST"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/stop", view_func=self.api_handlers_stop, methods=["POST"])
+        self.app.add_url_rule("/api/handlers/<handler_uuid>/remove", view_func=self.api_handlers_remove, methods=["POST"])
 
         # Reports
         self.app.add_url_rule("/api/handlers/<handler_uuid>/dispatch", view_func=self.api_handlers_dispatch, methods=["POST"])
@@ -70,6 +71,11 @@ class ReportDispatcher(Thread):
     def stop_report_handler(self, handler_uuid):
         if self.handlers[handler_uuid].is_alive():
             self.handlers[handler_uuid].stop()
+
+    def remove_report_handler(self, handler_uuid):
+        if self.handlers[handler_uuid].is_alive():
+            self.handlers[handler_uuid].stop()
+        del self.handlers[handler_uuid]
 
     def pass_report_to_handler(self, report, handler_uuid):
         # report = {"report": {"key": str, "val": any}}
@@ -169,6 +175,13 @@ class ReportDispatcher(Thread):
     @check_handler_existence
     def api_handlers_stop(self, handler_uuid):
         self.stop_report_handler(handler_uuid)
+        body = {"success": True, "error": None, "data": None}
+        return body
+
+    # POST /api/handlers/<handler_uuid>/remove
+    @check_handler_existence
+    def api_handlers_remove(self, handler_uuid):
+        self.remove_report_handler(handler_uuid)
         body = {"success": True, "error": None, "data": None}
         return body
 
