@@ -10,12 +10,11 @@
 export default {
   name: 'BrowserView',
   mounted() {
-    let currentURL = new URL(window.location.href)
-    let browserURL = new URL()
-    browserURL.protocol = currentURL.protocol
-    browserURL.host = currentURL.host
+    let browserURL = new URL(window.location.href)
     browserURL.port = '9090'
     browserURL.pathname = '/vnc_auto.html'
+    browserURL.search = ''
+    browserURL.hash = ''
     // browserURL.searchParams.set('password', 'changeme')
 
     let browserFrame = document.getElementById('browserFrame')
