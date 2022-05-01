@@ -80,12 +80,27 @@ class PoCGenerator:
                 postmessage_data = report["val"]["data"]
                 postmessage_data_type = report["val"]["data_type"]
                 if postmessage_data_type == "string":
-                    postmessage_data_escaped = postmessage_data.replace('\\', '\\\\') # TODO: escape all characters
-                    postmessage_data_escaped = postmessage_data_escaped.replace('"', '\\"')
+                    postmessage_data_escaped = self.encode_pm_data(postmessage_data)
                     postmessages.append(f'"{postmessage_data_escaped}"')
                 else:
-                    postmessages.append(f"{postmessage_data}")
+                    postmessage_data_escaped = self.encode_pm_data(postmessage_data)
+                    postmessages.append(f"{postmessage_data_escaped}")
         return postmessages
+
+    @staticmethod
+    def encode_pm_data(data):
+        if type(data) is str:
+            return data \
+                .replace('\\', '\\\\') \
+                .replace('"', '\\"') \
+                .replace('<', '\\x3c') \
+                .replace('>', '\\x3e')
+        elif type(data) is dict or type(data) is list:
+            return json.dumps(data) \
+                .replace('<', '\\x3c') \
+                .replace('>', '\\x3e')
+        else:
+            return data
 
     def poc_template(self, initiator_url, postmessages, receivers):
         title = self.get_stm("initurl") or "N/A"
@@ -151,18 +166,19 @@ class PoCGenerator:
 </head>
 <body>
   <h1>PoC: {title}</h1>
-  <h3>Initiator Exploits</h3>
-  <p><button onclick="openPopupInitiator()">Open Initiator in Popup</button></p>
-  <p><button onclick="embedIframeInitiator()">Embed Initiator in IFrame</button></p>
-
-  <h3>Receiver Exploits</h3>
-  <div id="receiverExploits"></div>
 
   <h3>Statements</h3>
   <code><pre>{statements_string}</pre></code>
 
   <h3>Received postMessages:</h3>
   <div id="pms"></div>
+
+  <h3>Initiator Exploits</h3>
+  <p><button onclick="openPopupInitiator()">Open Initiator in Popup</button></p>
+  <p><button onclick="embedIframeInitiator()">Embed Initiator in IFrame</button></p>
+
+  <h3>Receiver Exploits</h3>
+  <div id="receiverExploits"></div>
 
   <script>
     window.onmessage = (e) => {{
