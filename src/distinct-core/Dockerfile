@@ -24,6 +24,7 @@ RUN apt install -y nodejs
 RUN mkdir /app
 RUN mkdir -p /app/data/tmp
 RUN mkdir -p /app/data/handlers
+RUN mkdir -p /app/data/pocs
 WORKDIR /app
 
 # Copy the app

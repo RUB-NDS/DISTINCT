@@ -4,7 +4,7 @@ import base64
 import io
 from threading import Thread
 from functools import wraps
-from flask import Flask, request, redirect, send_file
+from flask import Flask, request, redirect, send_file, send_from_directory
 from flask_cors import CORS
 from model.ReportHandler import ReportHandler
 
@@ -38,6 +38,9 @@ class ReportDispatcher(Thread):
         self.app.add_url_rule("/", view_func=self.index, methods=["GET"])
         self.app.add_url_rule("/app", view_func=self.frontend, methods=["GET"], defaults={"path": ""})
         self.app.add_url_rule("/app/<path:path>", view_func=self.frontend, methods=["GET"])
+
+        # Pocs
+        self.app.add_url_rule("/pocs/<handler_uuid>", view_func=self.send_poc, methods=["GET"])
 
         # Report handlers
         self.app.add_url_rule("/api/handlers", view_func=self.api_handlers, methods=["GET", "POST"])
@@ -87,6 +90,12 @@ class ReportDispatcher(Thread):
             f" {handler_uuid} because the report handler does not exist")
             return False
 
+    def deploy_poc(self, handler_uuid, poc):
+        filename = f"/app/data/pocs/{handler_uuid}.html"
+        with open(filename, "w+") as f:
+            f.write(poc)
+        return f"/pocs/{handler_uuid}.html"
+
     """ Wrappers """
 
     def check_handler_existence(func):
@@ -112,6 +121,10 @@ class ReportDispatcher(Thread):
     # GET /app/<path:path>
     def frontend(self, path):
         return self.app.send_static_file("index.html")
+
+    # GET /pocs/<handler_uuid>
+    def send_poc(self, handler_uuid):
+        return send_from_directory("/app/data/pocs", handler_uuid)
 
     """ API Routes """
 
@@ -245,12 +258,14 @@ class ReportDispatcher(Thread):
     @check_handler_existence
     def api_handlers_poc(self, handler_uuid):
         success, val = self.handlers[handler_uuid].ctx.poc.generate_poc()
+        poc_url = self.deploy_poc(handler_uuid, val)
         if success:
             body = {
                 "success": True,
                 "error": None,
                 "data": {
                     "uuid": handler_uuid,
+                    "poc_url": poc_url,
                     "poc": val
                 }
             }
