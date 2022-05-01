@@ -100,7 +100,7 @@ ENTRYPOINT [ "/bin/bash", "-c", " \
   echo 'NoVNC Certificate Fingerprint:'; \
   openssl x509 -in /etc/ssl/certs/novnc_cert.pem -noout -fingerprint -sha256; \
   vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH -localhost; \
-  echo $VNCPWD | vncpasswd -f > /root/.vnc/passwd; \
+  echo ${VNCPWD:-changeme} | vncpasswd -f > /root/.vnc/passwd; \
   /usr/share/novnc/utils/launch.sh --listen $NOVNCPORT --vnc localhost:$VNCPORT \
     --cert /etc/ssl/private/novnc_combined.pem & \
   python3 distinct-browser-api/distinct-browser-api.py \
