@@ -177,10 +177,13 @@ export default {
       const modalTitle = modal.querySelector('.modal-title')
       const modalBody = modal.querySelector('.modal-body')
       const modalCode = modalBody.querySelector('code')
+      const modalDeployURL = modalBody.querySelector('#deployURL')
       modalTitle.textContent = handler_uuid
 
       getPoC(handler_uuid).then((r) => {
         if (r.success) {
+          modalDeployURL.setAttribute('href', `${location.origin}${r.data['poc_url']}`)
+          modalDeployURL.textContent = `${location.origin}${r.data['poc_url']}`
           modalCode.textContent = r.data['poc']
           Prism.highlightAll()
         } else {

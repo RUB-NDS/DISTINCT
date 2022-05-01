@@ -7,6 +7,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" v-on:click="clearModal()"></button>
         </div>
         <div class="modal-body">
+          <p>PoC deployed on <a id="deployURL" href="" target="_blank"></a>.</p>
           <pre class="language-html"><code></code></pre>
         </div>
         <div class="modal-footer">
