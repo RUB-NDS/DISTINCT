@@ -8,8 +8,8 @@ DISTINCT is an analysis framework for modern communication techniques that was d
 
 Setup was tested on `Ubuntu 20.04.3 LTS`
 
-- Download and install [Docker](https://docs.docker.com/get-docker/)
-  - Check that ports `9080` and `9090` are not allocated on your system
+- Download and install [Docker](https://docs.docker.com/get-docker/) and [Docker-Compose](https://docs.docker.com/compose/install/)
+- Check that ports `9080` and `9090` are not allocated on your system
 - Clone this repository: `git clone https://github.com/XXXX/DISTINCT.git`
 - Go into its `src` directory: `cd ./src`
 - Run: `docker-compose build`
