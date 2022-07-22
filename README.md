@@ -30,7 +30,9 @@ Setup was tested on `Ubuntu 20.04.3 LTS`
 - Open `http://localhost:9080` in your webbrowser
 - Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
-## Workflow
+## Workflow via DISTINCT's Web Interface
+
+![](gui-example.png)
 
 - Refresh Analysis Results:
   - DISTINCT's web interface is connected to a backend API
