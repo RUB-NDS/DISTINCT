@@ -1,5 +1,6 @@
 import re
 import logging
+import json
 
 from model.Frame import Frame
 from model.SequenceDiagram import SequenceDiagram
@@ -44,36 +45,51 @@ class ExecutionContext():
 
     def __init__(self, report_handler):
         self.report_handler = report_handler
+        self.db = self.report_handler.report_dispatcher.db
 
         self.topframe = None # Top frame in hierarchy, i.e., root of the frame hierarchy
-        self.statements = {} # Statements received from chrome extension, i.e., flows, SDKs, ...
-        self.reports = [] # Reports received from chrome extension, i.e., documentinit, ...
-        self.sequencediagram = SequenceDiagram() # Sequence diagram shows reports as visual representation
-        self.poc = PoCGenerator(self) # PoC generator
+        self.sequencediagram = SequenceDiagram()
+        self.poc = PoCGenerator(self)
 
         # Initialize global statements for report handler
-        self.statements["uuid"] = report_handler.uuid
-        self.statements["starttime"] = report_handler.starttime
-        self.statements["initurl"] = report_handler.config.get("initurl")
+        self.process_statement("uuid", report_handler.uuid)
+        self.process_statement("starttime", report_handler.starttime)
+        self.process_statement("initurl", report_handler.config.get("initurl"))
 
-    def hierarchy(self):
-        """ String representation of execution context is a tree hierarchy """
-        if not self.topframe:
-            return ""
+    @property
+    def reports(self):
+        doc = self.db["distinct"]["reports"].find({"handler_uuid": self.report_handler.uuid})
+        return [json.loads(d["report"]) for d in doc]
 
-        dump = {"val": "top"}
-        def go_down(current, dump, indent):
-            for i in current.frames.keys():
-                dump["val"] += "\n{}-> frames[{}]".format('\t'*indent, i)
-                go_down(current.frames[i], dump, indent+1)
-            for i in current.popups.keys():
-                if current.popups[i].closed:
-                    continue
-                dump["val"] += "\n{}-> popups[{}]".format('\t'*indent, i)
-                go_down(current.popups[i], dump, indent+1)
+    @property
+    def statements(self):
+        doc = self.db["distinct"]["statements"].find({"handler_uuid": self.report_handler.uuid})
+        stms = {}
+        for d in doc:
+            stms[d["statement"]["key"]] = d["statement"]["val"]
+        return stms
 
-        go_down(self.topframe, dump, 1)
-        return dump["val"]
+    def process_statement(self, stm_key, stm_val):
+        """ Process statements """
+        if stm_key not in self.statements:
+            self.db["distinct"]["statements"].insert_one({
+                "handler_uuid": self.report_handler.uuid,
+                "statement": {"key": stm_key, "val": stm_val}
+            })
+        elif type(self.statements[stm_key]) is list and stm_val not in self.statements[stm_key]:
+            self.db["distinct"]["statements"].update_one({
+                "handler_uuid": self.report_handler.uuid,
+                "statement.key": self.statements[stm_key]
+            }, {
+                "$push": {"statement.val": stm_val}
+            })
+        elif type(self.statements[stm_key]) is not list and stm_val != self.statements[stm_key]:
+            self.db["distinct"]["statements"].update_one({
+                "handler_uuid": self.report_handler.uuid,
+                "statement.key": self.statements[stm_key]
+            }, {
+                "$set": {"statement.val": [self.statements[stm_key], stm_val]}
+            })
 
     def process_report(self, report):
         """ Process reports
@@ -98,13 +114,11 @@ class ExecutionContext():
                 }
             }
         """
-        self.reports.append(report)
-
         key = report["key"]
 
         # Statements
         if key == "statement":
-            StatementProcessor(self, report)
+            self.process_statement(report["val"]["key"], report["val"]["val"])
 
         # Document Events
         elif key == "documentinit":
@@ -185,7 +199,37 @@ class ExecutionContext():
         else:
             logger.warn(f"Received unknown report: {key}")
 
+        # Store report in database
+        try:
+            self.db["distinct"]["reports"].insert_one({
+                "handler_uuid": self.report_handler.uuid,
+                "report": json.dumps(report)
+            })
+        except Exception as e:
+            logger.exception(e)
+            logger.error("Failed to insert report into database:")
+            logger.error(report)
+
     """ Frame Navigation """
+
+    def hierarchy(self):
+        """ String representation of execution context is a tree hierarchy """
+        if not self.topframe:
+            return ""
+
+        dump = {"val": "top"}
+        def go_down(current, dump, indent):
+            for i in current.frames.keys():
+                dump["val"] += "\n{}-> frames[{}]".format('\t'*indent, i)
+                go_down(current.frames[i], dump, indent+1)
+            for i in current.popups.keys():
+                if current.popups[i].closed:
+                    continue
+                dump["val"] += "\n{}-> popups[{}]".format('\t'*indent, i)
+                go_down(current.popups[i], dump, indent+1)
+
+        go_down(self.topframe, dump, 1)
+        return dump["val"]
 
     def update_frame(self, old_frame, new_frame):
         """ Update properties of existing frame with properties of new frame

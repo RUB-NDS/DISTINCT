@@ -6,3 +6,4 @@ selenium_stealth==1.0.6
 requests==2.27.1
 jsbeautifier==1.14.0
 html5print==0.1.2
+pymongo==4.2.0

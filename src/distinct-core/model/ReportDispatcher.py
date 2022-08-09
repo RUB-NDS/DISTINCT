@@ -2,6 +2,7 @@ import logging
 import requests
 import base64
 import io
+import pymongo
 from threading import Thread
 from functools import wraps
 from flask import Flask, request, redirect, send_file, send_from_directory
@@ -12,9 +13,15 @@ logger = logging.getLogger(__name__)
 
 class ReportDispatcher(Thread):
 
+    dbEndpoint = "mongodb://distinct-db:27017/"
+    browserEndpoint = "http://distinct-browser:8080"
+
     def __init__(self):
         logger.info("Initializing report dispatcher thread")
         super(ReportDispatcher, self).__init__()
+
+        # Init the database
+        self.db = self.connect_db(self.dbEndpoint)
 
         self.handlers = {}
         self.app = Flask(__name__, static_folder="../distinct-gui/dist", static_url_path="/static")
@@ -30,6 +37,18 @@ class ReportDispatcher(Thread):
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
+
+    @staticmethod
+    def connect_db(endpoint):
+        logger.info(f"Connecting to the database: {endpoint}")
+        db = pymongo.MongoClient(endpoint)
+        try:
+            db.admin.command("ping")
+            logger.info("Successfully connected to the database")
+            return db
+        except pymongo.errors.ConnectionFailure:
+            logger.error("Failed to connect to the database. Not reachable. Quitting...")
+            exit(-1)
 
     def register_routes(self):
         logger.info("Registering routes for the report dispatcher's webserver")
@@ -336,8 +355,6 @@ class ReportDispatcher(Thread):
             return r
 
     """ Connectors to browser API """
-
-    browserEndpoint = "http://distinct-browser:8080"
 
     def get_browsers(self):
         r = requests.get(f"{self.browserEndpoint}/api/browsers")
