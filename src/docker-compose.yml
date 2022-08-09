@@ -5,6 +5,8 @@ services:
     build: ./distinct-core
     container_name: distinct-core
     restart: always
+    depends_on:
+      - distinct-db
     ports:
       - "9080:8080"
     networks:
@@ -13,12 +15,14 @@ services:
       - distinct-core-data:/app/data
     environment:
       VERBOSITY: ${VERBOSITY}
+
   distinct-browser:
     build: ./distinct-browser
     container_name: distinct-browser
     restart: always
     depends_on:
       - distinct-core
+      - distinct-db
     ports:
       - "9090:9090"
     networks:
@@ -36,6 +40,15 @@ services:
       APPLE_PASSWORD: ${APPLE_PASSWORD}
       APPLE_2FA: ${APPLE_2FA}
 
+  distinct-db:
+    image: mongo:focal
+    container_name: distinct-db
+    restart: always
+    networks:
+      - distinct-net
+    volumes:
+      - distinct-db-data:/data/db
+
 networks:
   distinct-net:
     driver: bridge
@@ -43,3 +56,4 @@ networks:
 volumes:
   distinct-browser-data:
   distinct-core-data:
+  distinct-db-data:
