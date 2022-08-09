@@ -79,14 +79,14 @@ class ExecutionContext():
         elif type(self.statements[stm_key]) is list and stm_val not in self.statements[stm_key]:
             self.db["distinct"]["statements"].update_one({
                 "handler_uuid": self.report_handler.uuid,
-                "statement.key": self.statements[stm_key]
+                "statement.key": stm_key
             }, {
                 "$push": {"statement.val": stm_val}
             })
         elif type(self.statements[stm_key]) is not list and stm_val != self.statements[stm_key]:
             self.db["distinct"]["statements"].update_one({
                 "handler_uuid": self.report_handler.uuid,
-                "statement.key": self.statements[stm_key]
+                "statement.key": stm_key
             }, {
                 "$set": {"statement.val": [self.statements[stm_key], stm_val]}
             })
@@ -200,15 +200,10 @@ class ExecutionContext():
             logger.warn(f"Received unknown report: {key}")
 
         # Store report in database
-        try:
-            self.db["distinct"]["reports"].insert_one({
-                "handler_uuid": self.report_handler.uuid,
-                "report": json.dumps(report)
-            })
-        except Exception as e:
-            logger.exception(e)
-            logger.error("Failed to insert report into database:")
-            logger.error(report)
+        self.db["distinct"]["reports"].insert_one({
+            "handler_uuid": self.report_handler.uuid,
+            "report": json.dumps(report)
+        })
 
     """ Frame Navigation """
 
