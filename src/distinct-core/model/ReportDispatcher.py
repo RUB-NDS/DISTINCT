@@ -8,6 +8,7 @@ from functools import wraps
 from flask import Flask, request, redirect, send_file, send_from_directory
 from flask_cors import CORS
 from model.ReportHandler import ReportHandler
+from model.ReportHandlerStatus import ReportHandlerStatus
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,8 @@ class ReportDispatcher(Thread):
         self.db = self.connect_db(self.dbEndpoint)
 
         self.handlers = {}
+        self.restore_handlers()
+
         self.app = Flask(__name__, static_folder="../distinct-gui/dist", static_url_path="/static")
         self.app.url_map.strict_slashes = False # allow trailing slashes
         CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
@@ -84,17 +87,35 @@ class ReportDispatcher(Thread):
 
     """ Routines """
 
+    def restore_handlers(self):
+        logger.info("Restoring handlers")
+        for d in self.db["distinct"]["handlers"].find():
+            self.restore_report_handler(d["handler"]["uuid"])
+
     def new_report_handler(self, config):
-        report_handler = ReportHandler(self, config)
+        logger.info("Creating new report handler")
+        report_handler = ReportHandler(self, config=config)
+        report_handler.start()
+        self.handlers[report_handler.uuid] = report_handler
+        return report_handler
+
+    def restore_report_handler(self, handler_uuid):
+        logger.info(f"Restoring report handler with uuid: {handler_uuid}")
+        d = self.db["distinct"]["handlers"].find_one({"handler_uuid": handler_uuid})
+        report_handler = ReportHandler(self, uuid=d["handler"]["uuid"])
+        if ReportHandlerStatus(d["handler"]["status"]) == ReportHandlerStatus.STOPPED:
+            report_handler.should_stop = True
         report_handler.start()
         self.handlers[report_handler.uuid] = report_handler
         return report_handler
 
     def stop_report_handler(self, handler_uuid):
+        logger.info(f"Stopping report handler with uuid: {handler_uuid}")
         if self.handlers[handler_uuid].is_alive():
             self.handlers[handler_uuid].stop()
 
     def remove_report_handler(self, handler_uuid):
+        logger.info(f"Removing report handler with uuid: {handler_uuid}")
         if self.handlers[handler_uuid].is_alive():
             self.handlers[handler_uuid].stop()
         del self.handlers[handler_uuid]
@@ -110,6 +131,7 @@ class ReportDispatcher(Thread):
             return False
 
     def deploy_poc(self, handler_uuid, poc):
+        logger.info(f"Deploying poc for handler with uuid: {handler_uuid}")
         filename = f"/app/data/pocs/{handler_uuid}.html"
         with open(filename, "w+") as f:
             f.write(poc)
