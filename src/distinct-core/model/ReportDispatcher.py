@@ -174,24 +174,19 @@ class ReportDispatcher(Thread):
     def send_poc(self, handler_uuid):
         return send_from_directory("/app/data/pocs", handler_uuid)
 
-    """ API Routes """
+    """ API Routes: Handlers """
 
     # GET|POST /api/handlers
     def api_handlers(self):
         # GET /api/handlers
         if request.method == "GET":
             body = {"success":True, "error": None, "data": []}
-            r_browsers = self.get_browsers()
 
             for uuid, handler in self.handlers.items():
                 # Get browser and proxy for uuid
-                browser_for_uuid = None # {"pid": ..., "returncode": ..., "args": ...}
-                proxy_for_uuid = None # {"pid": ..., "returncode": ..., "args": ...}
-                if r_browsers["success"] == True:
-                    for entry in r_browsers["data"]:
-                        if entry["uuid"] == uuid:
-                            browser_for_uuid = entry["browser"]
-                            proxy_for_uuid = entry["proxy"]
+                r_browser = self.get_browsers_by_handler(uuid)
+                browser_for_uuid = r_browser["data"]["browser"] or None
+                proxy_for_uuid = r_browser["data"]["proxy"] or None
 
                 body["data"].append({
                     "uuid": uuid,
@@ -325,6 +320,8 @@ class ReportDispatcher(Thread):
             }
         return body
 
+    """ API Routes: Browsers """
+
     # POST /api/browsers/<handler_uuid>/start
     @check_handler_existence
     def api_browsers_start(self, handler_uuid):
@@ -392,30 +389,6 @@ class ReportDispatcher(Thread):
     def stop_browser(self, handler_uuid):
         r = requests.post(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/stop")
         return r.json()
-
-    def get_browsers(self):
-        body = {"success": True, "error": None, "data": []}
-        browsers = self.db["distinct"]["browsers"].find()
-        for b in browsers:
-            data = {
-                "uuid": b["handler_uuid"],
-                "browser": {
-                    "pid": b["browser"]["pid"],
-                    "returncode": b["browser"]["returncode"],
-                    "args": b["browser"]["args"]
-                }
-            }
-            proxy = self.db["distinct"]["proxies"].find_one({"handler_uuid": b["handler_uuid"]})
-            if proxy:
-                data["proxy"] = {
-                    "pid": proxy["proxy"]["pid"],
-                    "returncode": proxy["proxy"]["returncode"],
-                    "args": proxy["proxy"]["args"]
-                }
-            else:
-                data["proxy"] = None
-            body["data"].append(data)
-        return body
 
     def get_browsers_by_handler(self, handler_uuid):
         body = {
