@@ -73,7 +73,7 @@ class ReportHandler(Thread):
         while True and not self.should_stop:
             # {"id": int, "timestamp": str, "key": str, "val": any}
             try:
-                report = self.queue.get(timeout=10)
+                report = self.queue.get(timeout=1)
 
                 # Process report
                 logger.debug(f"Report handler {self.uuid} processes report: {report}")
