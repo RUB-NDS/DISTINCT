@@ -49,6 +49,19 @@ services:
     volumes:
       - distinct-db-data:/data/db
 
+  distinct-db-explorer:
+    image: mongo-express:0.54.0
+    container_name: distinct-db-explorer
+    restart: always
+    depends_on:
+      - distinct-db
+    ports:
+      - "9070:8081"
+    networks:
+      - distinct-net
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=distinct-db
+
 networks:
   distinct-net:
     driver: bridge
