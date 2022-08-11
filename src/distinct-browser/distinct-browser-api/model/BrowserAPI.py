@@ -5,6 +5,7 @@ import shutil
 import json
 import base64
 import pymongo
+import gridfs
 import time
 from threading import Thread
 from functools import wraps
@@ -26,6 +27,7 @@ class BrowserAPI(Thread):
 
         # Init the database
         self.db = self.connect_db(self.dbEndpoint)
+        self.fs = gridfs.GridFS(self.db["distinct"])
 
         self.app = Flask(__name__)
         self.app.url_map.strict_slashes = False # allow trailing slashes
@@ -187,14 +189,14 @@ class BrowserAPI(Thread):
         if os.path.exists(stream_path):
             with open(stream_path, "rb") as f:
                 stream_bytes = f.read()
-                stream_b64 = base64.b64encode(stream_bytes).decode("utf8")
+                stream_b64 = base64.b64encode(stream_bytes)
 
         # Encode the HAR file
         har_b64 = None
         if os.path.exists(har_path):
             with open(har_path, "rb") as f:
                 har_bytes = f.read()
-                har_b64 = base64.b64encode(har_bytes).decode("utf8")
+                har_b64 = base64.b64encode(har_bytes)
 
         # Cleanup STREAM and HAR
         if os.path.isfile(stream_path):
@@ -203,14 +205,16 @@ class BrowserAPI(Thread):
             os.remove(har_path)
 
         # Update proxy in database
+        stream_fs = self.fs.put(stream_b64)
+        har_fs = self.fs.put(har_b64)
         self.db["distinct"]["proxies"].update_one(
             {"handler_uuid": handler_uuid},
             {"$set": {
                 "proxy.returncode": self.proxies_by_handler[handler_uuid].poll(),
                 "proxy.status": ProxyStatus.STOPPED.value,
                 "proxy.endtime": str(int(time.time())),
-                "proxy.stream": stream_b64,
-                "proxy.hardump": har_b64
+                "proxy.stream": str(stream_fs),
+                "proxy.hardump": str(har_fs)
             }}
         )
 
@@ -287,7 +291,7 @@ class BrowserAPI(Thread):
             shutil.make_archive(profile_path, "zip", profile_path)
             with open(profile_zip_path, "rb") as f:
                 profile_zip_bytes = f.read()
-                profile_zip_b64 = base64.b64encode(profile_zip_bytes).decode("utf8")
+                profile_zip_b64 = base64.b64encode(profile_zip_bytes)
 
         # Cleanup profile
         if os.path.isfile(profile_zip_path):
@@ -296,13 +300,14 @@ class BrowserAPI(Thread):
             shutil.rmtree(profile_path)
 
         # Update browser in database
+        profile_fs = self.fs.put(profile_zip_b64)
         self.db["distinct"]["browsers"].update_one(
             {"handler_uuid": handler_uuid},
             {"$set": {
                 "browser.returncode": self.browsers_by_handler[handler_uuid].poll(),
                 "browser.status": BrowserStatus.STOPPED.value,
                 "browser.endtime": str(int(time.time())),
-                "browser.profile": profile_zip_b64
+                "browser.profile": str(profile_fs)
             }}
         )
 

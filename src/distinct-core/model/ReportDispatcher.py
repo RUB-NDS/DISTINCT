@@ -3,10 +3,12 @@ import requests
 import base64
 import io
 import pymongo
+import gridfs
 from threading import Thread
 from functools import wraps
 from flask import Flask, request, redirect, send_file, send_from_directory
 from flask_cors import CORS
+from bson import ObjectId
 from model.ReportHandler import ReportHandler
 from model.ReportHandlerStatus import ReportHandlerStatus
 from model.ProxyStatus import ProxyStatus
@@ -25,6 +27,7 @@ class ReportDispatcher(Thread):
 
         # Init the database
         self.db = self.connect_db(self.dbEndpoint)
+        self.fs = gridfs.GridFS(self.db["distinct"])
 
         self.handlers = {}
         self.restore_handlers()
@@ -419,10 +422,12 @@ class ReportDispatcher(Thread):
     def get_profile_by_handler(self, handler_uuid):
         d = self.db["distinct"]["browsers"].find_one({"handler_uuid": handler_uuid})
         bstat = BrowserStatus(d["browser"]["status"])
-        profile = d["browser"]["profile"]
-        if profile:
+        profile_fs = d["browser"]["profile"]
+        if profile_fs:
+            profile_obj = ObjectId(profile_fs)
+            profile = self.fs.get(profile_obj).read().decode("utf8")
             return {"success": True, "error": None, "data": profile}
-        elif profile is None and bstat == BrowserStatus.RUNNING:
+        elif profile_fs is None and bstat == BrowserStatus.RUNNING:
             return {"success": False, "error": f"Browser for handler uuid {handler_uuid} is still running", "data": None}
         else:
             return {"success": False, "error": f"Profile for handler uuid {handler_uuid} does not exist", "data": None}
@@ -430,10 +435,12 @@ class ReportDispatcher(Thread):
     def get_stream_by_handler(self, handler_uuid):
         d = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
         pstat = ProxyStatus(d["proxy"]["status"])
-        stream = d["proxy"]["stream"]
-        if stream:
+        stream_fs = d["proxy"]["stream"]
+        if stream_fs:
+            stream_obj = ObjectId(stream_fs)
+            stream = self.fs.get(stream_obj).read().decode("utf8")
             return {"success": True, "error": None, "data": stream}
-        elif stream is None and pstat == ProxyStatus.RUNNING:
+        elif stream_fs is None and pstat == ProxyStatus.RUNNING:
             return {"success": False, "error": f"Proxy for handler uuid {handler_uuid} is still running", "data": None}
         else:
             return {"success": False, "error": f"Proxy stream for handler uuid {handler_uuid} does not exist", "data": None}
@@ -441,10 +448,12 @@ class ReportDispatcher(Thread):
     def get_har_by_handler(self, handler_uuid):
         d = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
         pstat = ProxyStatus(d["proxy"]["status"])
-        hardump = d["proxy"]["hardump"]
-        if hardump:
+        hardump_fs = d["proxy"]["hardump"]
+        if hardump_fs:
+            hardump_obj = ObjectId(hardump_fs)
+            hardump = self.fs.get(hardump_obj).read().decode("utf8")
             return {"success": True, "error": None, "data": hardump}
-        elif hardump is None and pstat == ProxyStatus.RUNNING:
+        elif hardump_fs is None and pstat == ProxyStatus.RUNNING:
             return {"success": False, "error": f"Proxy for handler uuid {handler_uuid} is still running", "data": None}
         else:
             return {"success": False, "error": f"Proxy har for handler uuid {handler_uuid} does not exist", "data": None}
