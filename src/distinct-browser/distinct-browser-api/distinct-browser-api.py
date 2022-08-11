@@ -7,19 +7,35 @@ import os
 import shutil
 import json
 import base64
+import pymongo
+import time
 from threading import Thread
 from functools import wraps
 from socket import socket
 from flask import Flask, request
 from flask_cors import CORS
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+class ProxyStatus(Enum):
+    RUNNING = 1
+    STOPPED = -1
+
+class BrowserStatus(Enum):
+    RUNNING = 1
+    STOPPED = -1
+
 class BrowserAPI(Thread):
+
+    dbEndpoint = "mongodb://distinct-db:27017/"
 
     def __init__(self):
         logger.info("Initializing browser api thread")
         super(BrowserAPI, self).__init__()
+
+        # Init the database
+        self.db = self.connect_db(self.dbEndpoint)
 
         self.app = Flask(__name__)
         self.app.url_map.strict_slashes = False # allow trailing slashes
@@ -53,17 +69,20 @@ class BrowserAPI(Thread):
         self.app.add_url_rule(
             "/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"]
         )
-        self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>/profile", view_func=self.api_browsers_profile, methods=["GET"]
-        )
-        self.app.add_url_rule(
-            "/api/proxies/<handler_uuid>/stream", view_func=self.api_proxies_stream, methods=["GET"]
-        )
-        self.app.add_url_rule(
-            "/api/proxies/<handler_uuid>/har", view_func=self.api_proxies_har, methods=["GET"]
-        )
 
     """ Routines """
+
+    @staticmethod
+    def connect_db(endpoint):
+        logger.info(f"Connecting to the database: {endpoint}")
+        db = pymongo.MongoClient(endpoint)
+        try:
+            db.admin.command("ping")
+            logger.info("Successfully connected to the database")
+            return db
+        except pymongo.errors.ConnectionFailure:
+            logger.error("Failed to connect to the database. Not reachable. Quitting...")
+            exit(-1)
 
     @staticmethod
     def get_free_port():
@@ -73,6 +92,7 @@ class BrowserAPI(Thread):
 
     def setup_chrome_extensions(self, handler_uuid):
         """ Setup chrome extensions for handler """
+        logger.info(f"Setting up chrome extensions for handler uuid {handler_uuid}")
         distinct_ext_for_handler = f"/app/data/chrome-extensions/distinct-chrome-extension_{handler_uuid}"
         ace_ext_for_handler = f"/app/data/chrome-extensions/ace-chrome-extension_{handler_uuid}"
         if os.path.exists(distinct_ext_for_handler):
@@ -107,6 +127,16 @@ class BrowserAPI(Thread):
             "/app/ublock-chrome-extension"
         )
 
+    def destroy_chrome_extensions(self, handler_uuid):
+        """ Destroy chrome extensions for handler """
+        logger.info(f"Destroying chrome extensions for handler uuid {handler_uuid}")
+        distinct_ext_for_handler = f"/app/data/chrome-extensions/distinct-chrome-extension_{handler_uuid}"
+        ace_ext_for_handler = f"/app/data/chrome-extensions/ace-chrome-extension_{handler_uuid}"
+        if os.path.exists(distinct_ext_for_handler):
+            shutil.rmtree(distinct_ext_for_handler)
+        if os.path.exists(ace_ext_for_handler):
+            shutil.rmtree(ace_ext_for_handler)
+
     def start_proxy(self, handler_uuid):
         logger.info(f"Starting proxy with handler uuid {handler_uuid}")
         # stdout = f"/app/data/chrome-proxy/proxy-stdout_{handler_uuid}.log"
@@ -132,6 +162,21 @@ class BrowserAPI(Thread):
             stderr=subprocess.DEVNULL if logger.level > logging.DEBUG else None
         )
         self.proxies_by_handler[handler_uuid] = p
+        self.db["distinct"]["proxies"].insert_one({
+            "handler_uuid": handler_uuid,
+            "proxy": {
+                "pid": p.pid,
+                "starttime": str(int(time.time())),
+                "endtime": None,
+                "status": ProxyStatus.RUNNING.value,
+                "listen_host": listen_host,
+                "listen_port": listen_port,
+                "stream_path": stream_path,
+                "stream": None,
+                "hardump_path": hardump_path,
+                "hardump": None
+            }
+        })
 
         logger.info(f"Started proxy on {listen_host}:{listen_port}")
         return (
@@ -143,6 +188,48 @@ class BrowserAPI(Thread):
     def stop_proxy(self, handler_uuid):
         logger.info(f"Stopping proxy with handler uuid {handler_uuid}")
         self.proxies_by_handler[handler_uuid].terminate()
+
+        # Wait for STREAM and HAR files to be created
+        stream_path = f"/app/data/chrome-proxy/proxy-stream_{handler_uuid}.dump"
+        har_path = f"/app/data/chrome-proxy/proxy-hardump_{handler_uuid}.har"
+        poll_int = 0.5 # seconds
+        sleep_max = 30 # seconds
+        sleep_ctr = 0
+        while not os.path.exists(stream_path) or not os.path.exists(har_path):
+            time.sleep(0.5)
+            sleep_ctr += 1
+            if sleep_ctr > (1 / poll_int) * sleep_max: break
+
+        # Encode the STREAM file
+        stream_b64 = None
+        if os.path.exists(stream_path):
+            with open(stream_path, "rb") as f:
+                stream_bytes = f.read()
+                stream_b64 = base64.b64encode(stream_bytes).decode("utf8")
+
+        # Encode the HAR file
+        har_b64 = None
+        if os.path.exists(har_path):
+            with open(har_path, "rb") as f:
+                har_bytes = f.read()
+                har_b64 = base64.b64encode(har_bytes).decode("utf8")
+
+        # Cleanup STREAM and HAR
+        if os.path.isfile(stream_path):
+            os.remove(stream_path)
+        if os.path.isfile(har_path):
+            os.remove(har_path)
+
+        # Update proxy in database
+        self.db["distinct"]["proxies"].update_one(
+            {"handler_uuid": handler_uuid},
+            {"$set": {
+                "proxy.status": ProxyStatus.STOPPED.value,
+                "proxy.endtime": str(int(time.time())),
+                "proxy.stream": stream_b64,
+                "proxy.hardump": har_b64
+            }}
+        )
 
     def start_browser(self, handler_uuid, config):
         """ Start new browser process for handler uuid """
@@ -159,6 +246,7 @@ class BrowserAPI(Thread):
         # Start browser process
         gui_env = os.environ.copy()
         gui_env["DISPLAY"] = ":0.0"
+        chrome_profile_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}"
         p = subprocess.Popen(
             [
                 "/app/distinct-chromium/chrome",
@@ -173,7 +261,7 @@ class BrowserAPI(Thread):
                 f"--proxy-server={proxy_host}:{proxy_port}",
                 f"--proxy-bypass-list=distinct-core",
                 f"--load-extension={','.join(exts)}",
-                f"--user-data-dir=/app/data/chrome-profiles/chrome-profile_{handler_uuid}",
+                f"--user-data-dir={chrome_profile_path}",
                 config["initurl"] if "initurl" in config else ""
             ],
             env=gui_env,
@@ -181,12 +269,56 @@ class BrowserAPI(Thread):
             stderr=subprocess.DEVNULL if logger.level > logging.DEBUG else None
         )
         self.browsers_by_handler[handler_uuid] = p
+        self.db["distinct"]["browsers"].insert_one({
+            "handler_uuid": handler_uuid,
+            "browser": {
+                "pid": p.pid,
+                "starttime": str(int(time.time())),
+                "endtime": None,
+                "status": BrowserStatus.RUNNING.value,
+                "initurl": config["initurl"] if "initurl" in config else None,
+                "profile_path": chrome_profile_path,
+                "profile": None,
+                "proxy_host": proxy_host,
+                "proxy_port": proxy_port,
+                "proxy_pid": proxy.pid
+            }
+        })
 
     def stop_browser(self, handler_uuid):
         """ Stop browser process and proxy for handler uuid """
         logger.info(f"Stopping browser with handler uuid {handler_uuid}")
         self.browsers_by_handler[handler_uuid].terminate()
         self.stop_proxy(handler_uuid)
+        self.destroy_chrome_extensions(handler_uuid) # cleanup
+
+        # Encode the profile in zip
+        profile_zip_b64 = None
+        profile_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}"
+        profile_zip_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}.zip"
+        if os.path.isfile(profile_zip_path):
+            os.remove(profile_zip_path)
+        if os.path.exists(profile_path):
+            shutil.make_archive(profile_path, "zip", profile_path)
+            with open(profile_zip_path, "rb") as f:
+                profile_zip_bytes = f.read()
+                profile_zip_b64 = base64.b64encode(profile_zip_bytes).decode("utf8")
+
+        # Cleanup profile
+        if os.path.isfile(profile_zip_path):
+            os.remove(profile_zip_path)
+        if os.path.exists(profile_path):
+            shutil.rmtree(profile_path)
+
+        # Update browser in database
+        self.db["distinct"]["browsers"].update_one(
+            {"handler_uuid": handler_uuid},
+            {"$set": {
+                "browser.status": BrowserStatus.STOPPED.value,
+                "browser.endtime": str(int(time.time())),
+                "browser.profile": profile_zip_b64
+            }}
+        )
 
     """ Wrappers """
 
@@ -361,57 +493,6 @@ class BrowserAPI(Thread):
         body = {"success": True, "error": None, "data": None}
         return body
 
-    # GET /api/browsers/<handler_uuid>/profile
-    @check_browser_existence
-    @check_browser_not_running
-    def api_browsers_profile(self, handler_uuid):
-        profile_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}"
-        profile_zip_path = f"/app/data/chrome-profiles/chrome-profile_{handler_uuid}.zip"
-
-        if os.path.isfile(profile_zip_path):
-            os.remove(profile_zip_path)
-
-        if os.path.exists(profile_path):
-            shutil.make_archive(profile_path, "zip", profile_path)
-            with open(profile_zip_path, "rb") as f:
-                profile_zip_bytes = f.read()
-                profile_zip_b64 = base64.b64encode(profile_zip_bytes).decode("utf8")
-                body = {"success": True, "error": None, "data": profile_zip_b64}
-                return body
-        else:
-            body = {"success": False, "error": f"Profile for handler uuid {handler_uuid} does not exist", "data": None}
-            return body
-
-    # GET /api/proxies/<handler_uuid>/stream
-    @check_proxy_existence
-    @check_proxy_not_running
-    def api_proxies_stream(self, handler_uuid):
-        stream_path = f"/app/data/chrome-proxy/proxy-stream_{handler_uuid}.dump"
-        if os.path.exists(stream_path):
-            with open(stream_path, "rb") as f:
-                stream_bytes = f.read()
-                stream_b64 = base64.b64encode(stream_bytes).decode("utf8")
-                body = {"success": True, "error": None, "data": stream_b64}
-                return body
-        else:
-            body = {"success": False, "error": f"Proxy stream for handler uuid {handler_uuid} does not exist", "data": None}
-            return body
-
-    # GET /api/proxies/<handler_uuid>/har
-    @check_proxy_existence
-    @check_proxy_not_running
-    def api_proxies_har(self, handler_uuid):
-        har_path = f"/app/data/chrome-proxy/proxy-hardump_{handler_uuid}.har"
-        if os.path.exists(har_path):
-            with open(har_path, "rb") as f:
-                har_bytes = f.read()
-                har_b64 = base64.b64encode(har_bytes).decode("utf8")
-                body = {"success": True, "error": None, "data": har_b64}
-                return body
-        else:
-            body = {"success": False, "error": f"Proxy har for handler uuid {handler_uuid} does not exist", "data": None}
-            return body
-
 def main():
     verbosity = os.environ["VERBOSITY"]
     level = logging.getLevelName(verbosity) if verbosity else logging.DEBUG
@@ -423,7 +504,6 @@ def main():
     browser_api = BrowserAPI()
     browser_api.start()
     browser_api.join()
-
 
 if __name__ == "__main__":
     main()

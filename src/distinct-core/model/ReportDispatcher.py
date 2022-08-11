@@ -9,6 +9,8 @@ from flask import Flask, request, redirect, send_file, send_from_directory
 from flask_cors import CORS
 from model.ReportHandler import ReportHandler
 from model.ReportHandlerStatus import ReportHandlerStatus
+from model.ProxyStatus import ProxyStatus
+from model.BrowserStatus import BrowserStatus
 
 logger = logging.getLogger(__name__)
 
@@ -40,18 +42,6 @@ class ReportDispatcher(Thread):
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
-
-    @staticmethod
-    def connect_db(endpoint):
-        logger.info(f"Connecting to the database: {endpoint}")
-        db = pymongo.MongoClient(endpoint)
-        try:
-            db.admin.command("ping")
-            logger.info("Successfully connected to the database")
-            return db
-        except pymongo.errors.ConnectionFailure:
-            logger.error("Failed to connect to the database. Not reachable. Quitting...")
-            exit(-1)
 
     def register_routes(self):
         logger.info("Registering routes for the report dispatcher's webserver")
@@ -87,17 +77,22 @@ class ReportDispatcher(Thread):
 
     """ Routines """
 
+    @staticmethod
+    def connect_db(endpoint):
+        logger.info(f"Connecting to the database: {endpoint}")
+        db = pymongo.MongoClient(endpoint)
+        try:
+            db.admin.command("ping")
+            logger.info("Successfully connected to the database")
+            return db
+        except pymongo.errors.ConnectionFailure:
+            logger.error("Failed to connect to the database. Not reachable. Quitting...")
+            exit(-1)
+
     def restore_handlers(self):
         logger.info("Restoring handlers")
         for d in self.db["distinct"]["handlers"].find():
             self.restore_report_handler(d["handler"]["uuid"])
-
-    def new_report_handler(self, config):
-        logger.info("Creating new report handler")
-        report_handler = ReportHandler(self, config=config)
-        report_handler.start()
-        self.handlers[report_handler.uuid] = report_handler
-        return report_handler
 
     def restore_report_handler(self, handler_uuid):
         logger.info(f"Restoring report handler with uuid: {handler_uuid}")
@@ -105,6 +100,13 @@ class ReportDispatcher(Thread):
         report_handler = ReportHandler(self, uuid=d["handler"]["uuid"])
         if ReportHandlerStatus(d["handler"]["status"]) == ReportHandlerStatus.STOPPED:
             report_handler.should_stop = True
+        report_handler.start()
+        self.handlers[report_handler.uuid] = report_handler
+        return report_handler
+
+    def new_report_handler(self, config):
+        logger.info("Creating new report handler")
+        report_handler = ReportHandler(self, config=config)
         report_handler.start()
         self.handlers[report_handler.uuid] = report_handler
         return report_handler
@@ -119,6 +121,11 @@ class ReportDispatcher(Thread):
         if self.handlers[handler_uuid].is_alive():
             self.handlers[handler_uuid].stop()
         del self.handlers[handler_uuid]
+        self.db["distinct"]["handlers"].delete_many({"handler_uuid": handler_uuid})
+        self.db["distinct"]["reports"].delete_many({"handler_uuid": handler_uuid})
+        self.db["distinct"]["statements"].delete_many({"handler_uuid": handler_uuid})
+        self.db["distinct"]["proxies"].delete_many({"handler_uuid": handler_uuid})
+        self.db["distinct"]["browsers"].delete_many({"handler_uuid": handler_uuid})
 
     def pass_report_to_handler(self, report, handler_uuid):
         # report = {"report": {"key": str, "val": any}}
@@ -395,13 +402,34 @@ class ReportDispatcher(Thread):
         return r.json()
 
     def get_profile_by_handler(self, handler_uuid):
-        r = requests.get(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/profile")
-        return r.json()
+        d = self.db["distinct"]["browsers"].find_one({"handler_uuid": handler_uuid})
+        bstat = BrowserStatus(d["browser"]["status"])
+        profile = d["browser"]["profile"]
+        if profile:
+            return {"success": True, "error": None, "data": profile}
+        elif profile is None and bstat == BrowserStatus.RUNNING:
+            return {"success": False, "error": f"Browser for handler uuid {handler_uuid} is still running", "data": None}
+        else:
+            return {"success": False, "error": f"Profile for handler uuid {handler_uuid} does not exist", "data": None}
 
     def get_stream_by_handler(self, handler_uuid):
-        r = requests.get(f"{self.browserEndpoint}/api/proxies/{handler_uuid}/stream")
-        return r.json()
+        d = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
+        pstat = ProxyStatus(d["proxy"]["status"])
+        stream = d["proxy"]["stream"]
+        if stream:
+            return {"success": True, "error": None, "data": stream}
+        elif stream is None and pstat == ProxyStatus.RUNNING:
+            return {"success": False, "error": f"Proxy for handler uuid {handler_uuid} is still running", "data": None}
+        else:
+            return {"success": False, "error": f"Proxy stream for handler uuid {handler_uuid} does not exist", "data": None}
 
     def get_har_by_handler(self, handler_uuid):
-        r = requests.get(f"{self.browserEndpoint}/api/proxies/{handler_uuid}/har")
-        return r.json()
+        d = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
+        pstat = ProxyStatus(d["proxy"]["status"])
+        hardump = d["proxy"]["hardump"]
+        if hardump:
+            return {"success": True, "error": None, "data": hardump}
+        elif hardump is None and pstat == ProxyStatus.RUNNING:
+            return {"success": False, "error": f"Proxy for handler uuid {handler_uuid} is still running", "data": None}
+        else:
+            return {"success": False, "error": f"Proxy har for handler uuid {handler_uuid} does not exist", "data": None}
