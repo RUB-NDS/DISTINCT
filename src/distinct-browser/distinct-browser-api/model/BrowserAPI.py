@@ -12,6 +12,7 @@ from functools import wraps
 from socket import socket
 from flask import Flask, request
 from flask_cors import CORS
+from model.ProcessCleaner import ProcessCleaner
 from model.BrowserStatus import BrowserStatus
 from model.ProxyStatus import ProxyStatus
 
@@ -37,6 +38,9 @@ class BrowserAPI(Thread):
         self.browsers_by_handler = {} # {handler_uuid: Pprocess, ...}
         self.proxies_by_handler = {} # {handler_uuid: Pprocess, ...}
 
+        self.process_cleaner = ProcessCleaner(self)
+        self.process_cleaner.start()
+
     def run(self):
         logger.info("Starting browser api thread")
 
@@ -51,6 +55,9 @@ class BrowserAPI(Thread):
 
         self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
         self.app.add_url_rule("/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"])
+
+    def process_poller():
+        pass
 
     """ Routines """
 
@@ -169,7 +176,7 @@ class BrowserAPI(Thread):
             p
         )
 
-    def stop_proxy(self, handler_uuid):
+    def stop_proxy(self, handler_uuid, expected_quit=True):
         logger.info(f"Stopping proxy with handler uuid {handler_uuid}")
         self.proxies_by_handler[handler_uuid].terminate()
 
@@ -205,18 +212,26 @@ class BrowserAPI(Thread):
             os.remove(har_path)
 
         # Update proxy in database
-        stream_fs = self.fs.put(stream_b64)
-        har_fs = self.fs.put(har_b64)
+        if stream_b64:
+            stream_fs = self.fs.put(stream_b64)
+        else:
+            stream_fs = None
+        if har_b64:
+            har_fs = self.fs.put(har_b64)
+        else:
+            har_fs = None
         self.db["distinct"]["proxies"].update_one(
             {"handler_uuid": handler_uuid},
             {"$set": {
                 "proxy.returncode": self.proxies_by_handler[handler_uuid].poll(),
                 "proxy.status": ProxyStatus.STOPPED.value,
                 "proxy.endtime": str(int(time.time())),
-                "proxy.stream": str(stream_fs),
-                "proxy.hardump": str(har_fs)
+                "proxy.stream": str(stream_fs) if stream_fs else None,
+                "proxy.hardump": str(har_fs) if har_fs else None
             }}
         )
+        if expected_quit:
+            del self.proxies_by_handler[handler_uuid]
 
     def start_browser(self, handler_uuid, config):
         """ Start new browser process for handler uuid """
@@ -274,11 +289,12 @@ class BrowserAPI(Thread):
             }
         })
 
-    def stop_browser(self, handler_uuid):
+    def stop_browser(self, handler_uuid, expected_quit=True):
         """ Stop browser process and proxy for handler uuid """
         logger.info(f"Stopping browser with handler uuid {handler_uuid}")
-        self.browsers_by_handler[handler_uuid].terminate()
-        self.stop_proxy(handler_uuid)
+        if expected_quit:
+            self.browsers_by_handler[handler_uuid].terminate()
+            self.stop_proxy(handler_uuid)
         self.destroy_chrome_extensions(handler_uuid) # cleanup
 
         # Encode the profile in zip
@@ -300,54 +316,34 @@ class BrowserAPI(Thread):
             shutil.rmtree(profile_path)
 
         # Update browser in database
-        profile_fs = self.fs.put(profile_zip_b64)
+        if profile_zip_b64:
+            profile_fs = self.fs.put(profile_zip_b64)
+        else:
+            profile_fs = None
         self.db["distinct"]["browsers"].update_one(
             {"handler_uuid": handler_uuid},
             {"$set": {
                 "browser.returncode": self.browsers_by_handler[handler_uuid].poll(),
                 "browser.status": BrowserStatus.STOPPED.value,
                 "browser.endtime": str(int(time.time())),
-                "browser.profile": str(profile_fs)
+                "browser.profile": str(profile_fs) if profile_fs else None
             }}
         )
+        if expected_quit:
+            del self.browsers_by_handler[handler_uuid]
 
     """ Wrappers """
 
-    def check_browser_existence(func):
-        """ Error when there is no browser for handler uuid """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            browserapi = args[0]
-            handler_uuid = kwargs["handler_uuid"]
-            if handler_uuid in browserapi.browsers_by_handler:
-                return func(*args, **kwargs)
-            else:
-                logger.error(f"Browser with handler uuid {handler_uuid} does not exist")
-                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} does not exist", "data": None}
-                return body
-        return wrapper
-
-    def check_proxy_existence(func):
-        """ Error when there is no proxy for handler uuid """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            browserapi = args[0]
-            handler_uuid = kwargs["handler_uuid"]
-            if handler_uuid in browserapi.proxies_by_handler:
-                return func(*args, **kwargs)
-            else:
-                logger.error(f"Proxy with handler uuid {handler_uuid} does not exist")
-                body = {"success": False, "error": f"Proxy with handler uuid {handler_uuid} does not exist", "data": None}
-                return body
-        return wrapper
-
     def check_browser_absense(func):
-        """ Error when there is a browser for handler uuid """
+        """ Error when there is a browser process or instance for handler uuid """
         @wraps(func)
         def wrapper(*args, **kwargs):
             browserapi = args[0]
             handler_uuid = kwargs["handler_uuid"]
-            if handler_uuid not in browserapi.browsers_by_handler:
+            if (
+                handler_uuid not in browserapi.browsers_by_handler
+                and browserapi.db["distinct"]["browsers"].find_one({"handler_uuid": handler_uuid}) is None
+            ):
                 return func(*args, **kwargs)
             else:
                 logger.error(f"Browser with handler uuid {handler_uuid} already exist")
@@ -356,7 +352,7 @@ class BrowserAPI(Thread):
         return wrapper
 
     def check_browser_running(func):
-        """ Error when there is no browser running for handler uuid """
+        """ Error when there is no browser process running for handler uuid """
         @wraps(func)
         def wrapper(*args, **kwargs):
             browserapi = args[0]
@@ -367,54 +363,8 @@ class BrowserAPI(Thread):
             ):
                 return func(*args, **kwargs)
             else:
-                logger.error(f"Browser with handler uuid {handler_uuid} is not running")
-                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} is not running", "data": None}
-                return body
-        return wrapper
-
-    def check_browser_not_running(func):
-        """ Error when there is a browser running for handler uuid """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            browserapi = args[0]
-            handler_uuid = kwargs["handler_uuid"]
-            if (
-                (
-                    # There is no browser for handler uuid
-                    handler_uuid not in browserapi.browsers_by_handler
-                ) or (
-                    # There is a browser for handler uuid but it is not running
-                    handler_uuid in browserapi.browsers_by_handler
-                    and browserapi.browsers_by_handler[handler_uuid].poll() is not None
-                )
-            ):
-                return func(*args, **kwargs)
-            else:
-                logger.error(f"Browser with handler uuid {handler_uuid} is still running")
-                body = {"success": False, "error": f"Browser with handler uuid {handler_uuid} is still running", "data": None}
-                return body
-        return wrapper
-
-    def check_proxy_not_running(func):
-        """ Error when there is a proxy running for handler uuid """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            browserapi = args[0]
-            handler_uuid = kwargs["handler_uuid"]
-            if (
-                (
-                    # There is no proxy for handler uuid
-                    handler_uuid not in browserapi.proxies_by_handler
-                ) or (
-                    # There is a proxy for handler uuid but it is not running
-                    handler_uuid in browserapi.proxies_by_handler
-                    and browserapi.proxies_by_handler[handler_uuid].poll() is not None
-                )
-            ):
-                return func(*args, **kwargs)
-            else:
-                logger.error(f"Proxy with handler uuid {handler_uuid} is still running")
-                body = {"success": False, "error": f"Proxy with handler uuid {handler_uuid} is still running", "data": None}
+                logger.error(f"Browser process with handler uuid {handler_uuid} is not running")
+                body = {"success": False, "error": f"Browser process with handler uuid {handler_uuid} is not running", "data": None}
                 return body
         return wrapper
 
@@ -429,7 +379,6 @@ class BrowserAPI(Thread):
         return body
 
     # POST /api/browsers/<handler_uuid>/stop
-    @check_browser_existence
     @check_browser_running
     def api_browsers_stop(self, handler_uuid):
         self.stop_browser(handler_uuid)
