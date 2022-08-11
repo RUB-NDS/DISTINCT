@@ -19,40 +19,50 @@ class ReportHandler(Thread):
         self.queue = Queue()
         self.should_stop = False
 
-        if uuid is None:
-            # Create and store new handler
-            self.uuid = str(uuid4())
-            self.starttime = str(int(time.time()))
-            self.config = config
+        # Check if handler exists in database
+        if (
+            uuid is not None
+            and self.db["distinct"]["handlers"].find_one({"handler_uuid": uuid})
+            is not None
+        ):
+            # Handler already exists -> use existing handler
+            self.uuid = uuid
+        else:
+            # Handler does not exist -> create new handler
+            self.uuid = uuid or str(uuid4())
             self.db["distinct"]["handlers"].insert_one({
                 "handler_uuid": self.uuid,
                 "handler": {
                     "uuid": self.uuid,
-                    "starttime": self.starttime,
-                    "config": self.config,
+                    "starttime": str(int(time.time())),
+                    "config": config,
                     "status": ReportHandlerStatus.INIT.value,
                     "counter": 0
                 }
             })
-        else:
-            # Restore existing handler
-            d = self.db["distinct"]["handlers"].find_one({"handler_uuid": uuid})
-            self.uuid = d["handler"]["uuid"]
-            self.starttime = d["handler"]["starttime"]
-            self.config = d["handler"]["config"]
 
-        # Create new execution environment
+        # Initialize execution environment
         self.ctx = ExecutionContext(self)
 
     @property
-    def counter(self):
+    def starttime(self):
         d = self.db["distinct"]["handlers"].find_one({"handler_uuid": self.uuid})
-        return d["handler"]["counter"]
+        return d["handler"]["starttime"]
+
+    @property
+    def config(self):
+        d = self.db["distinct"]["handlers"].find_one({"handler_uuid": self.uuid})
+        return d["handler"]["config"]
 
     @property
     def status(self):
         d = self.db["distinct"]["handlers"].find_one({"handler_uuid": self.uuid})
         return ReportHandlerStatus(d["handler"]["status"])
+
+    @property
+    def counter(self):
+        d = self.db["distinct"]["handlers"].find_one({"handler_uuid": self.uuid})
+        return d["handler"]["counter"]
 
     def run(self):
         logger.info("Starting report handler thread")
@@ -72,7 +82,7 @@ class ReportHandler(Thread):
             except Empty:
                 continue
             except Exception as e:
-                logger.exception(f"Uncaught exception in report handler {self.uuid}: {e}")
+                logger.exception(f"Unknown exception in report handler {self.uuid}: {e}")
                 continue
 
         logger.info("Stopping report handler thread")
