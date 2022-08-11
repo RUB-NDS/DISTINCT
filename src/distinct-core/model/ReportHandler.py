@@ -27,9 +27,13 @@ class ReportHandler(Thread):
         ):
             # Handler already exists -> use existing handler
             self.uuid = uuid
+            self.counter = self.db["distinct"]["handlers"].find_one(
+                {"handler_uuid": uuid}
+            )["handler"]["counter"]
         else:
             # Handler does not exist -> create new handler
             self.uuid = uuid or str(uuid4())
+            self.counter = 0
             self.db["distinct"]["handlers"].insert_one({
                 "handler_uuid": self.uuid,
                 "handler": {
@@ -37,7 +41,7 @@ class ReportHandler(Thread):
                     "starttime": str(int(time.time())),
                     "config": config,
                     "status": ReportHandlerStatus.INIT.value,
-                    "counter": 0
+                    "counter": self.counter
                 }
             })
 
@@ -59,11 +63,6 @@ class ReportHandler(Thread):
         d = self.db["distinct"]["handlers"].find_one({"handler_uuid": self.uuid})
         return ReportHandlerStatus(d["handler"]["status"])
 
-    @property
-    def counter(self):
-        d = self.db["distinct"]["handlers"].find_one({"handler_uuid": self.uuid})
-        return d["handler"]["counter"]
-
     def run(self):
         logger.info("Starting report handler thread")
         self.db["distinct"]["handlers"].update_one(
@@ -82,7 +81,7 @@ class ReportHandler(Thread):
             except Empty:
                 continue
             except Exception as e:
-                logger.exception(f"Unknown exception in report handler {self.uuid}: {e}")
+                logger.exception(f"Uncaught exception in report handler {self.uuid}: {e}")
                 continue
 
         logger.info("Stopping report handler thread")
@@ -101,6 +100,7 @@ class ReportHandler(Thread):
         report_copy["timestamp"] = str(time.time())
 
         self.queue.put(report_copy)
+        self.counter += 1
         self.db["distinct"]["handlers"].update_one(
             {"handler_uuid": self.uuid},
             {"$inc": {"handler.counter": 1}}
