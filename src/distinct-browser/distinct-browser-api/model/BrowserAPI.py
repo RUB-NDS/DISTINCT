@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
 import logging
-import sys
 import subprocess
 import os
 import shutil
@@ -14,17 +11,10 @@ from functools import wraps
 from socket import socket
 from flask import Flask, request
 from flask_cors import CORS
-from enum import Enum
+from model.BrowserStatus import BrowserStatus
+from model.ProxyStatus import ProxyStatus
 
 logger = logging.getLogger(__name__)
-
-class ProxyStatus(Enum):
-    RUNNING = 1
-    STOPPED = -1
-
-class BrowserStatus(Enum):
-    RUNNING = 1
-    STOPPED = -1
 
 class BrowserAPI(Thread):
 
@@ -440,18 +430,3 @@ class BrowserAPI(Thread):
         self.stop_browser(handler_uuid)
         body = {"success": True, "error": None, "data": None}
         return body
-
-def main():
-    verbosity = os.environ["VERBOSITY"]
-    level = logging.getLevelName(verbosity) if verbosity else logging.DEBUG
-    logging.basicConfig(stream=sys.stdout, level=level)
-    logging.getLogger(__name__).setLevel(level)
-    logging.getLogger('werkzeug').setLevel(level)
-    logger.info(f"Log level: {level}")
-
-    browser_api = BrowserAPI()
-    browser_api.start()
-    browser_api.join()
-
-if __name__ == "__main__":
-    main()

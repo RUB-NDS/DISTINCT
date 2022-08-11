@@ -92,7 +92,7 @@ RUN pip3 install -r ./mitmproxy/requirements.txt
 COPY ./distinct-browser-api ./distinct-browser-api
 RUN pip3 install -r ./distinct-browser-api/requirements.txt
 
-WORKDIR /app
+WORKDIR /app/distinct-browser-api
 ENTRYPOINT [ "/bin/bash", "-c", " \
   mkdir -p /app/data/chrome-profiles; \
   mkdir -p /app/data/chrome-extensions; \
@@ -103,5 +103,5 @@ ENTRYPOINT [ "/bin/bash", "-c", " \
   echo ${VNCPWD:-changeme} | vncpasswd -f > /root/.vnc/passwd; \
   /usr/share/novnc/utils/launch.sh --listen $NOVNCPORT --vnc localhost:$VNCPORT \
     --cert /etc/ssl/private/novnc_combined.pem & \
-  python3 distinct-browser-api/distinct-browser-api.py \
+  python3 distinct-browser.py \
 " ]
