@@ -383,15 +383,7 @@ class ReportDispatcher(Thread):
         else:
             return r
 
-    """ Connectors to browser API """
-
-    def get_browsers(self):
-        r = requests.get(f"{self.browserEndpoint}/api/browsers")
-        return r.json()
-
-    def get_browsers_by_handler(self, handler_uuid):
-        r = requests.get(f"{self.browserEndpoint}/api/browsers/{handler_uuid}")
-        return r.json()
+    """ Browser Connectors """
 
     def start_browser(self, handler_uuid, config):
         r = requests.post(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/start", json=config)
@@ -400,6 +392,56 @@ class ReportDispatcher(Thread):
     def stop_browser(self, handler_uuid):
         r = requests.post(f"{self.browserEndpoint}/api/browsers/{handler_uuid}/stop")
         return r.json()
+
+    def get_browsers(self):
+        body = {"success": True, "error": None, "data": []}
+        browsers = self.db["distinct"]["browsers"].find()
+        for b in browsers:
+            data = {
+                "uuid": b["handler_uuid"],
+                "browser": {
+                    "pid": b["browser"]["pid"],
+                    "returncode": b["browser"]["returncode"],
+                    "args": b["browser"]["args"]
+                }
+            }
+            proxy = self.db["distinct"]["proxies"].find_one({"handler_uuid": b["handler_uuid"]})
+            if proxy:
+                data["proxy"] = {
+                    "pid": proxy["proxy"]["pid"],
+                    "returncode": proxy["proxy"]["returncode"],
+                    "args": proxy["proxy"]["args"]
+                }
+            else:
+                data["proxy"] = None
+            body["data"].append(data)
+        return body
+
+    def get_browsers_by_handler(self, handler_uuid):
+        body = {
+            "success": True,
+            "error": None,
+            "data": {
+                "uuid": handler_uuid,
+                "browser": None,
+                "proxy": None
+            }
+        }
+        browser = self.db["distinct"]["browsers"].find_one({"handler_uuid": handler_uuid})
+        proxy = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
+        if browser:
+            body["data"]["browser"] = {
+                "pid": browser["browser"]["pid"],
+                "returncode": browser["browser"]["returncode"],
+                "args": browser["browser"]["args"]
+            }
+        if proxy:
+            body["data"]["proxy"] = {
+                "pid": proxy["proxy"]["pid"],
+                "returncode": proxy["proxy"]["returncode"],
+                "args": proxy["proxy"]["args"]
+            }
+        return body
 
     def get_profile_by_handler(self, handler_uuid):
         d = self.db["distinct"]["browsers"].find_one({"handler_uuid": handler_uuid})

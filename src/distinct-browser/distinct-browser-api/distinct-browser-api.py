@@ -57,18 +57,8 @@ class BrowserAPI(Thread):
     def register_routes(self):
         logger.info("Registering routes for the browser api's webserver")
 
-        self.app.add_url_rule(
-            "/api/browsers", view_func=self.api_browsers, methods=["GET"]
-        )
-        self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>", view_func=self.api_browsers_handler, methods=["GET"]
-        )
-        self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"]
-        )
-        self.app.add_url_rule(
-            "/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"]
-        )
+        self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
+        self.app.add_url_rule("/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"])
 
     """ Routines """
 
@@ -166,6 +156,8 @@ class BrowserAPI(Thread):
             "handler_uuid": handler_uuid,
             "proxy": {
                 "pid": p.pid,
+                "args": p.args,
+                "returncode": p.poll(),
                 "starttime": str(int(time.time())),
                 "endtime": None,
                 "status": ProxyStatus.RUNNING.value,
@@ -224,6 +216,7 @@ class BrowserAPI(Thread):
         self.db["distinct"]["proxies"].update_one(
             {"handler_uuid": handler_uuid},
             {"$set": {
+                "proxy.returncode": self.proxies_by_handler[handler_uuid].poll(),
                 "proxy.status": ProxyStatus.STOPPED.value,
                 "proxy.endtime": str(int(time.time())),
                 "proxy.stream": stream_b64,
@@ -273,6 +266,8 @@ class BrowserAPI(Thread):
             "handler_uuid": handler_uuid,
             "browser": {
                 "pid": p.pid,
+                "args": p.args,
+                "returncode": p.poll(),
                 "starttime": str(int(time.time())),
                 "endtime": None,
                 "status": BrowserStatus.RUNNING.value,
@@ -314,6 +309,7 @@ class BrowserAPI(Thread):
         self.db["distinct"]["browsers"].update_one(
             {"handler_uuid": handler_uuid},
             {"$set": {
+                "browser.returncode": self.browsers_by_handler[handler_uuid].poll(),
                 "browser.status": BrowserStatus.STOPPED.value,
                 "browser.endtime": str(int(time.time())),
                 "browser.profile": profile_zip_b64
@@ -428,54 +424,6 @@ class BrowserAPI(Thread):
         return wrapper
 
     """ Webserver API Routes """
-
-    # GET /api/browsers/
-    def api_browsers(self):
-        body = {"success": True, "error": None, "data": []}
-        for uuid, process in self.browsers_by_handler.items():
-            data = {
-                "uuid": uuid,
-                "browser": {
-                    "pid": process.pid,
-                    "returncode": process.poll(),
-                    "args": process.args
-                }
-            }
-            if uuid in self.proxies_by_handler:
-                data["proxy"] = {
-                    "pid": self.proxies_by_handler[uuid].pid,
-                    "returncode": self.proxies_by_handler[uuid].poll(),
-                    "args": self.proxies_by_handler[uuid].args
-                }
-            else:
-                data["proxy"] = None
-            body["data"].append(data)
-        return body
-
-    # GET /api/browsers/<handler_uuid>/
-    def api_browsers_handler(self, handler_uuid):
-        body = {
-            "success": True,
-            "error": None,
-            "data": {
-                "uuid": handler_uuid,
-                "browser": None,
-                "proxy": None
-            }
-        }
-        if handler_uuid in self.browsers_by_handler:
-            body["data"]["browser"] = {
-                "pid": self.browsers_by_handler[handler_uuid].pid,
-                "returncode": self.browsers_by_handler[handler_uuid].poll(),
-                "args": self.browsers_by_handler[handler_uuid].args
-            }
-        if handler_uuid in self.proxies_by_handler:
-            body["data"]["proxy"] = {
-                "pid": self.proxies_by_handler[handler_uuid].pid,
-                "returncode": self.proxies_by_handler[handler_uuid].poll(),
-                "args": self.proxies_by_handler[handler_uuid].args
-            }
-        return body
 
     # POST /api/browsers/<handler_uuid>/start
     @check_browser_absense
