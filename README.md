@@ -2,18 +2,18 @@
 
 > Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniques
 
-DISTINCT is an analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using In-Browser Communications in Modern Single Sign-On".
+DISTINCT is a Single Sign-On security analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using In-Browser Communications in Dual-Window Single Sign-On".
 
 ## Setup
 
 Setup was tested on `Ubuntu 20.04.3 LTS`
 
 - Download and install [Docker](https://docs.docker.com/get-docker/) and [Docker-Compose](https://docs.docker.com/compose/install/)
-- Check that ports `9080` and `9090` are not allocated on your system
-- Clone this repository: `git clone https://github.com/XXXX/DISTINCT.git`
+- Check that ports `9070`, `9080`, and `9090` are not allocated on your system
+- Clone this repository: `git clone https://github.com/RUB-NDS/DISTINCT.git`
 - Go into its `src` directory: `cd ./src`
 - Run: `docker-compose build`
-- *Optional:* Configure log level and accounts
+- *Optional:* Configure log level and Identity Provider accounts
   - Create `.env` file in `./src`: `cp .env.example .env`
   - For `VERBOSITY`, choose between `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (default: `DEBUG`)
   - You can optionally configure your Google, Facebook, and Apple username (= email) and password. This automates the authentication on the Identity Provider so that you do not have to enter your credentials for each login flow.
@@ -27,7 +27,8 @@ Setup was tested on `Ubuntu 20.04.3 LTS`
       - There should be a `DES...=...` cookie for `appleid.apple.com`, this is the 2FA token
       - Copy this cookie in the following format to the `.env`: `cookie_name=cookie_value` (example: `DES123=XYZ`)
 - Run: `docker-compose up`
-- Open `http://localhost:9080` in your webbrowser
+- Open `http://localhost:9080` in your webbrowser for DISTINCT's web interface
+- *Optional:* Open `http://localhost:9070` in your webbrowser for a web interface showing DISTINCT's database ([mongo-express](https://github.com/mongo-express/mongo-express))
 - Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
 ## Workflow via DISTINCT's Web Interface
@@ -81,3 +82,16 @@ Setup was tested on `Ubuntu 20.04.3 LTS`
   - `./mitmproxy` - contains the proxy that is used to capture and store all requests and responses issued by the browser
   - `ublock-chrome-extension` - contains the [uBlock Origin Chrome extension](https://github.com/gorhill/uBlock) which is used to reduce the noise introduced by advertisements and trackers
   - `distinct-chromium.zip` - contains the compiled binary of the Chromium browser
+
+## Troubleshoot
+
+To reset DISTINCT and clear its database, run the following commands:
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
+- Remove all volumes: `docker volume rm src_distinct-core-data src_distinct-browser-data src_distinct-db-data`
+- Start DISTINCT: `docker-compose up`
+
+To make changes to DISTINCT's source code and rebuild it, run the following commands:
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
+- Make changes to DISTINCT's source code
+- Rebuild: `docker-compose build`
+- Start DISTINCT: `docker-compose up`
