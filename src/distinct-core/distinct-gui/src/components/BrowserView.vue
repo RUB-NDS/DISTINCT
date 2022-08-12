@@ -2,6 +2,7 @@
   <div class="container-fluid">
     <div class="container">
       <h1><span style="font-variant: small-caps">Live-Monitor</span></h1>
+      <p>In this interface, you can control the browser to navigate to the target website and execute its Single Sign-On login.</p>
       <form class="mb-4">
         <div class="form-group">
           <label for="vncpwd">Configure noVNC Password:</label>

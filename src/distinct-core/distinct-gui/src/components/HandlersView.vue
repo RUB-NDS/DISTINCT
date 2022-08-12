@@ -1,6 +1,7 @@
 <template>
   <div class="container mb-4">
     <h1><span style="font-variant: small-caps">Communication-Inspector</span></h1>
+    <p>In this interface, you can start a new analysis run and inspect the analysis results.</p>
     <div class="btn-toolbar mb-2">
       <div class="btn-group me-2">
         <button class="btn btn-primary" v-on:click="getHandlers()">

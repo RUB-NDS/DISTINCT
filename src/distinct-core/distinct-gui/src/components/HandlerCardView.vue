@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header" v-bind:class="[reporthandler.running ? 'bg-success' : 'bg-danger']">
-      Report Handler
+      Analysis Instance
     </div>
     <div class="card-body">
       <h5 class="card-title">{{this.reporthandler.uuid}}</h5>
@@ -76,7 +76,7 @@
         </div>
       </li>
       <li class="list-group-item">
-        <div>Handler Actions:</div>
+        <div>Instance Actions:</div>
         <div class="btn-group mb-2" role="group">
           <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">
             <i class="bi bi-stop-circle"></i>
