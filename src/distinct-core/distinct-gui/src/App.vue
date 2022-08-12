@@ -2,15 +2,21 @@
   <div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#/">DISTINCT</a>
+        <a class="navbar-brand" href="#/"><span style="font-variant: small-caps">Distinct</span></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
+              <router-link class="nav-link" to="/">
+                <i class="bi bi-info-circle"></i>
+                Info
+              </router-link>
+            </li>
+            <li class="nav-item">
               <router-link class="nav-link" to="/handlers">
-                <i class="bi bi-folder"></i>
+                <i class="bi bi-collection"></i>
                 Handlers
               </router-link>
             </li>
@@ -20,23 +26,19 @@
                 Browser
               </router-link>
             </li>
-            <!-- <li class="nav-item">
-              <router-link class="nav-link" to="/logs">
-                <i class="bi bi-body-text"></i>
-                Logs
-              </router-link>
+          </ul>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="https://github.com/RUB-NDS/DISTINCT">
+                <i class="bi bi-github"></i>
+                Source Code
+              </a>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/settings">
-                <i class="bi bi-gear"></i>
-                Settings
-              </router-link>
-            </li> -->
-            <li class="nav-item">
-              <router-link class="nav-link" to="/about">
-                <i class="bi bi-info-circle"></i>
-                About
-              </router-link>
+              <a class="nav-link" href="/paper.pdf">
+                <i class="bi bi-file-earmark-pdf"></i>
+                Paper
+              </a>
             </li>
           </ul>
         </div>
@@ -63,6 +65,11 @@ export default {
       this.appconfig[event.key] = event.val
     }
   },
+  watch: {
+    '$route' (to) {
+      document.title = to.meta.title || 'DISTINCT'
+    }
+  }
 }
 </script>
 
