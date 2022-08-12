@@ -20,7 +20,7 @@
     </div>
     <div class="btn-toolbar mb-4">
       <div class="btn-group me-2">
-        <button class="btn btn-primary" v-on:click="newHandler(this.$refs.initURL.value)">
+        <button class="btn btn-primary" v-on:click="newHandler(this.$refs.initURL.value)" :disabled="appMode == 'demo'">
           <i class="bi bi-plus-circle"></i>
           New Analysis Run
         </button>
@@ -30,7 +30,7 @@
           <i class="bi bi-cursor me-2"></i>
           <span>URL <i>(optional)</i></span>
         </div>
-        <input type="text" class="form-control" ref="initURL" placeholder="https://example.com" size=30>
+        <input type="text" class="form-control" ref="initURL" placeholder="https://example.com" size=30 :disabled="appMode == 'demo'">
       </div>
     </div>
 
@@ -69,7 +69,8 @@ export default {
   data: () => {
     return {
       'reporthandlers': [],
-      'intervalUpdater': undefined
+      'intervalUpdater': undefined,
+      'appMode': process.env['VUE_APP_MODE']
     }
   },
   methods: {

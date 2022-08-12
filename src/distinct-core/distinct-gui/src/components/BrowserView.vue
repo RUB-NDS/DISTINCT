@@ -3,7 +3,7 @@
     <div class="container">
       <h1><span style="font-variant: small-caps">Live-Monitor</span></h1>
       <p>In this interface, you can control the browser to navigate to the target website and execute its Single Sign-On login.</p>
-      <form class="mb-4">
+      <form v-if="appMode == 'prod'" class="mb-4">
         <div class="form-group">
           <label for="vncpwd">Configure noVNC Password:</label>
           <div class="input-group">
@@ -15,36 +15,43 @@
         </div>
       </form>
     </div>
-    <iframe id="browserFrame"></iframe>
+    <iframe v-if="appMode == 'prod'" id="browserFrame"></iframe>
   </div>
 </template>
 
 <script>
 export default {
   name: 'BrowserView',
-  mounted() {
-    let browserURL = new URL(window.location.href)
-    browserURL.port = '9090'
-    browserURL.pathname = '/vnc_auto.html'
-    browserURL.search = ''
-    browserURL.hash = ''
-
-    if (!window.localStorage.getItem('vncpwd')) {
-      let pwd = prompt('Please enter the noVNC password')
-      window.localStorage.setItem('vncpwd', pwd)
+  data: function() {
+    return {
+      'appMode': process.env['VUE_APP_MODE']
     }
-    let vncpwd = window.localStorage.getItem('vncpwd')
-    browserURL.searchParams.set('password', vncpwd)
-
-    let browserFrame = document.getElementById('browserFrame')
-    browserFrame.src = browserURL.href
-
-    this.$refs.vncpwd.value = window.localStorage.getItem('vncpwd')
   },
   methods: {
     'changeVNCPWD': function(vncpwd) {
       window.localStorage.setItem('vncpwd', vncpwd)
       window.location.reload()
+    }
+  },
+  mounted() {
+    if (this.$data['appMode'] == 'prod') {
+      let browserURL = new URL(window.location.href)
+      browserURL.port = '9090'
+      browserURL.pathname = '/vnc_auto.html'
+      browserURL.search = ''
+      browserURL.hash = ''
+
+      if (!window.localStorage.getItem('vncpwd')) {
+        let pwd = prompt('Please enter the noVNC password')
+        window.localStorage.setItem('vncpwd', pwd)
+      }
+      let vncpwd = window.localStorage.getItem('vncpwd')
+      browserURL.searchParams.set('password', vncpwd)
+
+      let browserFrame = document.getElementById('browserFrame')
+      browserFrame.src = browserURL.href
+
+      this.$refs.vncpwd.value = window.localStorage.getItem('vncpwd')
     }
   }
 }

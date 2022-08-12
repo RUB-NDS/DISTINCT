@@ -65,11 +65,11 @@
       <li class="list-group-item">
         <div>Browser Actions:</div>
         <div class="btn-group mb-2" role="group">
-          <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-primary" v-on:click="startBrowser(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-play-circle"></i>
             Browser
           </button>
-          <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-danger" v-on:click="stopBrowser(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-stop-circle"></i>
             Browser
           </button>
@@ -78,11 +78,11 @@
       <li class="list-group-item">
         <div>Instance Actions:</div>
         <div class="btn-group mb-2" role="group">
-          <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-danger" v-on:click="stopHandler(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-stop-circle"></i>
             Handler
           </button>
-          <button type="button" class="btn btn-outline-danger" v-on:click="removeHandler(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-danger" v-on:click="removeHandler(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-trash"></i>
             Handler
           </button>
@@ -103,6 +103,11 @@ import Prism from 'prismjs'
 export default {
   name: 'HandlerCardView',
   props: ['reporthandler'],
+  data: function() {
+    return {
+      'appMode': process.env['VUE_APP_MODE']
+    }
+  },
   methods: {
     'timestampToDate': timestampToDate,
     'stopHandler': function(handler_uuid) {
