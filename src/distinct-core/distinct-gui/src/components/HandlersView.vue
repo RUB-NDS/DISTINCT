@@ -1,35 +1,35 @@
 <template>
   <div class="container mb-4">
-    <h1>Handlers</h1>
+    <h1><span style="font-variant: small-caps">Communication-Inspector</span></h1>
     <div class="btn-toolbar mb-2">
       <div class="btn-group me-2">
         <button class="btn btn-primary" v-on:click="getHandlers()">
           <i class="bi bi-arrow-clockwise"></i>
-          Update All
+          Update
         </button>
       </div>
       <div class="input-group">
         <div class="input-group-text">
           <i class="bi bi-clock-history me-2"></i>
-          Interval
+          <span>Update Interval</span>
         </div>
         <input type="number" class="form-control" min="0" max="60" v-on:input="startIntervalUpdater(this.$refs.updateInterval.value)" ref="updateInterval">
-        <div class="input-group-text">s</div>
+        <div class="input-group-text">seconds</div>
       </div>
     </div>
     <div class="btn-toolbar mb-4">
       <div class="btn-group me-2">
         <button class="btn btn-primary" v-on:click="newHandler(this.$refs.initURL.value)">
           <i class="bi bi-plus-circle"></i>
-          New Handler
+          New Analysis Run
         </button>
       </div>
       <div class="input-group">
         <div class="input-group-text">
           <i class="bi bi-cursor me-2"></i>
-          Init URL
+          <span>URL <i>(optional)</i></span>
         </div>
-        <input type="text" class="form-control" ref="initURL">
+        <input type="text" class="form-control" ref="initURL" placeholder="https://example.com" size=30>
       </div>
     </div>
 

@@ -1,19 +1,19 @@
 <template>
   <div class="container-fluid">
-    <h1>Browser</h1>
-
-    <form class="mb-4">
-      <div class="form-group">
-        <label for="vncpwd">Configure noVNC Password:</label>
-        <div class="input-group">
-          <input type="text" class="form-control me-2" id="vncpwd" ref="vncpwd">
-          <div class="input-group-append">
-            <button type="submit" class="btn btn-primary" @click.prevent="changeVNCPWD(this.$refs.vncpwd.value)">Store</button>
+    <div class="container">
+      <h1><span style="font-variant: small-caps">Live-Monitor</span></h1>
+      <form class="mb-4">
+        <div class="form-group">
+          <label for="vncpwd">Configure noVNC Password:</label>
+          <div class="input-group">
+            <input type="text" class="form-control me-2" id="vncpwd" ref="vncpwd">
+            <div class="input-group-append">
+              <button type="submit" class="btn btn-primary" @click.prevent="changeVNCPWD(this.$refs.vncpwd.value)">Store</button>
+            </div>
           </div>
         </div>
-      </div>
-    </form>
-
+      </form>
+    </div>
     <iframe id="browserFrame"></iframe>
   </div>
 </template>

@@ -16,14 +16,14 @@
             </li>
             <li class="nav-item">
               <router-link class="nav-link" to="/handlers">
-                <i class="bi bi-collection"></i>
-                Handlers
+                <i class="bi bi-inboxes"></i>
+                <span> Communication-Inspector</span>
               </router-link>
             </li>
             <li class="nav-item">
               <router-link class="nav-link" to="/browser">
                 <i class="bi bi-window"></i>
-                Browser
+                <span style="font-variant: small-caps"> Live-Monitor</span>
               </router-link>
             </li>
           </ul>
