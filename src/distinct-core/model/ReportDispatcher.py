@@ -53,6 +53,7 @@ class ReportDispatcher(Thread):
         self.app.add_url_rule("/", view_func=self.index, methods=["GET"])
         self.app.add_url_rule("/app", view_func=self.frontend, methods=["GET"], defaults={"path": ""})
         self.app.add_url_rule("/app/<path:path>", view_func=self.frontend, methods=["GET"])
+        self.app.add_url_rule("/paper.pdf", view_func=self.paper, methods=["GET"])
 
         # Pocs
         self.app.add_url_rule("/pocs/<handler_uuid>", view_func=self.send_poc, methods=["GET"])
@@ -172,6 +173,10 @@ class ReportDispatcher(Thread):
     # GET /app/<path:path>
     def frontend(self, path):
         return self.app.send_static_file("index.html")
+
+    # GET /paper.pdf
+    def paper(self):
+        return send_from_directory("/", "paper.pdf", as_attachment=True)
 
     # GET /pocs/<handler_uuid>
     def send_poc(self, handler_uuid):

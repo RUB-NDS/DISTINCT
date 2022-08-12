@@ -13,6 +13,7 @@ services:
       - distinct-net
     volumes:
       - distinct-core-data:/app/data
+      - ../paper.pdf:/paper.pdf
     environment:
       VERBOSITY: ${VERBOSITY}
 
