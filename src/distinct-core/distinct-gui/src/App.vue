@@ -2,7 +2,7 @@
   <div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#/"><span style="font-variant: small-caps">Distinct</span></a>
+        <a class="navbar-brand" href="#/"><img :src="logoLarge" height="50"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -23,7 +23,7 @@
             <li class="nav-item">
               <router-link class="nav-link" to="/monitor">
                 <i class="bi bi-window"></i>
-                <span style="font-variant: small-caps"> Live-Monitor</span>
+                <span> Live-Monitor</span>
               </router-link>
             </li>
           </ul>
@@ -53,11 +53,14 @@
 </template>
 
 <script>
+import logoLarge from './assets/logo-large.png'
+
 export default {
   name: 'App',
   data: () => {
     return {
-      'appconfig': {}
+      'appconfig': {},
+      'logoLarge': logoLarge
     }
   },
   methods: {
