@@ -13,10 +13,11 @@ Setup was tested on `Ubuntu 20.04.3 LTS`
 - Clone this repository: `git clone https://github.com/RUB-NDS/DISTINCT.git`
 - Go into its `src` directory: `cd ./src`
 - Run: `docker-compose build`
-- *Optional:* Configure log level and Identity Provider accounts
+- *Optional:* Configure log level, VNC password, and Identity Provider accounts
   - Create `.env` file in `./src`: `cp .env.example .env`
   - For `VERBOSITY`, choose between `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (default: `DEBUG`)
-  - You can optionally configure your Google, Facebook, and Apple username (= email) and password. This automates the authentication on the Identity Provider so that you do not have to enter your credentials for each login flow.
+  - For `VNCPWD`, choose a custom password that is required in the web interface to control the browser (default: `changeme`)
+  - You can setup your Google, Facebook, and Apple accounts. This automates the authentication on the Identity Provider so that you do not have to enter your credentials (username/email and password) for each Single Sign-On login flow.
     - For Apple, you can optionally configure a 2FA token so that you do not have to enter the 2FA code sent to your phone for each login flow. You can generate this token as follows:
       - Open a fresh incognito browser session
       - Go to `https://appleid.apple.com/auth/authorize?client_id=com.twitter.twitter.siwa&redirect_uri=https%3A%2F%2Ftwitter.com&response_type=code&state=123`
@@ -28,6 +29,7 @@ Setup was tested on `Ubuntu 20.04.3 LTS`
       - Copy this cookie in the following format to the `.env`: `cookie_name=cookie_value` (example: `DES123=XYZ`)
 - Run: `docker-compose up`
 - Open `http://localhost:9080` in your webbrowser for DISTINCT's web interface
+  - If prompted, the default password for the noVNC server is: `changeme`
 - *Optional:* Open `http://localhost:9070` in your webbrowser for a web interface showing DISTINCT's database ([mongo-express](https://github.com/mongo-express/mongo-express))
 - Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
