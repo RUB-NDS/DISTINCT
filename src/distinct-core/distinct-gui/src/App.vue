@@ -15,13 +15,13 @@
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/handlers">
+              <router-link class="nav-link" to="/inspector">
                 <i class="bi bi-inboxes"></i>
                 <span> Communication-Inspector</span>
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/browser">
+              <router-link class="nav-link" to="/monitor">
                 <i class="bi bi-window"></i>
                 <span style="font-variant: small-caps"> Live-Monitor</span>
               </router-link>

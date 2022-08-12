@@ -16,14 +16,14 @@ const routes = [
     meta: {title: 'DISTINCT'}
   },
   {
-    path: '/handlers',
+    path: '/inspector',
     component: HandlersView,
-    meta: {title: 'DISTINCT - Handlers'}
+    meta: {title: 'DISTINCT - Communication-Inspector'}
   },
   {
-    path: '/browser',
+    path: '/monitor',
     component: BrowserView,
-    meta: {title: 'DISTINCT - Browser'}
+    meta: {title: 'DISTINCT - Live-Monitor'}
   }
 ]
 
