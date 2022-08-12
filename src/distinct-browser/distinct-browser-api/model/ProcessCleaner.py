@@ -53,7 +53,10 @@ class ProcessCleaner(Thread):
             is closed with the browser still running.
         """
         running_browsers = self.db["distinct"]["browsers"].find({
-            "browser.status": BrowserStatus.RUNNING.value
+            "$or": [
+                {"browser.status": BrowserStatus.RUNNING.value},
+                {"browser.returncode": None}
+            ]
         })
         for b in running_browsers:
             uuid = b["handler_uuid"]
@@ -124,7 +127,10 @@ class ProcessCleaner(Thread):
             is closed with the proxy still running.
         """
         running_proxies = self.db["distinct"]["proxies"].find({
-            "proxy.status": ProxyStatus.RUNNING.value
+            "$or": [
+                {"proxy.status": ProxyStatus.RUNNING.value},
+                {"proxy.returncode": None}
+            ]
         })
         for b in running_proxies:
             uuid = b["handler_uuid"]
