@@ -1,4 +1,5 @@
 import logging
+import os
 import requests
 import base64
 import io
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class ReportDispatcher(Thread):
 
-    dbEndpoint = "mongodb://distinct-db:27017/"
+    dbEndpoint = os.environ["DISTINCT_DB"]
     browserEndpoint = "http://distinct-browser:8080"
 
     def __init__(self):

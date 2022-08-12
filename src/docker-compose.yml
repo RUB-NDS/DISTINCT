@@ -2,7 +2,11 @@ version: '3'
 
 services:
   distinct-core:
-    build: ./distinct-core
+    build:
+      context: ./distinct-core
+      args:
+        PYTHON_APP_MODE: prod
+        VUE_APP_MODE: prod
     container_name: distinct-core
     restart: always
     depends_on:
@@ -16,6 +20,7 @@ services:
       - ../paper.pdf:/paper.pdf
     environment:
       VERBOSITY: ${VERBOSITY}
+      DISTINCT_DB: mongodb://distinct-db:27017/
 
   distinct-browser:
     build: ./distinct-browser

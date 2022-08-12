@@ -97,3 +97,12 @@ To make changes to DISTINCT's source code and rebuild it, run the following comm
 - Make changes to DISTINCT's source code
 - Rebuild: `docker-compose build`
 - Start DISTINCT: `docker-compose up`
+
+## Demo Mode
+
+To compile and run DISTINCT in a "demo mode" as on [distinct-sso.com](https://distinct-sso.com), run the following commands:
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool running in "normal mode"
+- Compile the "demo mode" version: `docker-compose -f docker-compose-demo.yml build`
+- Start DISTINCT in "demo mode": `docker-compose -f docker-compose-demo.yml up`
+- Go to `http://localhost:9070` and manually add example data to the database
+  - Note that the "demo mode" does not include a running browser. Thus, you cannot generate any new data while in "demo mode" and have to supply the example data by yourself in the database.

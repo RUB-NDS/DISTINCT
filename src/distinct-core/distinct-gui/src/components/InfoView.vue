@@ -3,6 +3,7 @@
     <div class="row">
       <div class="col border border-1 bg-light rounded-3">
         <!-- <h1><b><span style="font-variant: small-caps">Distinct</span></b></h1> -->
+        <p>{{ envExample }}</p>
         <p><img :src="logoLarge" style="width: 450px; max-width: 100%;"></p>
         <h5>is a <b>D</b>ynamic <b>I</b>n-Browser <b>S</b>ingle Sign-On <b>T</b>racer <b>I</b>nspecting <b>N</b>ovel <b>C</b>ommunication <b>T</b>echniques.</h5>
         <p><span style="font-variant: small-caps">Distinct</span> is a web-based Single Sign-On security analysis framework for modern in-browser communication techniques. It was developed for the paper <a href="/paper.pdf"><i class="bi bi-file-earmark-pdf"></i></a> <i>DISTINCT: Identity Theft using In-Browser Communications in Dual-Window Single Sign-On</i>. <span style="font-variant: small-caps">Distinct</span> is designed to monitor and analyze the in-browser communication techniques sending in-browser messages across browser windows at runtime. Its dynamic analysis approach automates the (1) capturing, (2) detection, (3) visualization, (4) security analysis, and (5) exploitation of Single Sign-On flows relying on novel in-browser communication techniques. Therefore, <span style="font-variant: small-caps">Distinct</span> executes the following two components.</p>
@@ -36,7 +37,8 @@ export default {
   name: 'InfoView',
   data: function() {
     return {
-      logoLarge: logoLarge
+      logoLarge: logoLarge,
+      envExample: process.env['VUE_APP_MODE']
     }
   }
 }
