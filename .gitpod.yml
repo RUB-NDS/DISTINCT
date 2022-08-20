@@ -1,0 +1,63 @@
+image:
+  file: .gitpod.Dockerfile
+  context: ./
+
+tasks:
+  - name: distinct-core-api
+    init: cd /workspace/DISTINCT/src/distinct-core && pip3 install -r requirements.txt
+    command: cd /workspace/DISTINCT/src/distinct-core && python3 distinct-core.py
+    env:
+      VERBOSITY: debug
+      PYTHON_APP_MODE: prod
+      DISTINCT_DB: mongodb://localhost:27017/
+
+  - name: distinct-core-gui
+    init: cd /workspace/DISTINCT/src/distinct-core/gui && npm install && npm run build
+    command: cd /workspace/DISTINCT/src/distinct-core/gui && npm run serve
+    env:
+      VUE_APP_MODE: prod
+
+  - name: distinct-browser-api
+    init: cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api && pip3 install -r requirements.txt
+    command: cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api && python3 distinct-browser.py
+    env:
+      VERBOSITY: debug
+
+  - name: distinct-browser-mitmproxy
+    init: cd /workspace/DISTINCT/src/distinct-browser/mitmproxy && pip3 install -r requirements.txt
+
+  - name: distinct-browser-vnc
+    init: echo $VNCPWD | vncpasswd -f > /root/.vnc/passwd && chmod 600 /root/.vnc/passwd
+    command: vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH -localhost
+    env:
+      USER: root
+      VNCPORT: 9091
+      VNCPWD: changeme
+      VNCDISPLAY: 1920x1080
+      VNCDEPTH: 16
+
+  - name: distinct-browser-novnc
+    command: /usr/share/novnc/utils/launch.sh --listen $NOVNCPORT --vnc localhost:$VNCPORT --cert /etc/ssl/private/novnc_combined.pem
+    env:
+      VNCPORT: 9091
+      NOVNCPORT: 9090
+
+  - name: distinct-db
+    command: mongod --dbpath /workspace/distinct-db-data
+
+ports:
+  # distinct-core-api
+  - port: 9080
+    onOpen: ignore
+  # distinct-browser-api
+  - port: 9081
+    onOpen: ignore
+  # distinct-core-gui
+  - port: 3000
+    onOpen: open-browser
+  # distinct-browser-novnc
+  - port: 9090
+    onOpen: open-browser
+  # distinct-browser-vnc
+  - port: 9091
+    onOpen: ignore
