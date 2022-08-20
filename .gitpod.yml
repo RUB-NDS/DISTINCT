@@ -59,7 +59,8 @@ tasks:
       export XKL_XMODMAP_DISABLE=1 \n
       /etc/X11/Xsession \n
       startxfce4 &
-      ' > ~/.vnc/xstartup
+      ' > ~/.vnc/xstartup &&
+      chmod +x ~/.vnc/xstartup
     command: vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH -localhost
     env:
       USER: gitpod
