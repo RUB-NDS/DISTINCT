@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  distinct-demo-core:
+    build:
+      context: ./distinct-core
+      args:
+        PYTHON_APP_MODE: demo
+        VUE_APP_MODE: demo
+    container_name: distinct-demo-core
+    restart: always
+    depends_on:
+      - distinct-demo-db
+    ports:
+      - "9080:8080"
+    networks:
+      - distinct-demo-net
+    volumes:
+      - distinct-demo-core-data:/app/data
+      - ../paper.pdf:/paper.pdf
+    environment:
+      VERBOSITY: ${VERBOSITY}
+      DISTINCT_DB: mongodb://distinct-demo-db:27017/
+
+  distinct-demo-db:
+    image: mongo:focal
+    container_name: distinct-demo-db
+    restart: always
+    networks:
+      - distinct-demo-net
+    volumes:
+      - distinct-demo-db-data:/data/db
+
+  distinct-demo-db-explorer:
+    image: mongo-express:0.54.0
+    container_name: distinct-demo-db-explorer
+    restart: always
+    depends_on:
+      - distinct-demo-db
+    ports:
+      - "9070:8081"
+    networks:
+      - distinct-demo-net
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=distinct-demo-db
+
+networks:
+  distinct-demo-net:
+    driver: bridge
+
+volumes:
+  distinct-demo-browser-data:
+  distinct-demo-core-data:
+  distinct-demo-db-data:

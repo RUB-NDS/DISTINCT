@@ -1,0 +1,12 @@
+tasks:
+  - name: distinct production
+    init: docker-compose -f ./src/docker-compose.yml build
+    command: docker-compose -f ./src/docker-compose.yml up
+
+ports:
+  - port: 9080
+    onOpen: open-browser
+  - port: 9090
+    onOpen: ignore
+  - port: 9070
+    onOpen: ignore

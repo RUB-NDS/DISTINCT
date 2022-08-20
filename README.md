@@ -1,57 +1,108 @@
 # DISTINCT
 
-Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniques
+> Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniques
 
-DISTINCT is an analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using Cross-Window Communications in Modern Single Sign-On".
+DISTINCT is a Single Sign-On security analysis framework for modern communication techniques that was developed for the paper "DISTINCT: Identity Theft using In-Browser Communications in Dual-Window Single Sign-On".
 
 ## Setup
 
 Setup was tested on `Ubuntu 20.04.3 LTS`
 
-- Install dependencies: `sudo apt update && sudo apt install -y chromium-browser chromium-chromedriver python3 python3-pip default-jre mitmproxy git`
-- Clone this repository and go into its `src` directory: `cd ./src`
-- Install requirements: `pip3 install -r requirements.txt`
-- Check that the ports 20200 and 20201 are not allocated on your system
+- Download and install [Docker](https://docs.docker.com/get-docker/) and [Docker-Compose](https://docs.docker.com/compose/install/)
+- Check that ports `9070`, `9080`, and `9090` are not allocated on your system
+- Clone this repository: `git clone https://github.com/RUB-NDS/DISTINCT.git`
+- Go into its `src` directory: `cd ./src`
+- Run: `docker-compose build`
+- *Optional:* Configure log level, VNC password, and Identity Provider accounts
+  - Create `.env` file in `./src`: `cp .env.example .env`
+  - For `VERBOSITY`, choose between `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (default: `DEBUG`)
+  - For `VNCPWD`, choose a custom password that is required in the web interface to control the browser (default: `changeme`)
+  - You can setup your Google, Facebook, and Apple accounts. This automates the authentication on the Identity Provider so that you do not have to enter your credentials (username/email and password) for each Single Sign-On login flow.
+    - For Apple, you can optionally configure a 2FA token so that you do not have to enter the 2FA code sent to your phone for each login flow. You can generate this token as follows:
+      - Open a fresh incognito browser session
+      - Go to `https://appleid.apple.com/auth/authorize?client_id=com.twitter.twitter.siwa&redirect_uri=https%3A%2F%2Ftwitter.com&response_type=code&state=123`
+      - Log in at Apple with your credentials
+      - Enter the 2FA code that is sent to your device
+      - Click the "Trust" button when asked whether you trust this browser (this is important!)
+      - Do **not** click "Continue" when asked for your consent but instead open the developer tools and check the cookies for `appleid.apple.com`
+      - There should be a `DES...=...` cookie for `appleid.apple.com`, this is the 2FA token
+      - Copy this cookie in the following format to the `.env`: `cookie_name=cookie_value` (example: `DES123=XYZ`)
+- Run: `docker-compose up`
+- Open `http://localhost:9080` in your webbrowser for DISTINCT's web interface
+  - If prompted, the default password for the noVNC server is: `changeme`
+- *Optional:* Open `http://localhost:9070` in your webbrowser for a web interface showing DISTINCT's database ([mongo-express](https://github.com/mongo-express/mongo-express))
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
-## Workflow
+## Workflow via DISTINCT's Web Interface
 
-- [OPTIONAL] Generate cookies that should be preloaded into the browser, i.e., for Google and Facebook sessions
-  - Go into the repository's `tools` directory
-  - Run `python3 cookiegen.py --output /tmp/cookiejar.json`
-  - Sign in to Google, and once completed, hit ENTER
-  - Sign in to Facebook, and once completed, hit ENTER
-  - You can use the `--cookie-file /tmp/cookiejar.json` in the next step to preload the cookies into the browser
-- Go into the repository's `src` directory
-- Start DISTINCT: `python3 main.py --url "https://pocs.work/tests/postmessage" --out /tmp`
-  - `--url` (mandatory) - the url of the site that should be analyzed
-  - `--out` (mandatory) - the directory which should contain the tool's output
-  - `--cookie-file` (optional) - the cookie file which contains cookies that are pre-loaded into the browser
-  - `--verbosity` (optional) - the overall output verbosity (default: debug)
-  - `--chromium-path` (optional) - set a specific path to a chrome / chromium binary
-  - `--webdriver-path` (optional) - set a specific path to a chrome / chromium webdriver binary
-  - `--port-proxy` (optional) - set a specific port of the http proxy (default: 20201)
-- Interact with the website, i.e., execute the Single Sign-On flow
-- If you are done, manually stop by tool by hitting `ENTER` on the command prompt
-- Investigate the output:
-  - `cookiejar.json` - contains all cookies that were set during the browser session
-  - `history.json` - database storing all reports sent from the chrome extension to the backend
-  - `logs.log` - logging file of general purpose and for debugging
-  - `proxy.dump` - database of all http requests and responses in mitmproxy's format
-    - You can start a web instance of mitmproxy: `mitmweb`
-    - Then, go to `http://127.0.0.1:8081/`, click `mitmproxy -> open`, and load the `proxy.dump` file
-  - `proxy.har` - database of all http requests and responses in well-known [HAR](https://w3c.github.io/web-performance/specs/HAR/Overview.html) format
-  - `proxy_stderr.log` and `proxy_stdout.log` - output streams of proxy, usually empty
-  - `report.json` - contains the most relevant information about this output trace, i.e., which SSO flows were started and in which configuration
-  - `sequencediagram.txt` and `sequencediagram.svg`: contains the sequence diagram of the SSO flow generated by DISTINCT in textual and visual form
-    - You can recompile the textual representation with `java -jar [plantuml.jar] -svg [sequencediagram.txt]`
-    - You can find the `plantuml.jar` in the `tools` directory
+![](gui-example.png)
 
-## Layout
+- Refresh Analysis Results:
+  - DISTINCT's web interface is connected to a backend API
+  - To refresh all analysis results, click on "Update All"
+  - You can also set a fixed interval (in seconds) at which the interface should update its results
+- Start New Analysis:
+  - To start a new analysis, click on "New Handler"
+  - You can optionally configure a URL (i.e., `https://indeed.com`), which you want to analyze, in the "Init URL" field
+  - Otherwise, you have to submit the URL in the browser later
+- Start Browser:
+  - On the new running report handler, click on "Actions" --> "Run Browser"
+- Execute SSO Flow:
+  - If the browser shows up in the "Browsers" view, interact with the website and execute the Single Sign-On login flow
+  - If you did not configure an "Init URL", you have to first enter the website under analysis in the address bar
+- Stop Browser:
+  - If the SSO login flow is completed, exit the browser by opening the "Handlers" view and click on "Actions" --> "Stop Browser"
+- Investigate the Analysis Results:
+  - In the statistics, you can see the number of reports (= in-browser communications) that were captured by the Chrome extension
+  - You can see all reports in a table view by clicking on "Show" --> "Reports"
+    - You can submit a search query to filter results, or you can select one of our pre-defined search queries
+    - To pretty print the HTML code, check the "Pretty Print HTML" checkbox
+  - You can see the sequence diagram by clicking on "Show" --> "SVG"
+  - You can see Single Sign-On specific measurements by clicking on "Show" --> "Stms"
+    - These results include the SSO flow type (textbook, popup, iframe), the Identity Provider, the login request and response, and the frame in which these requests where issued
+  - You can generate the proof of concept (PoC) HTML code by clicking on "Show" --> "Poc"
+- Export the Analysis Results:
+  - To export the Chrome profile, click on "Export" --> "Profile"
+  - To export the requests and responses captured by the Proxy in the "Stream" format, click on "Export" --> "Stream"
+  - To export the requests and responses captured by the Proxy in the "HAR" format, click on "Export" --> "HAR"
+- Stop the Analysis:
+  - To stop the analysis, click on "Actions" --> "Stop Handler"
+  - You cannot restart a stopped analysis
+  - Each analysis can open only one browser instance. To open another browser instance, start a new analysis.
 
-- `./chrome_extension` - contains the chrome extension that monitors the in-browser events and sends them in reports back to the python backend
-- `./mitmproxy` - contains the configurations for the proxy
-- `./model` - contains all python classes for the backend's post-processing
-- `./processors` - contains the processors for each report that (1) generate the output (i.e., sequence diagram), and (2) analyze the patterns (i.e., security checks, back tracing, ...)
-- `./tests` - contains tests for the virtual execution context
-- `config.py` - performs basic configurations, i.e., sets up the browser
-- `main.py` - main routine
+## Project Structure
+
+- `./distinct-core` - contains the Python backend code that receives and processes the in-browser reports generated by the Chrome extension; and the Vue.js frontend code that presents the analysis results from the Python backend to the analyst
+  - `./distinct-gui` - contains the Vue.js frontend code for DISTINCT's web interface
+  - `./model` - contains all Python classes for the backend's post-processing
+  - `./plantuml` - contains the Java tool that is used to generate the sequence diagram
+  - `./processors` - contains the processors for each report that generate the output (i.e., sequence diagram) and analyze the security
+- `./distinct-browser` - contains an Ubuntu system with a pre-configured Chromium browser runnning the Chrome extension
+  - `./ace-chrome-extension` - contains the Chrome extension that automates the logins on the Identity Providers
+  - `./distinct-browser-api` - contains the API that is used by DISTINCT's backend to start, stop, and configure the browser
+  - `./distinct-chrome-extension` - contains the Chrome extension that captures the in-browser communications during the SSO login flow
+  - `./mitmproxy` - contains the proxy that is used to capture and store all requests and responses issued by the browser
+  - `ublock-chrome-extension` - contains the [uBlock Origin Chrome extension](https://github.com/gorhill/uBlock) which is used to reduce the noise introduced by advertisements and trackers
+  - `distinct-chromium.zip` - contains the compiled binary of the Chromium browser
+
+## Troubleshoot
+
+To reset DISTINCT and clear its database, run the following commands:
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
+- Remove all volumes: `docker volume rm src_distinct-core-data src_distinct-browser-data src_distinct-db-data`
+- Start DISTINCT: `docker-compose up`
+
+To make changes to DISTINCT's source code and rebuild it, run the following commands:
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
+- Make changes to DISTINCT's source code
+- Rebuild: `docker-compose build`
+- Start DISTINCT: `docker-compose up`
+
+## Demo Mode
+
+To compile and run DISTINCT in a "demo mode" as on [distinct-sso.com](https://distinct-sso.com), run the following commands:
+- Press `Ctrl+C` and run `docker-compose down` to close and exit the tool running in "normal mode"
+- Compile the "demo mode" version: `docker-compose -f docker-compose-demo.yml build`
+- Start DISTINCT in "demo mode": `docker-compose -f docker-compose-demo.yml up`
+- Go to `http://localhost:9070` and manually add example data to the database
+  - Note that the "demo mode" does not include a running browser. Thus, you cannot generate any new data while in "demo mode" and have to supply the example data by yourself in the database.
