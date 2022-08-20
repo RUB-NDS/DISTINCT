@@ -45,6 +45,9 @@ tasks:
   - name: distinct-db
     command: mongod --dbpath /workspace/distinct-db-data
 
+  - name: git-lfs-distinct-chromium
+    init: cd /workspace/DISTINCT && git lfs pull && cp ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip && unzip /distinct-chromium.zip -d /
+
 ports:
   # distinct-core-api
   - port: 9080

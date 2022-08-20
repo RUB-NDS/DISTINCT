@@ -25,7 +25,8 @@ RUN apt install -y \
   python3 \
   python3-pip \
   mitmproxy \
-  gnupg
+  gnupg \
+  git-lfs
 
 # install nodejs
 RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
@@ -74,7 +75,3 @@ RUN chmod 600 /etc/ssl/private/novnc_combined.pem
 # setup chromium
 RUN git clone https://github.com/scheib/chromium-latest-linux.git /chromium
 RUN /chromium/update.sh
-
-# setup distinct-chromium
-COPY ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip
-RUN unzip /distinct-chromium.zip -d /
