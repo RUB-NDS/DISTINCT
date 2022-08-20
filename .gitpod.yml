@@ -1,7 +1,7 @@
 tasks:
   - name: distinct production
-    init: docker-compose -f ./src/docker-compose.yaml build
-    command: docker-compose -f ./src/docker-compose.yaml up
+    init: docker-compose -f ./src/docker-compose.yml build
+    command: docker-compose -f ./src/docker-compose.yml up
 
 ports:
   - port: 9080
