@@ -25,15 +25,16 @@ RUN apt install -y \
   python3 \
   python3-pip \
   mitmproxy \
-  gnupg
+  gnupg \
+  tee
 
 # install nodejs
 RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
 RUN apt install -y nodejs
 
 # install mongodb
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-RUN echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+RUN wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add -
+RUN echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 RUN apt update
 RUN apt install -y mongodb-org
 RUN mkdir -p /workspace/distinct-db-data
