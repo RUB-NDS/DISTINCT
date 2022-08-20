@@ -33,7 +33,7 @@ class ReportDispatcher(Thread):
         self.handlers = {}
         self.restore_handlers()
 
-        self.app = Flask(__name__, static_folder="../distinct-gui/dist", static_url_path="/static")
+        self.app = Flask(__name__, static_folder="../gui/dist", static_url_path="/static")
         self.app.url_map.strict_slashes = False # allow trailing slashes
         CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
         self.register_routes()
