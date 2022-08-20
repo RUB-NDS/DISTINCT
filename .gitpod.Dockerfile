@@ -25,8 +25,7 @@ RUN apt install -y \
   python3 \
   python3-pip \
   mitmproxy \
-  gnupg \
-  tee
+  gnupg
 
 # install nodejs
 RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
