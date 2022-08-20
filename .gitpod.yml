@@ -35,7 +35,8 @@ tasks:
       touch ~/.vnc/passwd &&
       echo $VNCPWD | vncpasswd -f > ~/.vnc/passwd &&
       chmod 600 ~/.vnc/passwd &&
-      echo "#!/bin/sh \n
+      set +H &&
+      echo -e "#!/bin/sh \n
       xrdb $HOME/.Xresources \n
       xsetroot -solid grey \n
       #x-terminal-emulator -geometry 80x24+10+10 -ls -title "$VNCDESKTOP Desktop" & \n
