@@ -30,7 +30,21 @@ tasks:
     init: cd /workspace/DISTINCT/src/distinct-browser/mitmproxy && pip3 install -r requirements.txt
 
   - name: distinct-browser-vnc
-    init: echo $VNCPWD | vncpasswd -f > ~/.vnc/passwd && chmod 600 ~/.vnc/passwd
+    init: >
+      mkdir -p ~/.vnc &&
+      touch ~/.vnc/passwd &&
+      echo $VNCPWD | vncpasswd -f > ~/.vnc/passwd &&
+      chmod 600 ~/.vnc/passwd &&
+      echo "#!/bin/sh \n
+      xrdb $HOME/.Xresources \n
+      xsetroot -solid grey \n
+      #x-terminal-emulator -geometry 80x24+10+10 -ls -title "$VNCDESKTOP Desktop" & \n
+      #x-window-manager & \n
+      # Fix to make GNOME work \n
+      export XKL_XMODMAP_DISABLE=1 \n
+      /etc/X11/Xsession \n
+      startxfce4 & \n
+      " > ~/.vnc/xstartup
     command: vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH -localhost
     env:
       USER: gitpod
@@ -46,10 +60,10 @@ tasks:
       NOVNCPORT: 9090
 
   - name: distinct-db
-    command: mongod --dbpath /workspace/distinct-db-data
+    command: mongod --dbpath /app/data/db
 
   - name: git-lfs-distinct-chromium
-    init: cd /workspace/DISTINCT && git lfs pull && cp ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip && unzip /distinct-chromium.zip -d /
+    init: cd /workspace/DISTINCT && git lfs pull && sudo cp ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip && unzip /distinct-chromium.zip -d /
 
 ports:
   # distinct-core-api
