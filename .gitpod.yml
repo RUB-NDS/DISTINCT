@@ -5,44 +5,41 @@ image:
 tasks:
   - name: distinct-core-api
     init: >
-      cd /workspace/DISTINCT/src/distinct-core &&
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core &&
       pip3 install -r requirements.txt
     command: >
-      cd /workspace/DISTINCT/src/distinct-core &&
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core &&
       python3 distinct-core.py
     env:
       VERBOSITY: DEBUG
-      DISTINCT_DB: mongodb://localhost:27017/
-      DISTINCT_BROWSER: http://localhost:9081
+      DISTINCT_DB: mongodb://localhost:27017
+      DISTINCT_BROWSER_API: http://localhost:9081
       PYTHON_APP_MODE: prod
 
   - name: distinct-core-gui
     init: >
-      cd /workspace/DISTINCT/src/distinct-core/gui &&
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core/gui &&
       npm install &&
       npm run build
     command: >
-      cd /workspace/DISTINCT/src/distinct-core/gui &&
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core/gui &&
       npm run serve
     env:
       VUE_APP_MODE: prod
 
   - name: distinct-browser-api
     init: >
-      cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api &&
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-browser/mitmproxy &&
+      pip3 install -r requirements.txt
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-browser/distinct-browser-api &&
       pip3 install -r requirements.txt
     command: >
-      cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api &&
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-browser/distinct-browser-api &&
       python3 distinct-browser.py
     env:
       VERBOSITY: DEBUG
-      DISTINCT_DB: mongodb://localhost:27017/
-      DISTINCT_CORE: http://localhost:9080
-
-  - name: distinct-browser-mitmproxy
-    init: >
-      cd /workspace/DISTINCT/src/distinct-browser/mitmproxy &&
-      pip3 install -r requirements.txt
+      DISTINCT_DB: mongodb://localhost:27017
+      DISTINCT_CORE_API: http://localhost:9080
 
   - name: distinct-browser-vnc
     init: >
@@ -80,17 +77,13 @@ tasks:
 
   - name: git-lfs-distinct-chromium
     init: >
-      cd /workspace/DISTINCT &&
+      cd ${GITPOD_REPO_ROOTS} &&
       git lfs pull &&
-      sudo cp ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip &&
-      sudo unzip /distinct-chromium.zip -d /
+      sudo cp ./src/distinct-browser/distinct-chromium.zip /app/distinct-chromium.zip &&
+      sudo unzip /app/distinct-chromium.zip -d /app
 
 ports:
   - name: distinct-core
-    port: 8080
-    onOpen: open-browser
-    visibility: public
-  - name: distinct-browser
-    port: 9090
-    onOpen: open-browser
+    port: 9080
+    onOpen: open-preview
     visibility: public

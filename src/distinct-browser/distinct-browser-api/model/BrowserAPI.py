@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class BrowserAPI(Thread):
 
     dbEndpoint = os.environ["DISTINCT_DB"]
-    coreEndpoint = os.environ["DISTINCT_CORE"]
+    coreEndpoint = os.environ["DISTINCT_CORE_API"]
 
     def __init__(self):
         logger.info("Initializing browser api thread")
