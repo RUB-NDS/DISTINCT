@@ -21,6 +21,7 @@ services:
     environment:
       VERBOSITY: ${VERBOSITY}
       DISTINCT_DB: mongodb://distinct-db:27017/
+      DISTINCT_BROWSER: http://distinct-browser:9081
 
   distinct-browser:
     build: ./distinct-browser
@@ -37,6 +38,8 @@ services:
       - distinct-browser-data:/app/data
     environment:
       VERBOSITY: ${VERBOSITY}
+      DISTINCT_DB: mongodb://distinct-db:27017/
+      DISTINCT_CORE: http://distinct-core:9080
       VNCPWD: ${VNCPWD}
       GOOGLE_USERNAME: ${GOOGLE_USERNAME}
       GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}

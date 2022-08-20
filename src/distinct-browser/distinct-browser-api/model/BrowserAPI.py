@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 class BrowserAPI(Thread):
 
-    dbEndpoint = "mongodb://distinct-db:27017/"
+    dbEndpoint = os.environ["DISTINCT_DB"]
+    coreEndpoint = os.environ["DISTINCT_CORE"]
 
     def __init__(self):
         logger.info("Initializing browser api thread")
@@ -45,7 +46,7 @@ class BrowserAPI(Thread):
         logger.info("Starting browser api thread")
 
         listen_host = "0.0.0.0"
-        listen_port = 8080
+        listen_port = 9081
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
@@ -94,7 +95,7 @@ class BrowserAPI(Thread):
         # Configure distinct chrome extension
         with open(f"{distinct_ext_for_handler}/config/config.json", "w") as f:
             f.write(json.dumps({
-                "core_endpoint": "http://distinct-core:8080",
+                "core_endpoint": coreEndpoint,
                 "handler_uuid": handler_uuid
             }))
 

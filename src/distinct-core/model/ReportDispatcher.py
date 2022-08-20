@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ReportDispatcher(Thread):
 
     dbEndpoint = os.environ["DISTINCT_DB"]
-    browserEndpoint = "http://distinct-browser:8080"
+    browserEndpoint = os.environ["DISTINCT_BROWSER"]
 
     def __init__(self):
         logger.info("Initializing report dispatcher thread")
@@ -42,7 +42,7 @@ class ReportDispatcher(Thread):
         logger.info("Starting report dispatcher thread")
 
         listen_host = "0.0.0.0"
-        listen_port = 8080
+        listen_port = 9080
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
