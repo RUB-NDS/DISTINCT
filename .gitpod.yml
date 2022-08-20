@@ -4,8 +4,12 @@ image:
 
 tasks:
   - name: distinct-core-api
-    init: cd /workspace/DISTINCT/src/distinct-core && pip3 install -r requirements.txt
-    command: cd /workspace/DISTINCT/src/distinct-core && python3 distinct-core.py
+    init: >
+      cd /workspace/DISTINCT/src/distinct-core &&
+      pip3 install -r requirements.txt
+    command: >
+      cd /workspace/DISTINCT/src/distinct-core &&
+      python3 distinct-core.py
     env:
       VERBOSITY: DEBUG
       DISTINCT_DB: mongodb://localhost:27017/
@@ -13,21 +17,32 @@ tasks:
       PYTHON_APP_MODE: prod
 
   - name: distinct-core-gui
-    init: cd /workspace/DISTINCT/src/distinct-core/gui && npm install && npm run build
-    command: cd /workspace/DISTINCT/src/distinct-core/gui && npm run serve
+    init: >
+      cd /workspace/DISTINCT/src/distinct-core/gui &&
+      npm install &&
+      npm run build
+    command: >
+      cd /workspace/DISTINCT/src/distinct-core/gui &&
+      npm run serve
     env:
       VUE_APP_MODE: prod
 
   - name: distinct-browser-api
-    init: cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api && pip3 install -r requirements.txt
-    command: cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api && python3 distinct-browser.py
+    init: >
+      cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api &&
+      pip3 install -r requirements.txt
+    command: >
+      cd /workspace/DISTINCT/src/distinct-browser/distinct-browser-api &&
+      python3 distinct-browser.py
     env:
       VERBOSITY: DEBUG
       DISTINCT_DB: mongodb://localhost:27017/
       DISTINCT_CORE: http://localhost:9080
 
   - name: distinct-browser-mitmproxy
-    init: cd /workspace/DISTINCT/src/distinct-browser/mitmproxy && pip3 install -r requirements.txt
+    init: >
+      cd /workspace/DISTINCT/src/distinct-browser/mitmproxy &&
+      pip3 install -r requirements.txt
 
   - name: distinct-browser-vnc
     init: >
@@ -63,21 +78,18 @@ tasks:
     command: mongod --dbpath /app/data/db
 
   - name: git-lfs-distinct-chromium
-    init: cd /workspace/DISTINCT && git lfs pull && sudo cp ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip && unzip /distinct-chromium.zip -d /
+    init: >
+      cd /workspace/DISTINCT &&
+      git lfs pull &&
+      sudo cp ./src/distinct-browser/distinct-chromium.zip /distinct-chromium.zip &&
+      sudo unzip /distinct-chromium.zip -d /
 
 ports:
-  # distinct-core-api
-  - port: 9080
-    onOpen: ignore
-  # distinct-browser-api
-  - port: 9081
-    onOpen: ignore
-  # distinct-core-gui
-  - port: 3000
+  - name: distinct-core
+    port: 8080
     onOpen: open-browser
-  # distinct-browser-novnc
-  - port: 9090
+    visibility: public
+  - name: distinct-browser
+    port: 9090
     onOpen: open-browser
-  # distinct-browser-vnc
-  - port: 9091
-    onOpen: ignore
+    visibility: public
