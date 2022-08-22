@@ -24,34 +24,46 @@ export default {
   name: 'BrowserView',
   data: function() {
     return {
-      'appMode': process.env['VUE_APP_MODE']
+      'appMode': process.env['VUE_APP_MODE'],
+      'browserNoVNC': process.env['VUE_APP_BROWSER_NOVNC']
     }
   },
   methods: {
     'changeVNCPWD': function(vncpwd) {
       window.localStorage.setItem('vncpwd', vncpwd)
       window.location.reload()
-    }
-  },
-  mounted() {
-    if (this.$data['appMode'] == 'prod') {
-      let browserURL = new URL(window.location.href)
-      browserURL.port = '9090'
-      browserURL.pathname = '/vnc_auto.html'
-      browserURL.search = ''
-      browserURL.hash = ''
-
+    },
+    'loadBrowserFrame': function(url) {
+      let browserURL = url
       if (!window.localStorage.getItem('vncpwd')) {
         let pwd = prompt('Please enter the noVNC password')
         window.localStorage.setItem('vncpwd', pwd)
       }
       let vncpwd = window.localStorage.getItem('vncpwd')
       browserURL.searchParams.set('password', vncpwd)
-
       let browserFrame = document.getElementById('browserFrame')
       browserFrame.src = browserURL.href
-
       this.$refs.vncpwd.value = window.localStorage.getItem('vncpwd')
+    }
+  },
+  mounted() {
+    if (this.$data['appMode'] == 'prod') {
+      // Production mode: Show real browser
+      let browserURL = undefined;
+      console.log(this.$data['browserNoVNC'])
+      if (this.$data['browserNoVNC']) {
+        browserURL = new URL(this.$data['browserNoVNC'])
+      } else {
+        browserURL = new URL(window.location.href)
+        browserURL.port = '9090'
+      }
+      browserURL.pathname = '/vnc_auto.html'
+      browserURL.search = ''
+      browserURL.hash = ''
+      this.loadBrowserFrame(browserURL)
+    } else {
+      // Demo mode: Show example image
+      // TODO
     }
   }
 }
