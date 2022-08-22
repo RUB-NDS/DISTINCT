@@ -60,20 +60,21 @@ class ReportDispatcher(Thread):
         self.app.add_url_rule("/pocs/<handler_uuid>", view_func=self.send_poc, methods=["GET"])
 
         # Report handlers
-        self.app.add_url_rule("/api/handlers", view_func=self.api_handlers, methods=["GET", "POST"])
-        self.app.add_url_rule("/api/handlers/<handler_uuid>/stop", view_func=self.api_handlers_stop, methods=["POST"])
-        self.app.add_url_rule("/api/handlers/<handler_uuid>/remove", view_func=self.api_handlers_remove, methods=["POST"])
+        if self.prod(): self.app.add_url_rule("/api/handlers", view_func=self.api_handlers, methods=["GET", "POST"])
+        else: self.app.add_url_rule("/api/handlers", view_func=self.api_handlers, methods=["GET"])
+        if self.prod(): self.app.add_url_rule("/api/handlers/<handler_uuid>/stop", view_func=self.api_handlers_stop, methods=["POST"])
+        if self.prod(): self.app.add_url_rule("/api/handlers/<handler_uuid>/remove", view_func=self.api_handlers_remove, methods=["POST"])
 
         # Reports
-        self.app.add_url_rule("/api/handlers/<handler_uuid>/dispatch", view_func=self.api_handlers_dispatch, methods=["POST"])
+        if self.prod(): self.app.add_url_rule("/api/handlers/<handler_uuid>/dispatch", view_func=self.api_handlers_dispatch, methods=["POST"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/reports", view_func=self.api_handlers_reports, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/svg", view_func=self.api_handlers_svg, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/statements", view_func=self.api_handlers_statements, methods=["GET"])
         self.app.add_url_rule("/api/handlers/<handler_uuid>/poc", view_func=self.api_handlers_poc, methods=["GET"])
 
         # Browsers
-        self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
-        self.app.add_url_rule("/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"])
+        if self.prod(): self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
+        if self.prod(): self.app.add_url_rule("/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"])
         self.app.add_url_rule("/api/browsers/<handler_uuid>/profile", view_func=self.api_browsers_profile, methods=["GET"])
 
         # Proxies
@@ -93,6 +94,9 @@ class ReportDispatcher(Thread):
         except pymongo.errors.ConnectionFailure:
             logger.error("Failed to connect to the database. Not reachable. Quitting...")
             exit(-1)
+
+    def prod(self):
+        return self.appMode == "prod"
 
     def restore_handlers(self):
         logger.info("Restoring handlers")
