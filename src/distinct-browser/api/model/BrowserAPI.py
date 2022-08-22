@@ -261,6 +261,7 @@ class BrowserAPI(Thread):
                 "--allow-running-insecure-content",
                 "--disable-site-isolation-trials",
                 "--disable-http2",
+                "--start-maximized",
                 f"--proxy-server={proxy_host}:{proxy_port}",
                 f"--proxy-bypass-list=distinct-core",
                 f"--load-extension={','.join(exts)}",
