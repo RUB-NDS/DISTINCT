@@ -1,5 +1,5 @@
 
-const endpoint = `${location.origin}/api`
+const endpoint = `${process.env['VUE_APP_CORE_API'] ? process.env['VUE_APP_CORE_API'] : location.origin}/api`
 
 const getHandlers = () => {
   return new Promise((resolve, reject) => {

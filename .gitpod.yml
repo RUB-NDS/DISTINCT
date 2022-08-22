@@ -21,8 +21,8 @@ tasks:
   # ports: 8080
   - name: distinct-core-gui
     init: |
-      export DISTINCT_CORE_API=https://9080-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}
-      export DISTINCT_BROWSER_NOVNC=https://9090-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}
+      export VUE_APP_CORE_API=https://9080-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}
+      export VUE_APP_BROWSER_NOVNC=https://9090-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}
       cd ${GITPOD_REPO_ROOTS}/src/distinct-core/gui
       npm install
       npm run build
