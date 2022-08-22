@@ -22,6 +22,7 @@ class ReportDispatcher(Thread):
     dbEndpoint = os.environ["DISTINCT_DB"]
     browserEndpoint = os.environ["DISTINCT_BROWSER_API"] \
         if os.environ["PYTHON_APP_MODE"] == "prod" else None
+    appMode = os.environ["PYTHON_APP_MODE"]
 
     def __init__(self):
         logger.info("Initializing report dispatcher thread")
@@ -52,9 +53,7 @@ class ReportDispatcher(Thread):
         logger.info("Registering routes for the report dispatcher's webserver")
 
         # Frontend
-        self.app.add_url_rule("/", view_func=self.index, methods=["GET"])
-        self.app.add_url_rule("/app", view_func=self.frontend, methods=["GET"], defaults={"path": ""})
-        self.app.add_url_rule("/app/<path:path>", view_func=self.frontend, methods=["GET"])
+        self.app.add_url_rule("/", view_func=self.frontend, methods=["GET"])
         self.app.add_url_rule("/paper.pdf", view_func=self.paper, methods=["GET"])
 
         # Pocs
@@ -168,12 +167,7 @@ class ReportDispatcher(Thread):
     """ GUI Routes """
 
     # GET /
-    def index(self):
-        return redirect("/app", 302)
-
-    # GET /app
-    # GET /app/<path:path>
-    def frontend(self, path):
+    def frontend(self):
         return self.app.send_static_file("index.html")
 
     # GET /paper.pdf
