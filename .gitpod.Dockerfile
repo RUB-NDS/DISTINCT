@@ -33,7 +33,7 @@ RUN echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mon
 RUN apt update
 RUN apt install -y mongodb-org
 
-# create dirs for distinct-browser
+# create dirs
 RUN mkdir -p /app/data/tmp
 RUN mkdir -p /app/data/pocs
 RUN mkdir -p /app/data/chrome-profiles

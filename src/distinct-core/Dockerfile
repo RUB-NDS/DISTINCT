@@ -23,14 +23,14 @@ RUN mkdir -p /app/data/pocs
 WORKDIR /app
 COPY ./ ./distinct-core
 
-# install distinct-core requirements
-WORKDIR /app/distinct-core
-RUN pip3 install -r requirements.txt
-
 # set production (MODE=prod) or demo (MODE=demo) mode
 ARG MODE
 ENV VUE_APP_MODE=$MODE
 ENV PYTHON_APP_MODE=$MODE
+
+# install distinct-core requirements
+WORKDIR /app/distinct-core
+RUN pip3 install -r requirements.txt
 
 # install and compile gui
 WORKDIR /app/distinct-core/gui
