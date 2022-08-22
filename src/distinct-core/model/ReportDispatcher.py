@@ -426,6 +426,8 @@ class ReportDispatcher(Thread):
 
     def get_profile_by_handler(self, handler_uuid):
         d = self.db["distinct"]["browsers"].find_one({"handler_uuid": handler_uuid})
+        if d is None:
+            return {"success": False, "error": f"Browser for handler uuid {handler_uuid} was not yet started", "data": None}
         bstat = BrowserStatus(d["browser"]["status"])
         profile_fs = d["browser"]["profile"]
         if profile_fs:
@@ -439,6 +441,8 @@ class ReportDispatcher(Thread):
 
     def get_stream_by_handler(self, handler_uuid):
         d = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
+        if d is None:
+            return {"success": False, "error": f"Browser for handler uuid {handler_uuid} was not yet started", "data": None}
         pstat = ProxyStatus(d["proxy"]["status"])
         stream_fs = d["proxy"]["stream"]
         if stream_fs:
@@ -452,6 +456,8 @@ class ReportDispatcher(Thread):
 
     def get_har_by_handler(self, handler_uuid):
         d = self.db["distinct"]["proxies"].find_one({"handler_uuid": handler_uuid})
+        if d is None:
+            return {"success": False, "error": f"Browser for handler uuid {handler_uuid} was not yet started", "data": None}
         pstat = ProxyStatus(d["proxy"]["status"])
         hardump_fs = d["proxy"]["hardump"]
         if hardump_fs:
