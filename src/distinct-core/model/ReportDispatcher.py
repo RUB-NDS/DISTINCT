@@ -177,7 +177,7 @@ class ReportDispatcher(Thread):
 
     # GET /paper.pdf
     def paper(self):
-        return send_from_directory("/", "paper.pdf", as_attachment=True)
+        return send_from_directory("../", "paper.pdf", as_attachment=True)
 
     # GET /pocs/<handler_uuid>
     def send_poc(self, handler_uuid):
