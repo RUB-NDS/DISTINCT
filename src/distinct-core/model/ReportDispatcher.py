@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 class ReportDispatcher(Thread):
 
     dbEndpoint = os.environ["DISTINCT_DB"]
-    browserEndpoint = os.environ["DISTINCT_BROWSER_API"]
+    browserEndpoint = os.environ["DISTINCT_BROWSER_API"] \
+        if os.environ["PYTHON_APP_MODE"] == "prod" else None
 
     def __init__(self):
         logger.info("Initializing report dispatcher thread")

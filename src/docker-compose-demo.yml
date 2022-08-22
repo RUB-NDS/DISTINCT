@@ -47,6 +47,5 @@ networks:
     driver: bridge
 
 volumes:
-  distinct-demo-browser-data:
   distinct-demo-core-data:
   distinct-demo-db-data:
