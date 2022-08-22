@@ -10,6 +10,7 @@ RUN apt install -y \
   xfce4-goodies \
   curl \
   wget \
+  net-tools \
   python3 \
   python3-pip \
   openjdk-11-jre \
