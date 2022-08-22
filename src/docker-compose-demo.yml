@@ -5,22 +5,20 @@ services:
     build:
       context: ./distinct-core
       args:
-        PYTHON_APP_MODE: demo
-        VUE_APP_MODE: demo
+        MODE: demo
     container_name: distinct-demo-core
     restart: always
     depends_on:
       - distinct-demo-db
     ports:
-      - "9080:8080"
+      - "9080:9080"
     networks:
       - distinct-demo-net
     volumes:
       - distinct-demo-core-data:/app/data
-      - ../paper.pdf:/paper.pdf
     environment:
+      DISTINCT_DB: mongodb://distinct-demo-db:27017
       VERBOSITY: ${VERBOSITY}
-      DISTINCT_DB: mongodb://distinct-demo-db:27017/
 
   distinct-demo-db:
     image: mongo:focal

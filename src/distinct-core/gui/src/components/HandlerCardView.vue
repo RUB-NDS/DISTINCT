@@ -201,7 +201,7 @@ export default {
     'startBrowser': function(handler_uuid) {
       startBrowser(handler_uuid).then((r) => {
         if (r.success) {
-          this.$router.push('/browser')
+          this.$router.push('/monitor')
         } else {
           alert(`Error: ${r['error']}`)
         }

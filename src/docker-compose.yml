@@ -5,22 +5,21 @@ services:
     build:
       context: ./distinct-core
       args:
-        PYTHON_APP_MODE: prod
-        VUE_APP_MODE: prod
+        MODE: prod
     container_name: distinct-core
     restart: always
     depends_on:
       - distinct-db
     ports:
-      - "9080:8080"
+      - "9080:9080"
     networks:
       - distinct-net
     volumes:
       - distinct-core-data:/app/data
-      - ../paper.pdf:/paper.pdf
     environment:
+      DISTINCT_DB: mongodb://distinct-db:27017
+      DISTINCT_BROWSER_API: http://distinct-browser:9081
       VERBOSITY: ${VERBOSITY}
-      DISTINCT_DB: mongodb://distinct-db:27017/
 
   distinct-browser:
     build: ./distinct-browser
@@ -36,6 +35,8 @@ services:
     volumes:
       - distinct-browser-data:/app/data
     environment:
+      DISTINCT_DB: mongodb://distinct-db:27017
+      DISTINCT_CORE_API: http://distinct-core:9080
       VERBOSITY: ${VERBOSITY}
       VNCPWD: ${VNCPWD}
       GOOGLE_USERNAME: ${GOOGLE_USERNAME}

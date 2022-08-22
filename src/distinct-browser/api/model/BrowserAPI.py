@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 class BrowserAPI(Thread):
 
-    dbEndpoint = "mongodb://distinct-db:27017/"
+    dbEndpoint = os.environ["DISTINCT_DB"]
+    coreEndpoint = os.environ["DISTINCT_CORE_API"]
 
     def __init__(self):
         logger.info("Initializing browser api thread")
@@ -45,7 +46,7 @@ class BrowserAPI(Thread):
         logger.info("Starting browser api thread")
 
         listen_host = "0.0.0.0"
-        listen_port = 8080
+        listen_port = 9081
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
@@ -86,34 +87,34 @@ class BrowserAPI(Thread):
         ace_ext_for_handler = f"/app/data/chrome-extensions/ace-chrome-extension_{handler_uuid}"
         if os.path.exists(distinct_ext_for_handler):
             shutil.rmtree(distinct_ext_for_handler)
-        shutil.copytree("/app/distinct-chrome-extension", distinct_ext_for_handler)
+        shutil.copytree("../distinct-chrome-extension", distinct_ext_for_handler)
         if os.path.exists(ace_ext_for_handler):
             shutil.rmtree(ace_ext_for_handler)
-        shutil.copytree("/app/ace-chrome-extension", ace_ext_for_handler)
+        shutil.copytree("../ace-chrome-extension", ace_ext_for_handler)
 
         # Configure distinct chrome extension
         with open(f"{distinct_ext_for_handler}/config/config.json", "w") as f:
             f.write(json.dumps({
-                "core_endpoint": "http://distinct-core:8080",
+                "core_endpoint": self.coreEndpoint,
                 "handler_uuid": handler_uuid
             }))
 
         # Configure ace chrome extension
         with open(f"{ace_ext_for_handler}/config/config.json", "w") as f:
             f.write(json.dumps({
-                "googleUsername": os.environ["GOOGLE_USERNAME"],
-                "googlePassword": os.environ["GOOGLE_PASSWORD"],
-                "facebookUsername": os.environ["FACEBOOK_USERNAME"],
-                "facebookPassword": os.environ["FACEBOOK_PASSWORD"],
-                "appleUsername": os.environ["APPLE_USERNAME"],
-                "applePassword": os.environ["APPLE_PASSWORD"],
-                "apple2FA": os.environ["APPLE_2FA"]
+                "googleUsername": os.environ.get("GOOGLE_USERNAME", None),
+                "googlePassword": os.environ.get("GOOGLE_PASSWORD", None),
+                "facebookUsername": os.environ.get("FACEBOOK_USERNAME", None),
+                "facebookPassword": os.environ.get("FACEBOOK_PASSWORD", None),
+                "appleUsername": os.environ.get("APPLE_USERNAME", None),
+                "applePassword": os.environ.get("APPLE_PASSWORD", None),
+                "apple2FA": os.environ.get("APPLE_2FA", None)
             }))
 
         return (
             distinct_ext_for_handler,
             ace_ext_for_handler,
-            "/app/ublock-chrome-extension"
+            "../ublock-chrome-extension"
         )
 
     def destroy_chrome_extensions(self, handler_uuid):
@@ -143,8 +144,8 @@ class BrowserAPI(Thread):
                 "--listen-port", str(listen_port),
                 "--save-stream-file", stream_path,
                 "--quiet",
-                "--scripts", "/app/mitmproxy/har.py",
-                "--scripts", "/app/mitmproxy/redirects.py",
+                "--scripts", "../mitmproxy/har.py",
+                "--scripts", "../mitmproxy/redirects.py",
                 "--set", f"hardump={hardump_path}"
             ],
             stdout=subprocess.DEVNULL if logger.level > logging.DEBUG else None,
@@ -260,6 +261,7 @@ class BrowserAPI(Thread):
                 "--allow-running-insecure-content",
                 "--disable-site-isolation-trials",
                 "--disable-http2",
+                "--start-maximized",
                 f"--proxy-server={proxy_host}:{proxy_port}",
                 f"--proxy-bypass-list=distinct-core",
                 f"--load-extension={','.join(exts)}",

@@ -1,12 +1,7 @@
 FROM ubuntu:20.04
 
-# API
-EXPOSE 8080
-
-# Prevent interactive prompts
+# install dependencies
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Install dependencies
 RUN apt update
 RUN apt upgrade -y
 RUN apt install -y \
@@ -20,29 +15,28 @@ RUN apt install -y \
 RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
 RUN apt install -y nodejs
 
-# Create new app directory
-RUN mkdir /app
+# create dirs for distinct-core
 RUN mkdir -p /app/data/tmp
-RUN mkdir -p /app/data/handlers
 RUN mkdir -p /app/data/pocs
-WORKDIR /app
 
-# Copy the app
+# copy distinct-core
+WORKDIR /app
 COPY ./ ./distinct-core
 
-# Install the backend
+# set production (MODE=prod) or demo (MODE=demo) mode
+ARG MODE
+ENV VUE_APP_MODE=$MODE
+ENV PYTHON_APP_MODE=$MODE
+
+# install distinct-core requirements
 WORKDIR /app/distinct-core
 RUN pip3 install -r requirements.txt
 
-# Install the GUI
-WORKDIR /app/distinct-core/distinct-gui
+# install and compile gui
+WORKDIR /app/distinct-core/gui
 RUN npm install
-ARG VUE_APP_MODE
-ENV VUE_APP_MODE=$VUE_APP_MODE
 RUN npm run build
 
-# Run
+# run distinct-core
 WORKDIR /app/distinct-core
-ARG PYTHON_APP_MODE
-ENV PYTHON_APP_MODE=$PYTHON_APP_MODE
 CMD ["python3", "distinct-core.py"]

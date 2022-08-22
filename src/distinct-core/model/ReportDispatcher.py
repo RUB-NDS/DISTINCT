@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class ReportDispatcher(Thread):
 
     dbEndpoint = os.environ["DISTINCT_DB"]
-    browserEndpoint = "http://distinct-browser:8080"
+    browserEndpoint = os.environ["DISTINCT_BROWSER_API"]
 
     def __init__(self):
         logger.info("Initializing report dispatcher thread")
@@ -33,7 +33,7 @@ class ReportDispatcher(Thread):
         self.handlers = {}
         self.restore_handlers()
 
-        self.app = Flask(__name__, static_folder="../distinct-gui/dist", static_url_path="/static")
+        self.app = Flask(__name__, static_folder="../gui/dist", static_url_path="/static")
         self.app.url_map.strict_slashes = False # allow trailing slashes
         CORS(self.app, resources={r"/api/*": {"origins": "*"}}) # enable CORS
         self.register_routes()
@@ -42,7 +42,7 @@ class ReportDispatcher(Thread):
         logger.info("Starting report dispatcher thread")
 
         listen_host = "0.0.0.0"
-        listen_port = 8080
+        listen_port = 9080
 
         logger.info(f"Starting webserver on {listen_host}:{listen_port}")
         self.app.run(host=listen_host, port=listen_port)
@@ -177,7 +177,7 @@ class ReportDispatcher(Thread):
 
     # GET /paper.pdf
     def paper(self):
-        return send_from_directory("/", "paper.pdf", as_attachment=True)
+        return send_from_directory("../", "paper.pdf", as_attachment=True)
 
     # GET /pocs/<handler_uuid>
     def send_poc(self, handler_uuid):

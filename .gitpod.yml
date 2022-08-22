@@ -1,0 +1,120 @@
+image:
+  file: .gitpod.Dockerfile
+  context: ./
+
+tasks:
+
+  # ports: 9080
+  - name: distinct-core-api
+    init: |
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core
+      pip3 install -r requirements.txt
+    command: |
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core
+      python3 distinct-core.py
+    env:
+      VERBOSITY: DEBUG
+      DISTINCT_DB: mongodb://localhost:27017
+      DISTINCT_BROWSER_API: http://localhost:9081
+      PYTHON_APP_MODE: prod
+
+  # ports: 8080
+  - name: distinct-core-gui
+    init: |
+      export VUE_APP_CORE_API=https://9080-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}
+      export VUE_APP_BROWSER_NOVNC=https://9090-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core/gui
+      npm install
+      npm run build
+    command: |
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-core/gui
+      npm run serve
+    env:
+      VUE_APP_MODE: prod
+
+  # ports: 9081
+  - name: distinct-browser-api
+    init: |
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-browser/mitmproxy
+      pip3 install -r requirements.txt
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-browser/api
+      pip3 install -r requirements.txt
+    command: |
+      cd ${GITPOD_REPO_ROOTS}/src/distinct-browser/api
+      python3 distinct-browser.py
+    env:
+      VERBOSITY: DEBUG
+      DISTINCT_DB: mongodb://localhost:27017
+      DISTINCT_CORE_API: http://localhost:9080
+
+  # ports: 9091
+  - name: distinct-browser-vnc
+    init: |
+      mkdir -p ~/.vnc
+      touch ~/.vnc/passwd
+      echo $VNCPWD | vncpasswd -f > ~/.vnc/passwd
+      chmod 600 ~/.vnc/passwd
+      echo -e '#!/bin/sh
+      xrdb $HOME/.Xresources
+      xsetroot -solid grey
+      #x-terminal-emulator -geometry 80x24+10+10 -ls -title "$VNCDESKTOP Desktop" &
+      #x-window-manager &
+      # Fix to make GNOME work
+      export XKL_XMODMAP_DISABLE=1
+      /etc/X11/Xsession
+      startxfce4 &
+      ' > ~/.vnc/xstartup
+      chmod +x ~/.vnc/xstartup
+    command: |
+      vncserver :0 -rfbport $VNCPORT -geometry $VNCDISPLAY -depth $VNCDEPTH -localhost
+      exit
+    env:
+      VNCPORT: 9091
+      VNCPWD: changeme
+      VNCDISPLAY: 1920x1080
+      VNCDEPTH: 16
+
+  # ports: 9090
+  - name: distinct-browser-novnc
+    command: /usr/share/novnc/utils/launch.sh --listen $NOVNCPORT --vnc localhost:$VNCPORT
+    env:
+      VNCPORT: 9091
+      NOVNCPORT: 9090
+
+  # ports: 27017
+  - name: distinct-db
+    command: mongod --dbpath /app/data/db
+
+  - name: git-lfs-distinct-chromium
+    init: |
+      cd ${GITPOD_REPO_ROOTS}
+      git lfs pull
+      sudo cp ./src/distinct-browser/distinct-chromium.zip /app/distinct-chromium.zip
+      sudo unzip /app/distinct-chromium.zip -d /app
+      exit
+
+ports:
+  - name: distinct-core-api
+    port: 9080
+    onOpen: open-preview
+    visibility: public
+  - name: distinct-core-gui
+    port: 8080
+    onOpen: ignore
+    visibility: public
+  - name: distinct-browser-api
+    port: 9081
+    onOpen: ignore
+    visibility: public
+  - name: distinct-browser-vnc
+    port: 9091
+    onOpen: ignore
+    visibility: private
+  - name: distinct-browser-novnc
+    port: 9090
+    onOpen: ignore
+    visibility: public
+  - name: distinct-db
+    port: 27017
+    onOpen: ignore
+    visibility: private
