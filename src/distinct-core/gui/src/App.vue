@@ -9,7 +9,7 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <router-link class="nav-link" to="/">
+              <router-link class="nav-link" to="/" style="font-size: large">
                 <i class="bi bi-info-circle"></i>
                 Info
               </router-link>
@@ -82,5 +82,9 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+}
+
+li.nav-item {
+  font-size: large;
 }
 </style>

@@ -1,6 +1,9 @@
 <template>
   <div class="container mb-4">
-    <h1><span style="font-variant: small-caps">Communication-Inspector</span></h1>
+    <h1 style="display: flex;">
+      <span style="font-variant: small-caps">Communication-Inspector </span>
+      <span v-if="appMode == 'demo'" class="badge bg-secondary rounded-pill" style="font-size: .5em; margin: auto .5em;">Demo Mode</span>
+    </h1>
     <p>In this interface, you can start a new analysis run and inspect the analysis results.</p>
     <div class="btn-toolbar mb-2">
       <div class="btn-group me-2">
@@ -14,7 +17,7 @@
           <i class="bi bi-clock-history me-2"></i>
           <span>Update Interval</span>
         </div>
-        <input type="number" class="form-control" min="0" max="60" v-on:input="startIntervalUpdater(this.$refs.updateInterval.value)" ref="updateInterval">
+        <input type="number" class="form-control" min="0" max="60" v-on:input="startIntervalUpdater(this.$refs.updateInterval.value)" ref="updateInterval" :disabled="appMode == 'demo'">
         <div class="input-group-text">seconds</div>
       </div>
     </div>

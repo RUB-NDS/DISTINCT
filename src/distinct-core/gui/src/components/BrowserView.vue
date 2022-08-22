@@ -1,7 +1,10 @@
 <template>
   <div class="container-fluid">
     <div class="container">
-      <h1><span style="font-variant: small-caps">Live-Monitor</span></h1>
+      <h1 style="display: flex;">
+        <span style="font-variant: small-caps">Live-Monitor </span>
+        <span v-if="appMode == 'demo'" class="badge bg-secondary rounded-pill" style="font-size: .5em; margin: auto .5em;">Demo Mode</span>
+      </h1>
       <p>In this interface, you can control the browser to navigate to the target website and execute its Single Sign-On login.</p>
       <form v-if="appMode == 'prod'" class="mb-4">
         <div class="form-group">
