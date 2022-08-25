@@ -180,16 +180,24 @@ const receivers = {
 
   jsstore: {
     localstorage: (receiverWindow, processData) => {
-      processData(receiverWindow.localStorage['data'])
+      setTimeout(() => {
+        processData(receiverWindow.localStorage['data'])
+      }, 1000)
     },
     sessionstorage: (receiverWindow, processData) => {
-      processData(receiverWindow.sessionStorage['data'])
+      setTimeout(() => {
+        processData(receiverWindow.sessionStorage['data'])
+      }, 1000)
     },
     cookie: (receiverWindow, processData) => {
-      processData(receiverWindow.document.cookie)
+      setTimeout(() => {
+        processData(receiverWindow.document.cookie)
+      }, 1000)
     },
     idb: (receiverWindow, processData) => {
-      processData('to be implemented')
+      setTimeout(() => {
+        processData('to be implemented')
+      }, 1000)
     },
   },
 
