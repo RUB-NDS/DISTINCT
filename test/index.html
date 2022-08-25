@@ -53,12 +53,14 @@
     <!-- sso button -->
     <h2>3) Execute Login</h2>
     <p>
-      3.1) Same-Origin Initiator-Receiver:
+      <b>3.1) Same-Origin Communication:</b>
       <button class="btn btn-primary" onclick="startPopupGoogleSameOrigin()">Sign in with Google</button>
+      (Initiator: test.distinct-sso.com; Receiver: test.distinct-sso.com)
     </p>
     <p>
-      3.2) Cross-Origin Initiator-Receiver:
+      <b>3.2) Cross-Origin Communication:</b>
       <button class="btn btn-primary" onclick="startPopupGoogleCrossOrigin()">Sign in with Google</button>
+      (Initiator: test-alt.distinct-sso.com; Receiver: test.distinct-sso.com)
     </p>
     <script>
       function startPopupGoogleSameOrigin() {
