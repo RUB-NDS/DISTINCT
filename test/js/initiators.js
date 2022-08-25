@@ -123,6 +123,11 @@ const initiators = {
       receiverWindow.location = `/index.html${data}`
       self.close()
     },
+    // insecure
+    hash: (receiverWindow, data) => {
+      receiverWindow.location = `#${data}`
+      self.close()
+    },
     // secure
     absolute: (receiverWindow, data) => {
       receiverWindow.location = `https://test.distinct-sso.com/index.html${data}`
