@@ -197,7 +197,7 @@ const receivers = {
 
   bm: {
     bm: (receiverWindow, processData) => {
-      let channel = BroadcastChannel('MyChannel')
+      let channel = new BroadcastChannel('MyChannel')
       channel.onmessage = (e) => {
         processData(e)
       }
