@@ -25,7 +25,7 @@
   <!-- navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/"><img src="/img/logo-large.png" height="50"></a>
+      <a class="navbar-brand" href="https://test.distinct-sso.com"><img src="/img/logo-large.png" height="50"></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -54,12 +54,12 @@
     <!-- sso button -->
     <h2>3) Execute Login</h2>
     <p>
-      3.1) Cross-Origin Initiator-Receiver:
+      3.1) Same-Origin Initiator-Receiver:
       <button class="btn btn-primary" onclick="startPopupGoogleSameOrigin()">Sign in with Google</button>
     </p>
     <p>
-      3.2) Same-Origin Initiator-Receiver:
-      <button class="btn btn-primary" onclick="startPopupGoogleSameOrigin()">Sign in with Google</button>
+      3.2) Cross-Origin Initiator-Receiver:
+      <button class="btn btn-primary" onclick="startPopupGoogleCrossOrigin()">Sign in with Google</button>
     </p>
     <script>
       function startPopupGoogleSameOrigin() {
