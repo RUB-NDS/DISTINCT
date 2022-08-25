@@ -161,7 +161,7 @@ const initiators = {
 
   /* safe same-origin: js direct access */
 
-  jsdir: {
+  jsdirect: {
     callback: (receiverWindow, data) => {
       receiverWindow.callback(data)
       self.close()
