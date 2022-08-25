@@ -88,6 +88,14 @@ const receivers = {
         }
       })
     },
+    // secure
+    originEqualsFixedAlt: (receiverWindow, processData) => {
+      receiverWindow.addEventListener('message', (e) => {
+        if (e.origin === 'https://test-alt.distinct-sso.com') {
+          processData(e.data)
+        }
+      })
+    },
   },
 
   /* unsafe cross-origin: web messaging - channel messaging */
@@ -107,6 +115,16 @@ const receivers = {
     originEqualsFixed: (receiverWindow, processData) => {
       receiverWindow.addEventListener('message', (e) => {
         if (e.origin === 'https://test.distinct-sso.com' && e.ports[0]) {
+          e.ports[0].onmessage = (e) => {
+            processData(e.data)
+          }
+        }
+      })
+    },
+    // secure
+    originEqualsFixedAlt: (receiverWindow, processData) => {
+      receiverWindow.addEventListener('message', (e) => {
+        if (e.origin === 'https://test-alt.distinct-sso.com' && e.ports[0]) {
           e.ports[0].onmessage = (e) => {
             processData(e.data)
           }
