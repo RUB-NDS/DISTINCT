@@ -37,7 +37,6 @@
 
   <!-- content -->
   <div class="container">
-    <h1><span style="font-variant: small-caps">Distinct</span>'s Vulnerable Test Service</h1>
 
     <!-- receiver -->
     <h2>1) Select Receiver</h2>
@@ -73,8 +72,18 @@
     </script>
 
     <!-- result -->
-    <h2>4) Received Token</h2>
+    <h2>4) Received Data</h2>
     <pre><code class="language-plain" id="receivedData"></code></pre>
+
+    <!-- restart -->
+    <h2>5) Restart</h2>
+    <p><button class="btn btn-danger" onclick="restart()">Restart</button></p>
+    <script>
+      function restart() {
+        location.href = 'https://test.distinct-sso.com'
+      }
+    </script>
+
   </div>
 </body>
 </html>
