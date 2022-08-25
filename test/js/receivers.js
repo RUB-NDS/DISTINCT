@@ -1,6 +1,6 @@
 /* process the received data sent by the initiator */
 const processReceivedData = (data) => {
-  document.querySelector('#receivedData').innerText = data.toString()
+  document.querySelector('#receivedData').innerText = `${data}`
   Prism.highlightAll()
 }
 
