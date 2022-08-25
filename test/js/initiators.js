@@ -6,8 +6,8 @@ const execSelectedInitiator = () => {
 
 /* get selected initiator from local storage */
 const getSelectedInitiator = () => {
-  const technique = localStorage['selectedInitiatorTechnique']
-  const type = localStorage['selectedInitiatorType']
+  const technique = getCookie('selectedInitiatorTechnique')
+  const type = getCookie('selectedInitiatorType')
   return initiators[technique][type]
 }
 
@@ -17,14 +17,14 @@ const selectInitiator = (selectedInitiator) => {
   const technique = selectedInitiatorSplitted[0]
   const type = selectedInitiatorSplitted[1]
   const initiatorFunction = initiators[technique][type]
-  localStorage['selectedInitiatorTechnique'] = technique
-  localStorage['selectedInitiatorType'] = type
+  document.cookie = `selectedInitiatorTechnique=${technique}; domain=.distinct-sso.com`
+  document.cookie = `selectedInitiatorType=${type}; domain=.distinct-sso.com`
   updateSelectedInitiatorCode()
 }
 
 const updateSelectedInitiatorCode = () => {
-  const technique = localStorage['selectedInitiatorTechnique']
-  const type = localStorage['selectedInitiatorType']
+  const technique = getCookie('selectedInitiatorTechnique')
+  const type = getCookie('selectedInitiatorType')
   const initiatorFunction = initiators[technique][type]
   document.querySelector('#initiatorSelectionCode').innerHTML = beautifyJS(initiatorFunction.toString())
   Prism.highlightAll()

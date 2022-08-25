@@ -12,8 +12,8 @@ const execSelectedReceiver = () => {
 
 /* get selected receiver from local storage */
 const getSelectedReceiver = () => {
-  const technique = localStorage['selectedReceiverTechnique']
-  const type = localStorage['selectedReceiverType']
+  const technique = getCookie('selectedReceiverTechnique')
+  const type = getCookie('selectedReceiverType')
   return receivers[technique][type]
 }
 
@@ -23,14 +23,14 @@ const selectReceiver = (selectedReceiver) => {
   const technique = selectedReceiverSplitted[0]
   const type = selectedReceiverSplitted[1]
   const receiverFunction = receivers[technique][type]
-  localStorage['selectedReceiverTechnique'] = technique
-  localStorage['selectedReceiverType'] = type
+  document.cookie = `selectedReceiverTechnique=${technique}; domain=.distinct-sso.com`
+  document.cookie = `selectedReceiverType=${type}; domain=.distinct-sso.com`
   updateSelectedReceiverCode()
 }
 
 const updateSelectedReceiverCode = () => {
-  const technique = localStorage['selectedReceiverTechnique']
-  const type = localStorage['selectedReceiverType']
+  const technique = getCookie('selectedReceiverTechnique')
+  const type = getCookie('selectedReceiverType')
   const receiverFunction = receivers[technique][type]
   document.querySelector('#receiverSelectionCode').innerHTML = beautifyJS(receiverFunction.toString())
   Prism.highlightAll()
