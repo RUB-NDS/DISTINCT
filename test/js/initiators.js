@@ -49,37 +49,188 @@ const initiatorSelectionList = () => {
 
 const initiators = {
 
-  /* postmessage */
+  /* unsafe cross-origin: web messaging - postmessage */
+
   pm: {
     // insecure
-    pmWildcard: (receiverWindow, data) => {
+    wildcard: (receiverWindow, data) => {
       receiverWindow.postMessage(data, '*')
       self.close()
     },
     // insecure
-    pmWindowOrigin: (receiverWindow, data) => {
+    windowOrigin: (receiverWindow, data) => {
       receiverWindow.postMessage(data, window.origin)
       self.close()
     },
     // secure
-    pmLocationOrigin: (receiverWindow, data) => {
+    locationOrigin: (receiverWindow, data) => {
       receiverWindow.postMessage(data, location.origin)
       self.close()
     },
     // secure
-    pmFixedOrigin: (receiverWindow, data) => {
-      receiverWindow.postMessage(data, 'https://test.distinct-sso.com')
+    fixedOrigin: (receiverWindow, data) => {
+      receiverWindow.postMessage(data, 'https://test.distinct-sso.com/callback.html')
       self.close()
-    }
+    },
   },
 
-  /* js navigate */
+  /* unsafe cross-origin: web messaging - channel messaging */
+
+  cm: {
+    // insecure
+    wildcard: (receiverWindow, data) => {
+      let channel = new MessageChannel()
+      receiverWindow.postMessage(null, '*', [channel.port2])
+      setTimeout(() => {
+        channel.port1.postMessage(data)
+        self.close()
+      }, 1000)
+    },
+    // insecure
+    windowOrigin: (receiverWindow, data) => {
+      let channel = new MessageChannel()
+      receiverWindow.postMessage(null, window.origin, [channel.port2])
+      setTimeout(() => {
+        channel.port1.postMessage(data)
+        self.close()
+      }, 1000)
+    },
+    // secure
+    locationOrigin: (receiverWindow, data) => {
+      let channel = new MessageChannel()
+      receiverWindow.postMessage(null, location.origin, [channel.port2])
+      setTimeout(() => {
+        channel.port1.postMessage(data)
+        self.close()
+      }, 1000)
+    },
+    // secure
+    fixedOrigin: (receiverWindow, data) => {
+      let channel = new MessageChannel()
+      receiverWindow.postMessage(null, 'https://test.distinct-sso.com/callback.html', [channel.port2])
+      setTimeout(() => {
+        channel.port1.postMessage(data)
+        self.close()
+      }, 1000)
+    },
+  },
+
+  /* unsafe cross-origin: js navigate */
+
   jsnav: {
     // insecure
-    jsnavRelativeLocation: (receiverWindow, data) => {
+    relative: (receiverWindow, data) => {
       receiverWindow.location = `/index.html${data}`
       self.close()
-    }
-  }
+    },
+    // secure
+    absolute: (receiverWindow, data) => {
+      receiverWindow.location = `https://test.distinct-sso.com/index.html${data}`
+      self.close()
+    },
+    // secure
+    absoluteSlashSlash: (receiverWindow, data) => {
+      receiverWindow.location = `//test.distinct-sso.com/index.html${data}`
+      self.close()
+    },
+    // secure
+    absoluteLocationOrigin: (receiverWindow, data) => {
+      receiverWindow.location = `${location.origin}/index.html${data}`
+      self.close()
+    },
+  },
+
+  /* safe cross-origin: js reload */
+
+  jsreload: {
+    reload: (receiverWindow, data) => {
+      receiverWindow.location.reload()
+      self.close()
+    },
+  },
+
+  /* safe cross-origin: js properties */
+
+  jsprop: {
+    close: (receiverWindow, data) => {
+      setTimeout(() => {
+        self.close()
+      }, 5000)
+    },
+  },
+
+  /* safe same-origin: js direct access */
+
+  jsdir: {
+    callback: (receiverWindow, data) => {
+      receiverWindow.callback(data)
+      self.close()
+    },
+    prop: (receiverWindow, data) => {
+      receiverWindow.prop = data
+      self.close()
+    },
+  },
+
+  /* safe same-origin: js storage */
+
+  jsstore: {
+    localstorage: (receiverWindow, data) => {
+      self.localStorage['data'] = data
+      self.localStorage.setItem('data', data)
+      self.close()
+    },
+    sessionstorage: (receiverWindow, data) => {
+      self.sessionStorage['data'] = data
+      self.sessionStorage.setItem('data', data)
+      self.close()
+    },
+    cookie: (receiverWindow, data) => {
+      self.document.cookie = `data=${data}`
+      self.close()
+    },
+    idb: (receiverWindow, data) => {
+      var open = indexedDB.open("MyDatabase", 1)
+      open.onupgradeneeded = () => {
+        var db = open.result
+        var store = db.createObjectStore("MyObjectStore", {keyPath: "id", autoIncrement: true})
+      }
+      open.onsuccess = function() {
+        var db = open.result
+        var tx = db.transaction("MyObjectStore", "readwrite")
+        var store = tx.objectStore("MyObjectStore")
+
+        store.put({key: 'data', value: data})
+        store.add({key: 'data', value: data})
+
+        tx.oncomplete = function() {
+            db.close()
+            self.close()
+        }
+      }
+    },
+  },
+
+  /* safe same-origin: web messaging - broadcast messaging */
+
+  bm: {
+    bm: (receiverWindow, data) => {
+      let channel = new BroadcastChannel('MyChannel')
+      channel.postMessage(data)
+      self.close()
+    },
+  },
+
+  /* safe same-origin: web messaging - custom events */
+
+  ce: {
+    ce: (receiverWindow, data) => {
+      let customEvent = new CustomEvent('MyCustomEvent', {
+        detail: { data: data }
+      })
+      receiverWindow.dispatchEvent(customEvent)
+      self.close()
+    },
+  },
 
 }
