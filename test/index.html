@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DISTINCT: Vulnerable Test Service</title>
+
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/prism.css">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/prism.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.6/beautify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.6/beautify-css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.6/beautify-html.min.js"></script>
+
+  <script src="/js/helpers.js"></script>
+  <script src="/js/initiators.js"></script>
+  <script src="/js/receivers.js"></script>
+</head>
+<body>
+  <!-- navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/"><img src="/img/logo-large.png" height="50"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <h4>Vulnerable Test Service</h4>
+      </div>
+    </div>
+  </nav>
+
+  <!-- content -->
+  <div class="container">
+    <h1><span style="font-variant: small-caps">Distinct</span>'s Vulnerable Test Service</h1>
+
+    <!-- receiver -->
+    <h2>1) Select Receiver</h2>
+    <div id="receiverSelectionList"></div>
+    <pre><code class="language-js" id="receiverSelectionCode"></code></pre>
+    <script>receiverSelectionList()</script>
+
+    <!-- initiator -->
+    <h2>2) Select Initiator</h2>
+    <div id="initiatorSelectionList"></div>
+    <pre><code class="language-js" id="initiatorSelectionCode"></code></pre>
+    <script>initiatorSelectionList()</script>
+
+    <!-- sso button -->
+    <h2>3) Execute Login</h2>
+    <p>
+      3.1) Cross-Origin Initiator-Receiver:
+      <button class="btn btn-primary" onclick="startPopupGoogleSameOrigin()">Sign in with Google</button>
+    </p>
+    <p>
+      3.2) Same-Origin Initiator-Receiver:
+      <button class="btn btn-primary" onclick="startPopupGoogleSameOrigin()">Sign in with Google</button>
+    </p>
+    <script>
+      function startPopupGoogleSameOrigin() {
+        execSelectedReceiver()
+        window.popup = window.open('https://accounts.google.com/o/oauth2/v2/auth?client_id=430560208114-kqfvufi8j2gc7kic5e7fh0m2r22msoph.apps.googleusercontent.com&redirect_uri=https://test.distinct-sso.com/callback.html&response_type=code&scope=profile+email+openid&state=123', '_blank')
+      }
+      function startPopupGoogleCrossOrigin() {
+        execSelectedReceiver()
+        window.popup = window.open('https://accounts.google.com/o/oauth2/v2/auth?client_id=430560208114-kqfvufi8j2gc7kic5e7fh0m2r22msoph.apps.googleusercontent.com&redirect_uri=https://test-alt.distinct-sso.com/callback.html&response_type=code&scope=profile+email+openid&state=123', '_blank')
+      }
+    </script>
+
+    <!-- result -->
+    <h2>4) Show Received Token</h2>
+    <pre><code class="language-plain" id="receivedData"></code></pre>
+  </div>
+</body>
+</html>
