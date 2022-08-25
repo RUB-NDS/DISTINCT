@@ -83,8 +83,4 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
 }
-
-li.nav-item {
-  font-size: large;
-}
 </style>
