@@ -125,7 +125,7 @@ const initiators = {
     },
     // insecure
     hash: (receiverWindow, data) => {
-      receiverWindow.location = `#${data}`
+      receiverWindow.location.href = `https://test.distinct-sso.com#${data}`
       self.close()
     },
     // secure
