@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DISTINCT: Vulnerable Test Service</title>
+
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/prism.css">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/prism.js"></script>
+  <script src="/js/beautify.min.js"></script>
+
+  <script src="/js/helpers.js"></script>
+  <script src="/js/initiators.js"></script>
+  <script src="/js/receivers.js"></script>
+</head>
+<body onload="execSelectedInitiator()">
+  <!-- navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="https://test.distinct-sso.com"><img src="/img/logo-large.png" height="50"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <h4>Vulnerable Test Service</h4>
+      </div>
+    </div>
+  </nav>
+
+  <!-- content -->
+  <div class="container">
+    <h1><span style="font-variant: small-caps">Distinct</span>'s Vulnerable Test Service</h1>
+
+    <h3>
+      Initiator is executing ...
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </h3>
+
+    <pre><code class="language-js" id="initiatorSelectionCode"></code></pre>
+    <script>updateSelectedInitiatorCode()</script>
+  </div>
+</body>
+</html>
