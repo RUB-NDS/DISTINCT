@@ -55,6 +55,14 @@ const receiverSelectionList = () => {
 
 const receivers = {
 
+  /* idle */
+
+  idle: {
+    idle: (receiverWindow, processData) => {
+      // do nothing
+    },
+  },
+
   /* unsafe cross-origin: web messaging - postmessage */
 
   pm: {
