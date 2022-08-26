@@ -7,7 +7,7 @@ import base64
 import pymongo
 import gridfs
 import time
-from threading import Thread
+from threading import Thread, Lock
 from functools import wraps
 from socket import socket
 from flask import Flask, request
@@ -39,6 +39,7 @@ class BrowserAPI(Thread):
         self.browsers_by_handler = {} # {handler_uuid: Pprocess, ...}
         self.proxies_by_handler = {} # {handler_uuid: Pprocess, ...}
 
+        self.process_cleaner_lock = Lock()
         self.process_cleaner = ProcessCleaner(self)
         self.process_cleaner.start()
 
@@ -295,6 +296,8 @@ class BrowserAPI(Thread):
         """ Stop browser process and proxy for handler uuid """
         logger.info(f"Stopping browser with handler uuid {handler_uuid}")
         if expected_quit:
+            logger.info(f"Acquire process cleaner lock")
+            self.process_cleaner_lock.acquire()
             self.browsers_by_handler[handler_uuid].terminate()
             self.stop_proxy(handler_uuid)
         self.destroy_chrome_extensions(handler_uuid) # cleanup
@@ -333,6 +336,8 @@ class BrowserAPI(Thread):
         )
         if expected_quit:
             del self.browsers_by_handler[handler_uuid]
+            logger.info(f"Release process cleaner lock")
+            self.process_cleaner_lock.release()
 
     """ Wrappers """
 
