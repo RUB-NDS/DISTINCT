@@ -188,7 +188,9 @@ const initiators = {
     sessionstorage: (receiverWindow, data) => {
       self.sessionStorage['data'] = data
       self.sessionStorage.setItem('data', data)
-      self.close()
+      setTimeout(()=> {
+        self.close()
+      }, 2000)
     },
     cookie: (receiverWindow, data) => {
       self.document.cookie = `data=${data}`

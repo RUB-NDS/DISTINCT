@@ -186,7 +186,7 @@ const receivers = {
     },
     sessionstorage: (receiverWindow, processData) => {
       setTimeout(() => {
-        processData(receiverWindow.sessionStorage['data'])
+        processData(popup.sessionStorage['data'])
       }, 1000)
     },
     cookie: (receiverWindow, processData) => {
