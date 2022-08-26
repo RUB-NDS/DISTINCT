@@ -192,7 +192,7 @@ let content_messaging = () => {
 
         // Serialize Message
 
-        let message_type = typeof message;
+        let message_type = (message === null ? 'null' : typeof message);
 
         // Transfer
 
@@ -302,7 +302,7 @@ let content_messaging = () => {
 
         if (args[1] && args[1]["detail"]) {
             data = args[1]["detail"];
-            data_type = typeof data;
+            data_type = (data === null ? 'null' : typeof data);
         }
 
         _sso._event("customeventnew", {
@@ -323,7 +323,7 @@ let content_messaging = () => {
         let event = args[0];
         let type = event.type;
         let data = event.detail || undefined;
-        let data_type = typeof data;
+        let data_type = (data === null ? 'null' : typeof data);
 
         if (!_sso._default_window_events.includes(type)) {
             // This is a custom event
@@ -375,7 +375,7 @@ let content_messaging = () => {
                 source_frame: e.target._source_frame,
                 target_frame: e.target._target_frame,
                 data: e.data,
-                data_type: typeof e.data
+                data_type: (e.data === null ? 'null' : typeof e.data)
             });
         });
 
@@ -386,7 +386,7 @@ let content_messaging = () => {
                 source_frame: e.target._source_frame,
                 target_frame: e.target._target_frame,
                 data: e.data,
-                data_type: typeof e.data
+                data_type: (e.data === null ? 'null' : typeof e.data)
             });
         });
 
@@ -410,7 +410,7 @@ let content_messaging = () => {
                 channel_name: this.name,
                 source_frame: _sso._hierarchy(window),
                 data: args[0],
-                data_type: typeof args[0]
+                data_type: (args[0] === null ? 'null' : typeof args[0])
             });
             return this._postMessage(...args);
         }
@@ -420,7 +420,7 @@ let content_messaging = () => {
                 channel_name: channel_name,
                 target_frame: _sso._hierarchy(self),
                 data: e.data,
-                data_type: typeof e.data
+                data_type: (e.data === null ? 'null' : typeof e.data)
             });
         });
 
