@@ -76,6 +76,11 @@
     <!-- result -->
     <h2>4) Received Data</h2>
     <pre><code class="language-json" id="receivedData"></code></pre>
+    <script>
+      if (location.search) {
+        processReceivedData(location.search)
+      }
+    </script>
 
     <!-- restart -->
     <h2>5) Restart</h2>
