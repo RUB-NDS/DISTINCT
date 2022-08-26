@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col border border-1 bg-light rounded-3">
+      <div class="col border border-1 bg-light rounded-3 mb-4">
         <p><img :src="logoLarge" style="width: 450px; max-width: 100%;"></p>
         <h5>is a <b>D</b>ynamic <b>I</b>n-Browser <b>S</b>ingle Sign-On <b>T</b>racer <b>I</b>nspecting <b>N</b>ovel <b>C</b>ommunication <b>T</b>echniques.</h5>
 
