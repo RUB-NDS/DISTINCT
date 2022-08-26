@@ -24,13 +24,13 @@ class ProcessCleaner(Thread):
         logger.info("Starting process cleaner thread")
 
         while True:
-            logger.info(f"Acquire process cleaner lock")
+            logger.debug(f"Acquire process cleaner lock")
             self.browser_api.process_cleaner_lock.acquire()
             self.check_terminated_browsers()
             self.check_terminated_browsers_running_in_db()
             self.check_running_proxies_without_browser()
             self.check_terminated_proxies_running_in_db()
-            logger.info(f"Release process cleaner lock")
+            logger.debug(f"Release process cleaner lock")
             self.browser_api.process_cleaner_lock.release()
             time.sleep(5)
 

@@ -296,7 +296,7 @@ class BrowserAPI(Thread):
         """ Stop browser process and proxy for handler uuid """
         logger.info(f"Stopping browser with handler uuid {handler_uuid}")
         if expected_quit:
-            logger.info(f"Acquire process cleaner lock")
+            logger.debug(f"Acquire process cleaner lock")
             self.process_cleaner_lock.acquire()
             self.browsers_by_handler[handler_uuid].terminate()
             self.stop_proxy(handler_uuid)
@@ -336,7 +336,7 @@ class BrowserAPI(Thread):
         )
         if expected_quit:
             del self.browsers_by_handler[handler_uuid]
-            logger.info(f"Release process cleaner lock")
+            logger.debug(f"Release process cleaner lock")
             self.process_cleaner_lock.release()
 
     """ Wrappers """
