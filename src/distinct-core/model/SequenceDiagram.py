@@ -2,13 +2,29 @@ import os
 
 class SequenceDiagram:
 
-    def __init__(self):
-        self.stms = [] # Lines of sequence diagram
-        self.stm("@startuml") # First line to start sequence diagram
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.db = self.ctx.db
+
+        # If sequence diagram does not exist, create new sequence diagram
+        if not self.db["distinct"]["sequence"].find_one({"handler_uuid": self.ctx.report_handler.uuid}):
+            self.db["distinct"]["sequence"].insert_one({
+                "handler_uuid": self.ctx.report_handler.uuid,
+                "stms": []
+            })
+            self.stm("@startuml")
+
+    @property
+    def stms(self):
+        return self.db["distinct"]["sequence"].find_one({"handler_uuid": self.ctx.report_handler.uuid})["stms"]
 
     def stm(self, stm):
         """ Add statement to sequence diagram """
-        self.stms.append(stm)
+        self.db["distinct"]["sequence"].update_one({
+            "handler_uuid": self.ctx.report_handler.uuid
+        }, {
+            "$push": {"stms": stm}
+        })
 
     def svg(self):
         """ Compile sequence diagram to SVG """

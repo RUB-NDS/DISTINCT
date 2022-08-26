@@ -48,7 +48,7 @@ class ExecutionContext():
         self.db = self.report_handler.report_dispatcher.db
 
         self.topframe = None # Top frame in hierarchy, i.e., root of the frame hierarchy
-        self.sequencediagram = SequenceDiagram()
+        self.sequencediagram = SequenceDiagram(self)
         self.poc = PoCGenerator(self)
 
         # Initialize global statements for report handler
