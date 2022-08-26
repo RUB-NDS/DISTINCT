@@ -11,7 +11,7 @@ services:
     depends_on:
       - distinct-db
     ports:
-      - "9080:9080"
+      - "127.0.0.1:9080:9080"
     networks:
       - distinct-net
     volumes:
@@ -29,7 +29,7 @@ services:
       - distinct-core
       - distinct-db
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     networks:
       - distinct-net
     volumes:
@@ -63,7 +63,7 @@ services:
     depends_on:
       - distinct-db
     ports:
-      - "9070:8081"
+      - "127.0.0.1:9070:8081"
     networks:
       - distinct-net
     environment:
