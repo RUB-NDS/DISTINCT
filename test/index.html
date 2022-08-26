@@ -72,17 +72,6 @@
     <div id="initiatorSelectionList"></div>
     <pre><code class="language-js" id="initiatorSelectionCode"></code></pre>
     <script>initiatorSelectionList()</script>
-    <script>
-      let preReceiver = (new URLSearchParams(location.search)).get("receiver")
-      if (preReceiver) {
-        selectReceiver(preReceiver)
-        execSelectedReceiver()
-      }
-      let preInitiator = (new URLSearchParams(location.search)).get("initiator")
-      if (preInitiator) {
-        selectInitiator(preInitiator)
-      }
-    </script>
 
     <!-- sso button -->
     <h2>3) Execute Login</h2>
@@ -126,5 +115,17 @@
     </script>
 
   </div>
+
+  <script>
+    let preReceiver = (new URLSearchParams(location.search)).get("receiver")
+    if (preReceiver) {
+      selectReceiver(preReceiver)
+      execSelectedReceiver()
+    }
+    let preInitiator = (new URLSearchParams(location.search)).get("initiator")
+    if (preInitiator) {
+      selectInitiator(preInitiator)
+    }
+  </script>
 </body>
 </html>
