@@ -209,8 +209,8 @@ const initiators = {
         store.add({key: 'data', value: data})
 
         tx.oncomplete = function() {
-            db.close()
-            self.close()
+          db.close()
+          self.close()
         }
       }
     },

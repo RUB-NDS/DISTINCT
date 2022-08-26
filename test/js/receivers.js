@@ -1,6 +1,6 @@
 /* process the received data sent by the initiator */
 const processReceivedData = (data) => {
-  document.querySelector('#receivedData').innerText = `${data}`
+  document.querySelector('#receivedData').innerText = `${JSON.stringify(data)}`
   Prism.highlightAll()
 }
 
@@ -196,7 +196,24 @@ const receivers = {
     },
     idb: (receiverWindow, processData) => {
       setTimeout(() => {
-        processData('to be implemented')
+        var open = indexedDB.open("MyDatabase", 1)
+        open.onupgradeneeded = () => {
+          var db = open.result
+          var store = db.createObjectStore("MyObjectStore", {keyPath: "id", autoIncrement: true})
+        }
+        open.onsuccess = function() {
+          var db = open.result
+          var tx = db.transaction("MyObjectStore", "readwrite")
+          var store = tx.objectStore("MyObjectStore")
+
+          var req = store.getAll()
+
+          tx.oncomplete = function() {
+            processData(req.result)
+            db.close()
+            self.close()
+          }
+        }
       }, 1000)
     },
   },
