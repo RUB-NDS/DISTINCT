@@ -138,7 +138,7 @@ To compile and run DISTINCT in a "demo mode" as on [distinct-sso.com](https://di
 
 ## 📝 Citation
 
-Feel free to use the following citation for the [paper](https://distinct-sso.com/paper.pdf):
+Feel free to use the following citation for the paper [📝](https://distinct-sso.com/paper.pdf):
 ```
 @inproceedings{TBD,
   author = {TBD},
