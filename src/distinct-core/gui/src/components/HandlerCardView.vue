@@ -48,15 +48,15 @@
       <li class="list-group-item">
         <div>Export:</div>
         <div class="btn-group mb-2" role="group">
-          <button type="button" class="btn btn-outline-primary" v-on:click="exportProfile(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportProfile(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-file-zip"></i>
             Profile
           </button>
-          <button type="button" class="btn btn-outline-primary" v-on:click="exportStream(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportStream(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-record-circle"></i>
             Stream
           </button>
-          <button type="button" class="btn btn-outline-primary" v-on:click="exportHAR(reporthandler.uuid)">
+          <button type="button" class="btn btn-outline-primary" v-on:click="exportHAR(reporthandler.uuid)" :disabled="appMode == 'demo'">
             <i class="bi bi-archive"></i>
             HAR
           </button>

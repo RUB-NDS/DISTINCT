@@ -76,11 +76,11 @@ class ReportDispatcher(Thread):
         # Browsers
         if self.prod(): self.app.add_url_rule("/api/browsers/<handler_uuid>/start", view_func=self.api_browsers_start, methods=["POST"])
         if self.prod(): self.app.add_url_rule("/api/browsers/<handler_uuid>/stop", view_func=self.api_browsers_stop, methods=["POST"])
-        self.app.add_url_rule("/api/browsers/<handler_uuid>/profile", view_func=self.api_browsers_profile, methods=["GET"])
+        if self.prod(): self.app.add_url_rule("/api/browsers/<handler_uuid>/profile", view_func=self.api_browsers_profile, methods=["GET"])
 
         # Proxies
-        self.app.add_url_rule("/api/proxies/<handler_uuid>/stream", view_func=self.api_proxies_stream, methods=["GET"])
-        self.app.add_url_rule("/api/proxies/<handler_uuid>/har", view_func=self.api_proxies_har, methods=["GET"])
+        if self.prod(): self.app.add_url_rule("/api/proxies/<handler_uuid>/stream", view_func=self.api_proxies_stream, methods=["GET"])
+        if self.prod(): self.app.add_url_rule("/api/proxies/<handler_uuid>/har", view_func=self.api_proxies_har, methods=["GET"])
 
     """ Routines """
 
