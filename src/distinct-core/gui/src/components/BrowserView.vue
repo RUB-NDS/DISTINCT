@@ -17,18 +17,22 @@
           </div>
         </div>
       </form>
+      <img v-if="appMode == 'demo'" id="browserImage" :src="browserScreenshotDemo" />
     </div>
     <iframe v-if="appMode == 'prod'" id="browserFrame"></iframe>
   </div>
 </template>
 
 <script>
+import browserScreenshotDemo from '../assets/browser-screenshot-demo.png'
+
 export default {
   name: 'BrowserView',
   data: function() {
     return {
       'appMode': process.env['VUE_APP_MODE'],
-      'browserNoVNC': process.env['VUE_APP_BROWSER_NOVNC']
+      'browserNoVNC': process.env['VUE_APP_BROWSER_NOVNC'],
+      'browserScreenshotDemo': browserScreenshotDemo
     }
   },
   methods: {
@@ -77,5 +81,11 @@ export default {
     width: 100%;
     height: 100vh;
     border: none;
+  }
+  #browserImage {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
   }
 </style>
