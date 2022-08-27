@@ -2,7 +2,7 @@
   <div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/"><img :src="logoLarge" height="50"></a>
+        <a class="navbar-brand" href="/"><img :src="logo3" height="50"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -65,14 +65,14 @@
 </template>
 
 <script>
-import logoLarge from './assets/logo-large.png'
+import logo3 from './assets/logo-3.png'
 
 export default {
   name: 'App',
   data: () => {
     return {
       'appconfig': {},
-      'logoLarge': logoLarge
+      'logo3': logo3
     }
   },
   methods: {
