@@ -1,3 +1,5 @@
+<p align="center"><img src="logo/logo-1.png" width="300"></p>
+
 # DISTINCT: Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniques
 
 [![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/RUB-NDS/DISTINCT)
@@ -5,7 +7,7 @@
 [![Website distinct-sso.com](https://img.shields.io/website-up-down-green-red/https/distinct-sso.com)](https://distinct-sso.com)
 <a href="https://gitpod.io/#https://github.com/RUB-NDS/DISTINCT"><img src="https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod" alt="Contribute with Gitpod"/></a>
 
-DISTINCT is a Single Sign-On security analysis framework for modern communication techniques that was developed for the paper [📝](https://distinct-sso.com/paper.pdf) "DISTINCT: Identity Theft using In-Browser Communications in Dual-Window Single Sign-On".
+DISTINCT is a web-based Single Sign-On security analysis framework for modern communication techniques that was developed for the paper [📝](https://distinct-sso.com/paper.pdf) "DISTINCT: Identity Theft using In-Browser Communications in Dual-Window Single Sign-On". It is designed to monitor and analyze the in-browser communication techniques sending in-browser messages across browser windows at runtime. Its dynamic analysis approach automates the (1) capturing, (2) detection, (3) visualization, (4) security analysis, and (5) exploitation of Single Sign-On flows relying on novel in-browser communication techniques. You can find more details in the paper [📝](https://distinct-sso.com/paper.pdf).
 
 ## 🚀 Quick Start
 
@@ -34,7 +36,7 @@ DISTINCT is a Single Sign-On security analysis framework for modern communicatio
 - *Optional:* Open `http://localhost:9070` in your webbrowser for a web interface showing DISTINCT's database ([mongo-express](https://github.com/mongo-express/mongo-express))
 - Press `Ctrl+C` and run `docker-compose down` to close and exit the tool
 
-## 🛠 Develop and Rebuild
+## 🛠 Develop and Build
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/RUB-NDS/DISTINCT)
 
