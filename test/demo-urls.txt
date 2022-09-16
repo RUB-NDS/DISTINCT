@@ -1,0 +1,26 @@
+https://test.distinct-sso.com/?initiator=pm%20|%20wildcard&receiver=pm%20|%20originEqualsFixedAlt
+-> cross
+
+https://test.distinct-sso.com/?initiator=cm%20|%20wildcard&receiver=cm%20|%20originEqualsFixedAlt
+-> cross
+
+https://test.distinct-sso.com/?initiator=pm%20|%20fixedOrigin&receiver=pm%20|%20originMissing
+-> cross
+
+https://test.distinct-sso.com/?initiator=pm%20|%20fixedOrigin&receiver=pm%20|%20originIncludesLocationOrigin
+-> same
+
+https://test.distinct-sso.com/?initiator=jsprop%20|%20close&receiver=jsprop%20|%20closedPoll
+-> same
+
+https://test.distinct-sso.com/?initiator=jsdirect%20|%20prop&receiver=jsdirect%20|%20prop
+-> same
+
+https://test.distinct-sso.com/?initiator=jsstore%20|%20localstorage&receiver=jsstore%20|%20localstorage
+-> same
+
+https://test.distinct-sso.com/?initiator=bm%20|%20bm&receiver=bm%20|%20bm
+-> same
+
+https://test.distinct-sso.com/?initiator=ce%20|%20ce&receiver=ce%20|%20ce
+-> same
