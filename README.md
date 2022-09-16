@@ -3,7 +3,7 @@
 # DISTINCT: Dynamic In-Browser Single Sign-On Tracer Inspecting Novel Communication Techniques
 
 [![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/RUB-NDS/DISTINCT)
-[![DOI:XXXXXXX.XXXXXXX](https://zenodo.org/badge/DOI/XXXXXXX.XXXXXXX.svg)](https://doi.org/XXXXXXX.XXXXXXX)
+[![DOI:10.1145/3548606.3560692](https://zenodo.org/badge/DOI/10.1145/3548606.3560692.svg)](https://doi.org/10.1145/3548606.3560692)
 [![Website distinct-sso.com](https://img.shields.io/website-up-down-green-red/https/distinct-sso.com)](https://distinct-sso.com)
 <a href="https://gitpod.io/#https://github.com/RUB-NDS/DISTINCT"><img src="https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod" alt="Contribute with Gitpod"/></a>
 
