@@ -1,0 +1,4 @@
+{
+    "core_endpoint": "http://distinct-core:8080",
+    "handler_uuid": "1234"
+}

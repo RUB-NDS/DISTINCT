@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DISTINCT: Vulnerable Test Service</title>
+
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/prism.css">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/prism.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.6/beautify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.6/beautify-css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.6/beautify-html.min.js"></script>
+
+  <script src="/js/helpers.js"></script>
+  <script src="/js/initiators.js"></script>
+  <script src="/js/receivers.js"></script>
+</head>
+<body>
+  <!-- navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="https://test.distinct-sso.com"><img src="/img/logo-3.png" height="50"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="https://test.distinct-sso.com">
+              <h4 style="margin: 0; display:flex; align-items: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="display: block; margin-right: 5px" fill="currentColor" class="bi bi-bug" viewBox="0 0 16 16">
+                  <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1h.5a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 1 1-1 0v-.5a.5.5 0 0 0-.5-.5H13a5 5 0 0 1-10 0h-.5a.5.5 0 0 0-.5.5v.5a.5.5 0 1 1-1 0v-.5A1.5 1.5 0 0 1 2.5 10H3V9H1.5a.5.5 0 0 1 0-1H3V7h-.5A1.5 1.5 0 0 1 1 5.5V5a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3c0-1.364.547-2.601 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 3.5 3.97V7H4zm4.5 0v7.97A4 4 0 0 0 12 11V7H8.5zM12 6a3.989 3.989 0 0 0-1.334-2.982A3.983 3.983 0 0 0 8 2a3.983 3.983 0 0 0-2.667 1.018A3.989 3.989 0 0 0 4 6h8z"/>
+                </svg>
+                <span>Vulnerable Test Service</span>
+              </h4>
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="https://distinct-sso.com">
+                <h4 style="margin: 0; display:flex; align-items: center;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="display: block; margin-right: 5px;" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
+                  </svg>
+                  <span>Back to <span style="font-variant: small-caps">Distinct</span></span>
+                </h4>
+              </a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- content -->
+  <div class="container">
+
+    <!-- receiver -->
+    <h2>1) Select Receiver</h2>
+    <div id="receiverSelectionList"></div>
+    <pre><code class="language-js" id="receiverSelectionCode"></code></pre>
+    <script>receiverSelectionList()</script>
+
+    <!-- initiator -->
+    <h2>2) Select Initiator</h2>
+    <div id="initiatorSelectionList"></div>
+    <pre><code class="language-js" id="initiatorSelectionCode"></code></pre>
+    <script>initiatorSelectionList()</script>
+
+    <!-- sso button -->
+    <h2>3) Execute Login</h2>
+    <p>
+      <b>3.1) Same-Origin Communication:</b>
+      <button class="btn btn-primary" onclick="startPopupGoogleSameOrigin()">Sign in with Google</button>
+      (Initiator: test.distinct-sso.com; Receiver: test.distinct-sso.com)
+    </p>
+    <p>
+      <b>3.2) Cross-Origin Communication:</b>
+      <button class="btn btn-primary" onclick="startPopupGoogleCrossOrigin()">Sign in with Google</button>
+      (Initiator: test-alt.distinct-sso.com; Receiver: test.distinct-sso.com)
+    </p>
+    <script>
+      function startPopupGoogleSameOrigin() {
+        execSelectedReceiver()
+        window.popup = window.open('https://accounts.google.com/o/oauth2/v2/auth?client_id=430560208114-kqfvufi8j2gc7kic5e7fh0m2r22msoph.apps.googleusercontent.com&redirect_uri=https://test.distinct-sso.com/callback.html&response_type=code&scope=profile+email+openid&state=123', '_blank')
+      }
+      function startPopupGoogleCrossOrigin() {
+        execSelectedReceiver()
+        window.popup = window.open('https://accounts.google.com/o/oauth2/v2/auth?client_id=430560208114-kqfvufi8j2gc7kic5e7fh0m2r22msoph.apps.googleusercontent.com&redirect_uri=https://test-alt.distinct-sso.com/callback.html&response_type=code&scope=profile+email+openid&state=123', '_blank')
+      }
+    </script>
+
+    <!-- result -->
+    <h2>4) Received Data</h2>
+    <pre><code class="language-json" id="receivedData"></code></pre>
+    <script>
+      if (location.search) {
+        processReceivedData(location.search)
+      }
+    </script>
+
+    <!-- restart -->
+    <h2>5) Restart</h2>
+    <p><button class="btn btn-danger" onclick="restart()">Restart</button></p>
+    <script>
+      function restart() {
+        location.href = 'https://test.distinct-sso.com'
+      }
+    </script>
+
+  </div>
+
+  <script>
+    let preReceiver = (new URLSearchParams(location.search)).get("receiver")
+    if (preReceiver) {
+      selectReceiver(preReceiver)
+      execSelectedReceiver()
+    }
+    let preInitiator = (new URLSearchParams(location.search)).get("initiator")
+    if (preInitiator) {
+      selectInitiator(preInitiator)
+    }
+  </script>
+</body>
+</html>

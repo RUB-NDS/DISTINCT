@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+  distinct-core:
+    build:
+      context: ./distinct-core
+      args:
+        MODE: prod
+    container_name: distinct-core
+    restart: always
+    depends_on:
+      - distinct-db
+    ports:
+      - "127.0.0.1:9080:9080"
+    networks:
+      - distinct-net
+    volumes:
+      - distinct-core-data:/app/data
+    environment:
+      DISTINCT_DB: mongodb://distinct-db:27017
+      DISTINCT_BROWSER_API: http://distinct-browser:9081
+      VERBOSITY: ${VERBOSITY}
+
+  distinct-browser:
+    build: ./distinct-browser
+    container_name: distinct-browser
+    restart: always
+    depends_on:
+      - distinct-core
+      - distinct-db
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - distinct-net
+    volumes:
+      - distinct-browser-data:/app/data
+    environment:
+      DISTINCT_DB: mongodb://distinct-db:27017
+      DISTINCT_CORE_API: http://distinct-core:9080
+      VERBOSITY: ${VERBOSITY}
+      VNCPWD: ${VNCPWD}
+      GOOGLE_USERNAME: ${GOOGLE_USERNAME}
+      GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
+      FACEBOOK_USERNAME: ${FACEBOOK_USERNAME}
+      FACEBOOK_PASSWORD: ${FACEBOOK_PASSWORD}
+      APPLE_USERNAME: ${APPLE_USERNAME}
+      APPLE_PASSWORD: ${APPLE_PASSWORD}
+      APPLE_2FA: ${APPLE_2FA}
+
+  distinct-db:
+    image: mongo:focal
+    container_name: distinct-db
+    restart: always
+    networks:
+      - distinct-net
+    volumes:
+      - distinct-db-data:/data/db
+
+  distinct-db-explorer:
+    image: mongo-express:0.54.0
+    container_name: distinct-db-explorer
+    restart: always
+    depends_on:
+      - distinct-db
+    ports:
+      - "127.0.0.1:9070:8081"
+    networks:
+      - distinct-net
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=distinct-db
+
+networks:
+  distinct-net:
+    driver: bridge
+
+volumes:
+  distinct-browser-data:
+  distinct-core-data:
+  distinct-db-data:
