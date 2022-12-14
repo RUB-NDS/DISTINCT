@@ -12,4 +12,4 @@ jobs:
       - uses: actions/checkout@v2
       - run: cd ./src && docker-compose -f docker-compose-demo.yml down
       - run: cd ./src && docker-compose -f docker-compose-demo.yml build
-      - run: cd ./src && docker-compose -f docker-compose-demo.yml up
+      - run: cd ./src && docker-compose -f docker-compose-demo.yml up -d
