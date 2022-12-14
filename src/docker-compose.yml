@@ -48,7 +48,7 @@ services:
       APPLE_2FA: ${APPLE_2FA}
 
   distinct-db:
-    image: mongo:focal
+    image: mongo:4.4.6
     container_name: distinct-db
     restart: always
     networks:
