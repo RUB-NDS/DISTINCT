@@ -21,7 +21,7 @@ services:
       VERBOSITY: ${VERBOSITY}
 
   distinct-demo-db:
-    image: mongo:focal
+    image: mongo:4.4.6
     container_name: distinct-demo-db
     restart: always
     networks:
