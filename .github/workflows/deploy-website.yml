@@ -10,6 +10,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
-      - run: docker-compose down
+      - run: cd ./src
+      - run: docker-compose -f docker-compose-demo.yml down
       - run: docker-compose -f docker-compose-demo.yml build
       - run: docker-compose -f docker-compose-demo.yml up
