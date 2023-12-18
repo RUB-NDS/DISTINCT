@@ -14,6 +14,7 @@ DISTINCT is a web-based Single Sign-On security analysis framework for modern co
 - Install [Docker](https://docs.docker.com/get-docker/) and [Docker-Compose](https://docs.docker.com/compose/install/)
 - Make sure ports `9070`, `9080`, and `9090` are free on your host
 - Clone this repo: `git clone https://github.com/RUB-NDS/DISTINCT.git`
+  - Note that you will need [git lfs](https://git-lfs.com/) to fetch all files, including the `distinct-chromium.zip` file. Otherwise, you will receive an unzip error during build process.
 - Go into its `src` directory: `cd ./DISTINCT/src`
 - Run: `docker-compose build`
 - *Optional:* Configure log level, password, and identity provider accounts
