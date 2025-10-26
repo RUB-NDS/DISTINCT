@@ -356,7 +356,7 @@ class ReportDispatcher(Thread):
             profile_zip = base64.b64decode(r["data"])
             return send_file(
                 io.BytesIO(profile_zip),
-                attachment_filename=f"chrome-profile_{handler_uuid}.zip",
+                download_name=f"chrome-profile_{handler_uuid}.zip",
                 as_attachment=True,
                 mimetype="application/zip"
             )
@@ -371,7 +371,7 @@ class ReportDispatcher(Thread):
             stream = base64.b64decode(r["data"])
             return send_file(
                 io.BytesIO(stream),
-                attachment_filename=f"proxy-stream_{handler_uuid}.dump",
+                download_name=f"proxy-stream_{handler_uuid}.dump",
                 as_attachment=True,
                 mimetype="application/octet-stream"
             )
@@ -386,7 +386,7 @@ class ReportDispatcher(Thread):
             har = base64.b64decode(r["data"])
             return send_file(
                 io.BytesIO(har),
-                attachment_filename=f"proxy-hardump_{handler_uuid}.har",
+                download_name=f"proxy-hardump_{handler_uuid}.har",
                 as_attachment=True,
                 mimetype="application/octet-stream"
             )
