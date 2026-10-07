@@ -1,3 +1,13 @@
+# compile gui with the official node image (the nodesource repository for node 17 no longer installs)
+FROM node:22-slim AS gui
+ARG MODE
+ENV VUE_APP_MODE=$MODE
+WORKDIR /gui
+COPY ./gui/package.json ./gui/package-lock.json ./
+RUN npm ci
+COPY ./gui ./
+RUN npm run build
+
 FROM ubuntu:20.04
 
 # install dependencies
@@ -9,33 +19,24 @@ RUN apt install -y \
   python3 \
   python3-pip \
   openjdk-11-jre \
-  mitmproxy \
-  npm
-
-RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
-RUN apt install -y nodejs
+  mitmproxy
 
 # create dirs for distinct-core
 RUN mkdir -p /app/data/tmp
 RUN mkdir -p /app/data/pocs
 
-# copy distinct-core
+# copy distinct-core and compiled gui
 WORKDIR /app
 COPY ./ ./distinct-core
+COPY --from=gui /gui/dist ./distinct-core/gui/dist
 
 # set production (MODE=prod) or demo (MODE=demo) mode
 ARG MODE
-ENV VUE_APP_MODE=$MODE
 ENV PYTHON_APP_MODE=$MODE
 
 # install distinct-core requirements
 WORKDIR /app/distinct-core
 RUN pip3 install -r requirements.txt
-
-# install and compile gui
-WORKDIR /app/distinct-core/gui
-RUN npm install
-RUN npm run build
 
 # run distinct-core
 WORKDIR /app/distinct-core
