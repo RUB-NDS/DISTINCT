@@ -136,8 +136,9 @@ To compile and run DISTINCT in a "demo mode" as on [distinct-sso.com](https://di
 - Press `Ctrl+C` and run `docker-compose down` to close and exit the tool running in "normal mode"
 - Compile the "demo mode" version: `docker-compose -f docker-compose-demo.yml build`
 - Start DISTINCT in "demo mode": `docker-compose -f docker-compose-demo.yml up`
-- Go to `http://localhost:9070` and manually add example data to the database
-  - Note that the "demo mode" does not include a running browser. Thus, you cannot generate any new data while in "demo mode" and have to supply the example data by yourself in the database.
+  - The example data in `./demo-data` is imported into the database on every start, before DISTINCT starts
+  - Note that the "demo mode" does not include a running browser. Thus, you cannot generate any new data while in "demo mode".
+- Open `http://localhost:9080` in your webbrowser for DISTINCT's web interface and `http://localhost:9060` for the vulnerable test service
 
 ## 📝 Citation
 

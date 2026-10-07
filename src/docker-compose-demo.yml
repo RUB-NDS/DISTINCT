@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   distinct-demo-core:
     build:
@@ -9,7 +7,8 @@ services:
     container_name: distinct-demo-core
     restart: always
     depends_on:
-      - distinct-demo-db
+      distinct-demo-db-import:
+        condition: service_completed_successfully
     ports:
       - "127.0.0.1:9080:9080"
     networks:
@@ -20,10 +19,26 @@ services:
       DISTINCT_DB: mongodb://distinct-demo-db:27017
       VERBOSITY: ${VERBOSITY}
 
+  distinct-demo-db-import:
+    build: ../demo-data
+    container_name: distinct-demo-db-import
+    depends_on:
+      distinct-demo-db:
+        condition: service_healthy
+    networks:
+      - distinct-demo-net
+    environment:
+      DISTINCT_DB: mongodb://distinct-demo-db:27017
+
   distinct-demo-db:
     image: mongo:4.4.6
     container_name: distinct-demo-db
     restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - distinct-demo-net
     volumes:
@@ -41,6 +56,15 @@ services:
       - distinct-demo-net
     environment:
       - ME_CONFIG_MONGODB_SERVER=distinct-demo-db
+
+  distinct-demo-test:
+    build: ../test
+    container_name: distinct-demo-test
+    restart: always
+    ports:
+      - "127.0.0.1:9060:80"
+    networks:
+      - distinct-demo-net
 
 networks:
   distinct-demo-net:
